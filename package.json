@@ -1,0 +1,28 @@
+{
+  "name": "vmox-koa-base",
+  "version": "1.0.0",
+  "description": "koa base ts",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development ts-node src/app.ts",
+    "start": "nodemon",
+    "test": "test"
+  },
+  "keywords": [
+    "koa",
+    "ts",
+    "base"
+  ],
+  "author": "enmotion",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "koa": "^2.16.1"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.15.0",
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
