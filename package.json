@@ -2,9 +2,13 @@
   "name": "vmox-koa-base",
   "version": "1.0.0",
   "description": "koa base ts",
+  "main": "src/app.ts",
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node src/app.ts",
-    "start": "nodemon",
+    "start": "cross-env ts-node src/app.ts",
+    "build": "tsc",
+    "pm2:start": "pm2 restart pm2.config.js || pm2 start pm2.config.js",
+    "pm2:stop": "pm2 stop pm2.config.js",
     "test": "test"
   },
   "keywords": [
@@ -15,6 +19,7 @@
   "author": "enmotion",
   "license": "MIT",
   "dependencies": {
+    "colors": "^1.4.0",
     "dotenv": "^16.4.7",
     "koa": "^2.16.1"
   },
