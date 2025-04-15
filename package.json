@@ -1,37 +1,27 @@
 {
-  "name": "vmox-koa-base",
+  "name": "vmox-koa-ts-base",
   "version": "1.0.0",
-  "description": "koa base ts",
-  "main": "src/app.ts",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development ts-node src/app.ts",
-    "start": "cross-env ts-node src/app.ts",
+    "dev": "cross-env NODE_ENV=development nodemon .bin/www.ts",
     "build": "tsc",
-    "pm2:start": "pm2 restart pm2.config.js || pm2 start pm2.config.js",
-    "pm2:stop": "pm2 stop pm2.config.js",
-    "test": "test"
+    "deploy": "npm run build && pm2 restart vmox-koa-ts-base --update-env || pm2 start vmox-koa-ts-base --update-env"
   },
-  "keywords": [
-    "koa",
-    "ts",
-    "base"
-  ],
-  "author": "enmotion",
-  "license": "MIT",
-  "dependencies": {
-    "@koa/router": "^13.1.0",
-    "colors": "^1.4.0",
-    "dotenv": "^16.4.7",
-    "koa": "^2.16.1"
-  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
     "@types/koa": "^2.15.0",
-    "@types/koa-router": "^7.4.8",
-    "@types/node": "^22.14.1",
     "cross-env": "^7.0.3",
-    "detect-port": "^2.1.0",
+    "koa": "^2.16.1",
     "nodemon": "^3.1.9",
+    "pm2": "^6.0.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "detect-port": "^2.1.0"
   }
 }
