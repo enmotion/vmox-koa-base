@@ -19,13 +19,17 @@
   "author": "enmotion",
   "license": "MIT",
   "dependencies": {
+    "@koa/router": "^13.1.0",
     "colors": "^1.4.0",
     "dotenv": "^16.4.7",
     "koa": "^2.16.1"
   },
   "devDependencies": {
     "@types/koa": "^2.15.0",
+    "@types/koa-router": "^7.4.8",
+    "@types/node": "^22.14.1",
     "cross-env": "^7.0.3",
+    "detect-port": "^2.1.0",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
