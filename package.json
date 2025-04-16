@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon -r tsconfig-paths/register .bin/www.ts",
-    "build": "tsc && copyfiles -u 0 .env dist && copyfiles -u 0 src/ssl/** dist",
+    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json && copyfiles -u 0 .env dist && copyfiles -u 1 src/ssl/** dist",
     "start": "cross-env NODE_ENV=production pm2 restart --update-env || cross-env NODE_ENV=production pm2 start --update-env"
   },
   "keywords": [],
@@ -19,7 +19,9 @@
     "nodemon": "^3.1.9",
     "pm2": "^6.0.5",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.13",
     "tsconfig-paths": "^4.2.0",
+    "tscpaths": "^0.0.9",
     "typescript": "^5.8.3"
   },
   "dependencies": {
