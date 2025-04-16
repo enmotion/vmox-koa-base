@@ -57,13 +57,13 @@ export default {
     'querystring',
     'zlib',
     'util',
-    'koa', // 将 koa 作为外部依赖
-    'koa-router', // 将 koa-router 作为外部依赖
-    'dotenv', // 将 dotenv 作为外部依赖
-    'koa-body', // 将 koa-body 作为外部依赖
-    'koa-static', // 将 koa-static 作为外部依赖
-    'koa-websocket', // 将 koa-websocket 作为外部依赖
-    'colors', // 将 colors 作为外部依赖
-    'detect-port' // 将 detect-port 作为外部依赖
+    // 'koa', // 将 koa 作为外部依赖
+    // 'koa-router', // 将 koa-router 作为外部依赖
+    // 'dotenv', // 将 dotenv 作为外部依赖
+    // 'koa-body', // 将 koa-body 作为外部依赖
+    // 'koa-static', // 将 koa-static 作为外部依赖
+    // 'koa-websocket', // 将 koa-websocket 作为外部依赖
+    // 'colors', // 将 colors 作为外部依赖
+    // 'detect-port' // 将 detect-port 作为外部依赖
   ]
 };
