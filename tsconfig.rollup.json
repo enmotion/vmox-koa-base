@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json", // 继承主 tsconfig.json 文件的配置
+  "compilerOptions": {
+    "module": "esnext" // 设置模块生成方式为 ESNext，以支持最新的 ES 模块特性
+  }
+}
