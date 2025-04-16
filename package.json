@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon .bin/www.ts",
     "build": "tsc",
-    "deploy": "cross-env NODE_ENV=development pm2 restart --update-env || cross-env NODE_ENV=development pm2 start --update-env"
+    "start": "cross-env NODE_ENV=development pm2 restart --update-env || cross-env NODE_ENV=development pm2 start --update-env"
   },
   "keywords": [],
   "author": "",
