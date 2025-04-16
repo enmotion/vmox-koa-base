@@ -2,7 +2,7 @@
  * @ Author: Your name
  * @ Create Time: 2025-04-15 18:06:29
  * @ Modified by: Your name
- * @ Modified time: 2025-04-16 18:15:28
+ * @ Modified time: 2025-04-16 18:20:09
  * @ Description:
  */
 // 引入 dotenv 模块，用于加载环境变量文件
@@ -16,6 +16,7 @@ const path = require('path');
  * 加载后，文件中的环境变量将被添加到 process.env 对象中。
  */
 const result = dotenv.config({ path: path.resolve(__dirname, `./dist/.env`) });
+
 // 打印一条由 50 个等号组成的红色分隔线，用于在控制台中分隔错误信息块，增强可读性
 console.log(colors.gray('='.repeat(50)));
 if (result.error) {
