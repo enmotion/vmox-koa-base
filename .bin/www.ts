@@ -1,7 +1,7 @@
 /**
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:31:05
- * @ Modified time: 2025-04-16 18:22:28
+ * @ Modified time: 2025-04-16 19:28:50
  * @ Description: 该脚本用于启动服务器，加载环境变量，并输出服务器访问地址。
  */
 
@@ -32,9 +32,9 @@ if (nodeEnv !== 'production') {
   dotenv.config({ path: path.resolve(__dirname, `../.env`) });
 }
 
-// 尝试从环境变量中获取端口号。如果环境变量中没有 PORT 字段，则使用默认值 '0'。
+// 尝试从环境变量中获取端口号。如果环境变量中没有 APP_PORT 字段，则使用默认值 '0'。
 // 将获取到的端口号字符串转换为整数。如果转换失败（例如值为 '0' 或者非数字字符串），则使用默认端口号 3000
-const port = parseInt(process.env.PORT as string) || 3000;
+const port = parseInt(process.env.APP_PORT as string) || 3000;
 
 /**
  * 异步函数，用于创建并启动服务器。

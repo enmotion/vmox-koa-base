@@ -1,8 +1,8 @@
 /**
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 18:06:29
- * @ Modified by: enmotion
- * @ Modified time: 2025-04-16 18:24:20
+ * @ Modified by: Your name
+ * @ Modified time: 2025-04-16 19:29:09
  * @ Description:
  */
 // 引入 dotenv 模块，用于加载环境变量文件
@@ -43,7 +43,7 @@ module.exports = {
        * 尝试从 process.env 中获取 NAME 的值，如果没有设置，则默认使用 'koa'。
        * 这样可以根据环境变量动态设置应用名称，提高配置的灵活性。
        */
-      name: process.env.NAME ?? 'koa',
+      name: process.env.APP_NAME ?? 'koa',
       /**
        * 应用程序的入口脚本路径。
        * 这里指定为 ./dist/.bin/www.js，表示 PM2 将启动该脚本作为应用程序的入口。
@@ -79,7 +79,7 @@ module.exports = {
          * 尝试从 process.env 中获取 PORT 的值，如果没有设置，则默认使用 3000。
          * 这样可以根据环境变量动态设置应用程序的端口号。
          */
-        PORT: process.env.PORT ?? 3000
+        PORT: process.env.APP_PORT ?? 3000
       }
     }
   ]
