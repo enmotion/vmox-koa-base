@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon -r tsconfig-paths/register .bin/www.ts",
-    "build": "tsc",
+    "build": "tsc && copyfiles -u 0 .env dist && copyfiles -u 0 src/ssl/** dist",
     "start": "cross-env NODE_ENV=production pm2 restart --update-env || cross-env NODE_ENV=production pm2 start --update-env"
   },
   "keywords": [],
@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/koa": "^2.15.0",
+    "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
     "koa": "^2.16.1",
     "nodemon": "^3.1.9",

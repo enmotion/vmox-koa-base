@@ -2,37 +2,34 @@
  * @ Author: Your name
  * @ Create Time: 2025-04-15 18:06:29
  * @ Modified by: Your name
- * @ Modified time: 2025-04-16 13:21:43
+ * @ Modified time: 2025-04-16 18:15:28
  * @ Description:
  */
 // 引入 dotenv 模块，用于加载环境变量文件
+const colors = require('colors');
 const dotenv = require('dotenv');
 // 引入 path 模块，用于处理文件路径
 const path = require('path');
 
 /**
- * 确定当前的环境模式。
- * 尝试从 process.env 中获取 NODE_ENV 的值，如果没有设置，则默认使用 'production'。
- * 这是因为在生产环境中，通常会明确设置 NODE_ENV 为 'production'，而在开发环境中可能会省略该设置。
- */
-const nodeEnv = process.env.NODE_ENV || 'production';
-
-/**
- * 根据当前的环境模式确定要加载的环境变量文件的路径。
- * 如果当前环境不是 'production'，则加载根目录下的 .env 文件；
- * 否则，加载根目录下以 .env. 开头，后面跟着当前环境模式的文件，例如 .env.production。
- * path.resolve(__dirname, ...) 用于构建文件的绝对路径，确保在不同操作系统上都能正确找到文件。
- */
-const envFilePath = nodeEnv !== 'production'
-  ? path.resolve(__dirname, `../.env.${nodeEnv}`)
-  : path.resolve(__dirname, `../.env`);
-
-/**
  * 使用 dotenv 加载指定路径的环境变量文件。
  * 加载后，文件中的环境变量将被添加到 process.env 对象中。
  */
-dotenv.config({ path: envFilePath });
-
+const result = dotenv.config({ path: path.resolve(__dirname, `./dist/.env`) });
+// 打印一条由 50 个等号组成的红色分隔线，用于在控制台中分隔错误信息块，增强可读性
+console.log(colors.gray('='.repeat(50)));
+if (result.error) {
+  console.log(colors.red.bold('❌ 环境变量信息文件读取失败'));
+  console.log(colors.red(`错误详情: ${result.error}`));
+  console.log(colors.red('='.repeat(50)));
+}else{
+  console.log(colors.gray('-'.repeat(50)));
+  console.log(colors.blue.bold(`🚀 启动环境变量:`));
+  for(let k in result.parsed){
+    console.log(`${colors.white.bold(`${k}:`)}${colors.green(`${result.parsed[k]}`)}`);
+  }
+  console.log(colors.gray('-'.repeat(50)));
+}
 /**
  * 导出 PM2 的配置对象。
  * PM2 是一个进程管理器，用于管理 Node.js 应用程序的运行。
