@@ -2,7 +2,7 @@
  * @ Author: Your name
  * @ Create Time: 2025-04-15 16:31:05
  * @ Modified by: Your name
- * @ Modified time: 2025-04-16 13:05:59
+ * @ Modified time: 2025-04-16 13:21:04
  * @ Description:
  */
 // 引入 "colors" 库，该库用于在控制台输出有颜色的文本，方便区分不同类型的信息
@@ -21,6 +21,7 @@ import { getAvailablePort, getLocalServerIP } from "../src/use.lib/tools";
  * 这是因为在生产环境中，通常会明确设置 NODE_ENV 为 'production'，而在开发环境中可能会省略该设置。
  */
 const nodeEnv = process.env.NODE_ENV || 'production';
+
 /**
  * 根据当前的环境模式确定要加载的环境变量文件的路径。
  * 如果当前环境不是 'production'，则加载根目录下的 .env 文件；
@@ -28,9 +29,9 @@ const nodeEnv = process.env.NODE_ENV || 'production';
  * path.resolve(__dirname, ...) 用于构建文件的绝对路径，确保在不同操作系统上都能正确找到文件。
  */
 const envFilePath = nodeEnv !== 'production'
-  ? path.resolve(__dirname, '../.env')
-  : path.resolve(__dirname, `../.env.${nodeEnv}`);
-
+  ? path.resolve(__dirname, `../.env.${nodeEnv}`)
+  : path.resolve(__dirname, `../.env`);
+  
 /**
  * 使用 dotenv 加载指定路径的环境变量文件。
  * 加载后，文件中的环境变量将被添加到 process.env 对象中。

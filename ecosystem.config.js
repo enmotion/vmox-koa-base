@@ -2,7 +2,7 @@
  * @ Author: Your name
  * @ Create Time: 2025-04-15 18:06:29
  * @ Modified by: Your name
- * @ Modified time: 2025-04-16 12:44:12
+ * @ Modified time: 2025-04-16 13:21:43
  * @ Description:
  */
 // 引入 dotenv 模块，用于加载环境变量文件
@@ -24,8 +24,8 @@ const nodeEnv = process.env.NODE_ENV || 'production';
  * path.resolve(__dirname, ...) 用于构建文件的绝对路径，确保在不同操作系统上都能正确找到文件。
  */
 const envFilePath = nodeEnv !== 'production'
-  ? path.resolve(__dirname, '.env')
-  : path.resolve(__dirname, `.env.${nodeEnv}`);
+  ? path.resolve(__dirname, `../.env.${nodeEnv}`)
+  : path.resolve(__dirname, `../.env`);
 
 /**
  * 使用 dotenv 加载指定路径的环境变量文件。
