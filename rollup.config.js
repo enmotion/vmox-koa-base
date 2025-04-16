@@ -6,17 +6,20 @@ import json from '@rollup/plugin-json'; // 引入 JSON 插件，用于导入 JSO
 import copy from 'rollup-plugin-copy'; // 引入 Copy 插件，用于在构建时复制文件
 import alias from '@rollup/plugin-alias'; // 引入 Alias 插件，用于处理模块别名
 import path from 'path'; // 引入 Node.js 的 path 模块，用于处理文件路径
+import del from 'rollup-plugin-delete'; // 引入 Delete 插件，用于删除文件和目录
 
 export default {
   input: '.bin/www.ts', // 指定入口文件
   output: {
     dir: 'dist', // 输出目录
     format: 'cjs', // 输出格式为 CommonJS
-    sourcemap: true, // 生成源映射文件
+    sourcemap: false, // 禁止生成源映射文件
     preserveModules: true, // 保留模块结构
-    preserveModulesRoot: '.' // 设置模块根目录
+    preserveModulesRoot: '.', // 设置模块根目录
+    exports: 'auto' // 设置导出方式为 auto
   },
   plugins: [
+    del({ targets: 'dist/*', hook: 'buildStart' }), // 在构建开始时删除 dist 目录
     alias({
       entries: [
         { find: '@lib', replacement: path.resolve(__dirname, 'src/use.lib') }, // 别名 @lib 指向 src/use.lib
@@ -31,7 +34,7 @@ export default {
     json(), // 处理 JSON 文件
     typescript({
       tsconfig: './tsconfig.rollup.json', // 指定 TypeScript 配置文件
-      sourceMap: true // 生成源映射文件
+      sourceMap: false // 禁止生成 TypeScript 源映射文件
     }),
     terser(), // 压缩代码
     copy({
