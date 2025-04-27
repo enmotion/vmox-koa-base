@@ -10,7 +10,7 @@ export interface IUser extends Document {
 }
 
 // 定义用户模型的结构
-const userSchema: Schema = new Schema({
+export const userSchema: Schema = new Schema({
   username: {
     type: String,
     required: true,
@@ -30,8 +30,3 @@ const userSchema: Schema = new Schema({
     default: Date.now, // 默认创建时间为当前时间
   },
 });
-
-// 创建用户模型
-const UserSchema = mongoose.model<IUser>('User', userSchema);
-
-export default UserSchema; // 导出用户模型

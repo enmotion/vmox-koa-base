@@ -2,18 +2,19 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-04-17 00:08:37
+ * @ Modified time: 2025-04-27 14:08:01
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
 import path from "path"; // Node.js 核心模块，用于处理和转换文件路径。
 import fs from 'fs'; // Node.js 核心文件系统模块，用于读取本地文件。
+import { mongoose } from "./database"
 import StaticServer from "koa-static"; // koa-static 是一个用于提供静态文件服务的 Koa 中间件。
 import KoaWebSocket from "koa-websocket"; // koa-websocket 是一个用于支持 WebSocket 的 Koa 中间件。
 import Router from "koa-router"; // koa-router 是一个用于处理路由的 Koa 中间件库。
 import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体的 Koa 中间件。
 import { getLocalServerIP } from '@lib/tools';
-import userRouter from "./models/users/routers"
+import { userUserModel } from "./models/users"
 const router = new Router();
 
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。
@@ -42,7 +43,7 @@ app.use(KoaBody({
 
 // 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
 app.use(StaticServer('public'));
-app.use(userRouter.routes());
+app.use(userUserModel(mongoose,'/user').router.routes());
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
 app.use(router.allowedMethods())
 
