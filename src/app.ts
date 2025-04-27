@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-04-27 14:08:01
+ * @ Modified time: 2025-04-27 14:24:44
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -43,7 +43,7 @@ app.use(KoaBody({
 
 // 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
 app.use(StaticServer('public'));
-app.use(userUserModel(mongoose,'/user').router.routes());
+app.use(userUserModel(mongoose,'/user2').router.routes());
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
 app.use(router.allowedMethods())
 
