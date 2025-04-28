@@ -1,11 +1,22 @@
+'use strict';
 // src/model/user/userController.ts
 import { ParameterizedContext } from 'koa';
 import useUserService from './service';
+import useCoreSchema from "./schema";
 
 export default function useUserController(service:ReturnType<typeof useUserService>){
   return {
     create:async (ctx:ParameterizedContext)=>{
-      return service.createUser(ctx.request.body)
+      try{
+        const result = await service.createUser(ctx.query as any)
+        return ctx.body = JSON.stringify(result)
+      }catch(err){
+        const errdata = Object(err);
+        const fieldName = Object.keys(errdata.keyPattern)[0];
+        const zhName = useCoreSchema.path(fieldName).options.zhName;
+        console.log(Object(err),zhName)
+        return ctx.body = {...errdata,zhName:zhName}
+      }
     },
     delete:async (ctx:ParameterizedContext)=>{
       return service.deleteUser(ctx.request.body)

@@ -1,3 +1,4 @@
+'use strict';
 import { keys } from "ramda";
 // 引入 Koa 的路由模块
 import Router from 'koa-router';
@@ -34,7 +35,7 @@ export default function useUserRouter(
   controllers: ReturnType<typeof useUserController>, 
   // 路由映射对象，默认值为空对象
   routerMapping: ControllerRouterMapping[] = [
-    {routerPath:'/create',httpMethod:'post',handlerName:'create'},
+    {routerPath:'/create',httpMethod:'get',handlerName:'create'},
     {routerPath:'/delete',httpMethod:'delete',handlerName:'delete'},
     {routerPath:'/update',httpMethod:'put',handlerName:'update'},
     {routerPath:'/query',httpMethod:'get',handlerName:'query'},

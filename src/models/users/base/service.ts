@@ -1,3 +1,4 @@
+'use strict';
 import { Model } from "mongoose";
 import type { IUser } from "./schema";
 
@@ -8,20 +9,17 @@ import type { IUser } from "./schema";
  */
 export default function useUserService<T extends IUser>(model:Model<T>){
   async function createUser(user:T){
-    const userModel = new model(user);
-    return await userModel.save()
+    const modelDoc = new model(user);
+    return await modelDoc.save()
   }
   async function deleteUser(user:T){
-    const userModel = new model(user);
-    return await userModel.save()
+    return await model.deleteMany({uid:user.uid})
   }
   async function updateUser(user:T){
-    const userModel = new model(user);
-    return await userModel.save()
+    return await model.updateOne({uid:user.uid},{$set:user},{runValidators : true })
   }
   async function findUser(user:T){
-    const userModel = new model(user);
-    return await userModel.save()
+    return await model.find({uid:user.uid})
   }
   return {
     createUser,

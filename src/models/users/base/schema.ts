@@ -1,4 +1,5 @@
 // src/model/user/User.ts
+'use strict';
 import { Document, Schema } from 'mongoose';
 import uniqid from "uniqid";
 
@@ -25,6 +26,8 @@ export default new Schema<IUser>({
   },
   username: {
     type: String,
+    alias:'userName',
+    zhName:'用户姓名',
     required: true,
     unique: true, // 用户名唯一
   },
