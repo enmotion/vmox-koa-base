@@ -1,7 +1,7 @@
 /**
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:31:05
- * @ Modified time: 2025-04-16 19:28:50
+ * @ Modified time: 2025-04-28 15:46:26
  * @ Description: 该脚本用于启动服务器，加载环境变量，并输出服务器访问地址。
  */
 
@@ -14,7 +14,7 @@ import path from 'path';
 // 引入应用实例，这个 app 应该是一个 Express 应用实例或者类似的服务器应用实例
 import app from '../src/app';
 // 从工具库模块中引入两个工具函数：getAvailablePort 用于获取可用端口，getLocalServerIP 用于获取本地服务器的 IP 地址
-import { getAvailablePort, getLocalServerIP } from "../src/use.lib/tools";
+import { getAvailablePort, getLocalServerIP } from "../src/use.lib/serverTools";
 
 // 获取当前的 NODE_ENV 环境变量，如果未设置则默认为 'production'
 const nodeEnv = process.env.NODE_ENV || 'production';

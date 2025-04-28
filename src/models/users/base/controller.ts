@@ -1,8 +1,8 @@
 // src/model/user/userController.ts
 import { ParameterizedContext } from 'koa';
-import { useUserService } from './service';
+import useUserService from './service';
 
-export function useUserController(service:ReturnType<typeof useUserService>){
+export default function useUserController(service:ReturnType<typeof useUserService>){
   return {
     create:async (ctx:ParameterizedContext)=>{
       return service.createUser(ctx.request.body)

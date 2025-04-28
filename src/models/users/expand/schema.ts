@@ -1,8 +1,8 @@
 // src/model/user/User.ts
-import mongoose, { Document, Schema } from 'mongoose';
-
+import { Document, Schema } from 'mongoose';
+import type { IUser } from "../base/schema"
 // 定义用户接口
-export interface IUser extends Document {
+export interface IUserExpand extends IUser {
   username: string;
   password: string;
   email: string;
@@ -10,7 +10,7 @@ export interface IUser extends Document {
 }
 
 // 定义用户模型的结构
-export const userSchema: Schema = new Schema({
+export default new Schema({
   username: {
     type: String,
     required: true,

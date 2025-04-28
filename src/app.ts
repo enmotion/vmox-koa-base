@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-04-27 14:24:44
+ * @ Modified time: 2025-04-28 15:45:57
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -13,7 +13,7 @@ import StaticServer from "koa-static"; // koa-static 是一个用于提供静态
 import KoaWebSocket from "koa-websocket"; // koa-websocket 是一个用于支持 WebSocket 的 Koa 中间件。
 import Router from "koa-router"; // koa-router 是一个用于处理路由的 Koa 中间件库。
 import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体的 Koa 中间件。
-import { getLocalServerIP } from '@lib/tools';
+import { getLocalServerIP } from '@lib/serverTools';
 import { userUserModel } from "./models/users"
 const router = new Router();
 

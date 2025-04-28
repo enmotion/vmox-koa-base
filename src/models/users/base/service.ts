@@ -6,20 +6,20 @@ import type { IUser } from "./schema";
  * @param model 
  * @returns 
  */
-export function useUserService(model:Model<IUser>){
-  async function createUser(user:IUser){
+export default function useUserService<T extends IUser>(model:Model<T>){
+  async function createUser(user:T){
     const userModel = new model(user);
     return await userModel.save()
   }
-  async function deleteUser(user:IUser){
+  async function deleteUser(user:T){
     const userModel = new model(user);
     return await userModel.save()
   }
-  async function updateUser(user:IUser){
+  async function updateUser(user:T){
     const userModel = new model(user);
     return await userModel.save()
   }
-  async function findUser(user:IUser){
+  async function findUser(user:T){
     const userModel = new model(user);
     return await userModel.save()
   }

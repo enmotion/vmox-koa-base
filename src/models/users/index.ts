@@ -1,10 +1,9 @@
-import Router from 'koa-router';
-import { userSchema, type IUser } from "./core/schema";
-import type { ParameterizedContext } from "koa";
+import type { IUser } from "./base/schema";
 import type { Mongoose } from "mongoose";
-import { useUserService } from "./core/service";
-import { useUserController } from "./core/controller";
-import { useUserRouter } from './core/routers';
+import userBaseSchema from "./base/schema";
+import useBaseUserService from "./base/service";
+import useBaseUserController from "./base/controller";
+import useBaseUserRouter from './base/routers';
 
 /**
  * 
@@ -15,13 +14,13 @@ import { useUserRouter } from './core/routers';
  */
 export function userUserModel(mongoose:Mongoose,prefix:string='/users'){
   // 获取数据查询模型
-  const userModel = mongoose.model<IUser>('user',userSchema) 
+  const userModel = mongoose.model<IUser>('user',userBaseSchema) 
   // 注入查询模型，创建 service
-  const userService = useUserService(userModel) 
+  const userService = useBaseUserService(userModel) 
   // 注入 service 创建 controllers
-  const controller = useUserController(userService); 
+  const controller = useBaseUserController(userService); 
   // 注入 controller 创建实例
-  const router = useUserRouter('/users',controller) 
+  const router = useBaseUserRouter('/users',controller) 
   return {
     userModel,
     userService,
