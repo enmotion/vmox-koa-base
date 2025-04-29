@@ -13,10 +13,12 @@ import useBaseUserRouter from './base/routers';
  * schema => service => controllers => router
  */
 export function userUserModel(mongoose:Mongoose,prefix:string='/users'){
+  // 获取当前的 Schema
+  const userSchema = userBaseSchema
   // 获取数据查询模型
-  const userModel = mongoose.model<IUser>('user',userBaseSchema) 
+  const userModel = mongoose.model<IUser>('user', userSchema) 
   // 注入查询模型，创建 service
-  const userService = useBaseUserService(userModel) 
+  const userService = useBaseUserService(userModel, userSchema) 
   // 注入 service 创建 controllers
   const controller = useBaseUserController(userService); 
   // 注入 controller 创建实例

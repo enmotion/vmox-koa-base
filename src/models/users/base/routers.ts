@@ -35,6 +35,7 @@ export default function useUserRouter(
   controllers: ReturnType<typeof useUserController>, 
   // 路由映射对象，默认值为空对象
   routerMapping: ControllerRouterMapping[] = [
+    {routerPath:'/register',httpMethod:'post',handlerName:'register'},
     {routerPath:'/create',httpMethod:'get',handlerName:'create'},
     {routerPath:'/delete',httpMethod:'delete',handlerName:'delete'},
     {routerPath:'/update',httpMethod:'put',handlerName:'update'},

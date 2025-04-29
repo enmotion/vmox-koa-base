@@ -26,7 +26,6 @@ export default new Schema<IUser>({
   },
   username: {
     type: String,
-    alias:'userName',
     zhName:'用户姓名',
     required: true,
     unique: true, // 用户名唯一
@@ -37,16 +36,13 @@ export default new Schema<IUser>({
   },
   avatar: {
     type: String,
-    required: true,
   },
   phone: {
     type: String,
-    required: true,
     unique: true, // 邮箱唯一
   },
   email: {
     type: String,
-    required: true,
     unique: true, // 邮箱唯一
   },
   createdAt: {

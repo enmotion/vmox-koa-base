@@ -16,7 +16,6 @@ import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体
 import { getLocalServerIP } from '@lib/serverTools';
 import { userUserModel } from "./models/users"
 const router = new Router();
-console.log(process.env)
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。
 // const options = {
 //   key: fs.readFileSync(path.join(__dirname,'ssl','mid.wow11.key')),
@@ -43,7 +42,7 @@ app.use(KoaBody({
 
 // 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
 app.use(StaticServer('public'));
-app.use(userUserModel(mongoose,'/user2').router.routes());
+app.use(userUserModel(mongoose,'/users').router.routes());
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
 app.use(router.allowedMethods())
 

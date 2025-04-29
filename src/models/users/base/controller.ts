@@ -3,9 +3,18 @@
 import { ParameterizedContext } from 'koa';
 import useUserService from './service';
 import useCoreSchema from "./schema";
+import { register } from 'module';
 
 export default function useUserController(service:ReturnType<typeof useUserService>){
   return {
+    register:async (ctx:ParameterizedContext)=>{
+      try{
+        const result = await service.createUser(ctx.request.body as any)
+        return ctx.body = JSON.stringify(result)
+      }catch(err:any){
+        return ctx.body = err
+      }
+    },
     create:async (ctx:ParameterizedContext)=>{
       try{
         const result = await service.createUser(ctx.query as any)
