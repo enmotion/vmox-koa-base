@@ -12,6 +12,9 @@ export default function useUserController(service:ReturnType<typeof useUserServi
         const result = await service.createUser(ctx.request.body as any)
         return ctx.body = JSON.stringify(result)
       }catch(err:any){
+        if(['MongoServerError','ValidationError'].includes(err.name)){
+          console.log('数据库错误')
+        }
         return ctx.body = err
       }
     },

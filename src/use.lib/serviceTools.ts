@@ -6,12 +6,17 @@ import type { Schema } from "mongoose";
  */
 export function mongoDBErrorTransform(err:any,schema:Schema){
   // 获取错误名称
-  const error: Record<string,any> = {name:Object(err).name} 
-  Object.keys(err).forEach(key=>error[key]=err[key]);
+  const error: Record<string,any> = {errorName:Object(err).name}
   // 数据库错误
-  if(error.name === 'MongoServerError'){
+  if(error.errorName === 'MongoServerError'){
     // 数据库错误在此处理
-    error['options'] = schema.path(Object.keys(error.keyPattern)[0]).options;
+    error['key'] = Object.keys(err.keyPattern)[0]
+    error['options'] = schema.path(error['key']).options;
+  }
+  if(error.errorName === 'ValidationError'){
+    // 数据验证错误
+    error['key'] = Object.keys(err.errors)[0];
+    error['options'] = schema.path(error['key']).options;
   }
   return error;
 }

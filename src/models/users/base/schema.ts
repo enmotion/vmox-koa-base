@@ -12,6 +12,7 @@ export interface IUser extends Document {
   avatar: string; // 用户头像
   phone: string; // 用户电话
   email: string; // 用户邮箱
+  age:number,
   createdAt: Date; // 创建时间
   updatedAt: Date; // 修改时间
 }
@@ -30,6 +31,7 @@ export default new Schema<IUser>({
     required: true,
     unique: true, // 用户名唯一
   },
+
   password: {
     type: String,
     required: true,
@@ -45,7 +47,15 @@ export default new Schema<IUser>({
     type: String,
     unique: true, // 邮箱唯一
   },
+  age:{
+    type: Number,
+    min:0,
+  },
   createdAt: {
+    type: Date,
+    default: Date.now, // 默认创建时间为当前时间
+  },
+  updatedAt: {
     type: Date,
     default: Date.now, // 默认创建时间为当前时间
   },
