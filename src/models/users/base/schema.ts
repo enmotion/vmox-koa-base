@@ -28,7 +28,7 @@ export default new Schema<IUser>({
   username: {
     type: String,
     zhName:'用户姓名',
-    required: true,
+    required: [true,"缺失用户名"],
     unique: [true,'用户名已被占用'], // 用户名唯一
   },
   password: {
