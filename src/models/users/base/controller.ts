@@ -23,7 +23,6 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
         const errdata = Object(err);
         const fieldName = Object.keys(errdata.keyPattern)[0];
         const zhName = useCoreSchema.path(fieldName).options.zhName;
-        console.log(Object(err),zhName)
         return ctx.body = {...errdata,zhName:zhName}
       }
     },

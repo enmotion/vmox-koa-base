@@ -1,4 +1,4 @@
-import { mergeAll } from "ramda";
+import { mergeDeepRight } from "ramda";
 import type { Mongoose, Schema } from "mongoose";
 
 import userBaseSchema from "./base/schema";
@@ -6,7 +6,7 @@ import useBaseUserService from "./base/service";
 import useBaseUserController from "./base/controller";
 import useBaseUserRouter from './base/routers';
 
-import userExpandSchema from "./expand/schema";
+import userExpandSchemaConfig from "./expand/schema";
 import type { ExpandUser } from "./expand/schema";
 
 /**
@@ -18,7 +18,7 @@ import type { ExpandUser } from "./expand/schema";
  */
 export function userUserModel(mongoose:Mongoose,prefix:`/${string}`='/users'){
   // 获取当前的 Schema
-  const userSchema = userExpandSchema as Schema;
+  const userSchema = userBaseSchema.add(userExpandSchemaConfig) as Schema;
   // 获取数据查询模型
   const userModel = mongoose.model<ExpandUser>('user-collection', userSchema) 
   // 注入查询模型，创建 service
