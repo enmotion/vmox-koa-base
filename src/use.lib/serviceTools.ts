@@ -7,6 +7,7 @@ import type { AppResponse } from "@type/index";
  */
 export function mongoDBErrorTransform(err:any,schema:Schema){
   try{
+    console.log(err)
     // 获取错误名称
     const res : AppResponse = { code:204, data:{ name:err.name }, msg:'' }
     // // 数据库错误
@@ -14,13 +15,13 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
       // 数据库错误在此处理, 两个错误类型的返回结构不太一样 MongooseError 将错误信息 封装在了 cause 对象里
       res.data['key'] = Object.keys(err?.cause?.keyPattern ?? err?.keyPattern)?.[0]
       res.data['options'] = schema.path(res.data['key']).options; // 获取字段的 schema 配置
-      res.msg = String(err).split(":")[1].replace(/\s/g,'');
+      res.msg = String(err).split(":")[1].replace(/^\s/g,'');
     }
     if(['ValidationError'].includes(res.data.name)){
       // 数据验证错误
       res.data['key'] = Object.keys(err?.errors)?.[0];
       res.data['options'] = schema.path(res.data['key']).options; // 获取字段的 schema 配置
-      res.msg = String(err).split(":")[2].replace(/\s/g,'');
+      res.msg = String(err).split(":")[2].replace(/^\s/g,'');
     }
     return res;
   }catch(error){

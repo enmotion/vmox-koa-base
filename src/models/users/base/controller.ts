@@ -3,8 +3,9 @@
 import { ParameterizedContext } from 'koa';
 import useUserService from './service';
 import useCoreSchema from "./schema";
+import type { IUser } from "./schema";
 
-export default function useUserController(service:ReturnType<typeof useUserService>){
+export default function useUserController<T extends IUser>(service:ReturnType<typeof useUserService<T>>){
   return {
     register:async (ctx:ParameterizedContext)=>{
       try{
