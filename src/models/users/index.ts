@@ -4,11 +4,10 @@ import type { Mongoose, Schema } from "mongoose";
 import userBaseSchema from "./base/schema";
 import useBaseUserService from "./base/service";
 import useBaseUserController from "./base/controller";
-import useBaseUserRouter from './base/routers';
-
 import userExpandSchemaConfig from "./expand/schema";
 import type { ExpandUser } from "./expand/schema";
 
+import { mappingControllersAndRouter } from "@lib/routerTools";
 /**
  * 
  * @param mongoose 数据库链接实例
@@ -16,7 +15,7 @@ import type { ExpandUser } from "./expand/schema";
  * @returns 
  * schema => service => controllers => router
  */
-export function userUserModel(mongoose:Mongoose,prefix:`/${string}`='/users'){
+export function userUserModel(mongoose:Mongoose, prefix:string=''){
   // 获取当前的 Schema
   const userSchema = userBaseSchema.add(userExpandSchemaConfig) as Schema;
   // 获取数据查询模型
@@ -26,11 +25,18 @@ export function userUserModel(mongoose:Mongoose,prefix:`/${string}`='/users'){
   // 注入 service 创建 controllers
   const controller = useBaseUserController<ExpandUser>(userService); 
   // 注入 controller 创建实例
-  const router = useBaseUserRouter(prefix,controller) 
+  const router = mappingControllersAndRouter<ReturnType<typeof useBaseUserController>>(prefix,controller,[
+    {routerPath:'/register',httpMethod:'post',handlerName:'register'},
+    {routerPath:'/create',httpMethod:'get',handlerName:'create'},
+    {routerPath:'/delete',httpMethod:'delete',handlerName:'delete'},
+    {routerPath:'/update',httpMethod:'put',handlerName:'update'},
+    {routerPath:'/find',httpMethod:'get',handlerName:'find'}
+  ]) 
   return {
     userModel,
     userService,
     controller,
-    router
+    router,
+    userSchema
   }
 }

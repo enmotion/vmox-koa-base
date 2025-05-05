@@ -2,8 +2,6 @@
 import { keys } from "ramda";
 // 引入 Koa 的路由模块
 import Router from 'koa-router';
-// 引入用户控制器模块
-import useUserController from './controller';
 // 引入 Koa 路由允许方法选项的类型定义
 import type { IRouterAllowedMethodsOptions } from "koa-router";
 
@@ -13,12 +11,12 @@ import type { IRouterAllowedMethodsOptions } from "koa-router";
  * - httpMethod: 表示 HTTP 请求的方法，支持常见的 HTTP 方法
  * - handlerName: 表示处理该请求的控制器方法名称
  */
-export type ControllerRouterMapping = {
+export type ControllerRouterMapping<T extends Record<string,any>> = {
   routerPath:`/${string}`
   // HTTP 请求方法，涵盖了标准的 HTTP 方法
   httpMethod: 'post' | 'get' | 'delete' | 'put' | 'head' | 'options' | 'patch';
   // 处理该请求的控制器方法的名称
-  handlerName: string;
+  handlerName: keyof T;
 };
 
 /**
@@ -28,20 +26,13 @@ export type ControllerRouterMapping = {
  * @param routerMapping - 路由映射对象，键为以斜杠开头的路径，值为 ControllerRouterMapping 类型
  * @returns 配置好的 Koa 路由实例
  */
-export default function useUserRouter(
+export function mappingControllersAndRouter<T extends Record<string,any>>(
   // 路由前缀，必须是以斜杠开头的字符串
-  prefix: `/${string}`, 
+  prefix: string, 
   // 用户控制器实例，由 useUserController 函数返回
-  controllers: ReturnType<typeof useUserController>, 
+  controllers: T, 
   // 路由映射对象，默认值为空对象
-  routerMapping: ControllerRouterMapping[] = [
-    {routerPath:'/register',httpMethod:'post',handlerName:'register'},
-    {routerPath:'/create',httpMethod:'get',handlerName:'create'},
-    {routerPath:'/delete',httpMethod:'delete',handlerName:'delete'},
-    {routerPath:'/update',httpMethod:'put',handlerName:'update'},
-    {routerPath:'/query',httpMethod:'get',handlerName:'query'},
-    {routerPath:'/find',httpMethod:'get',handlerName:'find'},
-  ]
+  routerMapping: ControllerRouterMapping<T>[] = []
 ) {
   // 创建一个 Koa 路由实例，并设置路由前缀
   const router = new Router({ prefix: prefix });
