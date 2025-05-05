@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-04-28 17:13:22
+ * @ Modified time: 2025-05-05 15:40:52
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -21,7 +21,6 @@ const router = new Router();
 //   key: fs.readFileSync(path.join(__dirname,'ssl','mid.wow11.key')),
 //   cert: fs.readFileSync(path.join(__dirname,'ssl','mid.wow11.pem')),
 // };
-
 // 创建 Koa 实例并判断是否为开发环境。如果不是开发环境，则启用 HTTPS。
 // 注意：在生产环境中，需要确保安全地管理 SSL 密钥和证书文件，避免泄露。
 // const app = process.env.KOA_APP_NODE_ENV == "development" ? KoaWebSocket(new Koa()) : KoaWebSocket(new Koa(), {}, options);
