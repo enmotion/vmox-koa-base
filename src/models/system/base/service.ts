@@ -15,20 +15,21 @@ import type { Model, Schema } from "mongoose";
  * @param model 
  * @returns 
  */
-export default function useSystemService<T extends Record<string,any>>(model:Model<T>, schema:Schema){
-  async function register(user:ExpandUser){
+export default function useSystemService<T extends Record<string,any>>(){
+  async function registerSystem(user:ExpandUser){
     try{
       const data = await userService.createUser(user)
       return data
     }catch(err){
-      throw mongoDBErrorTransform(err, schema)
+      return err
+      // throw mongoDBErrorTransform(err, schema)
     }
   }
   async function login(user:Partial<ExpandUser>){
 
   }
   return {
-    register,
+    registerSystem,
     login,
   }
 }

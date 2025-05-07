@@ -11,6 +11,7 @@ import KoaWebSocket from "koa-websocket"; // koa-websocket 是一个用于支持
 import Router from "koa-router"; // koa-router 是一个用于处理路由的 Koa 中间件库。
 import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体的 Koa 中间件。
 import { userRouter } from "./models/users"
+import { systemRouter } from '@model/system';
 
 // const userModel = userUserModel(mongoose,'/users') // 实例化用户模块
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。
@@ -39,6 +40,7 @@ app.use(KoaBody({
 // 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
 app.use(StaticServer('public'));
 app.use(userRouter.routes());
+app.use(systemRouter.routes());
 // app.use(appSystemModel(mongoose,'/system').router.routes())
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
 app.use(new Router().allowedMethods())
