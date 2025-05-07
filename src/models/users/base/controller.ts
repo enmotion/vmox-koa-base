@@ -19,7 +19,7 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
         const result = await service.createUser(ctx.request.body as any)
         return ctx.body = JSON.stringify(result)
       }catch(err:any){
-        return ctx.body = err
+        throw err
       }
     },
     create:async (ctx:ParameterizedContext)=>{

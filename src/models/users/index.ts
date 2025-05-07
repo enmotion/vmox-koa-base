@@ -46,7 +46,7 @@ export const userModel = mongoose.model<ExpandUser>(_mongoDbCollectionName, user
  * 使用基础用户服务钩子函数，传入用户模型和用户模式，创建一个用户服务实例。
  * 该服务实例用于处理用户相关的业务逻辑，如数据的增删改查等。
  */
-export const userService = useBaseUserService<ExpandUser>(userModel, userSchema);
+export const userService = useBaseUserService<ExpandUser>(userModel);
 
 /**
  * 使用基础用户控制器钩子函数，传入用户服务实例，创建一个用户控制器实例。
