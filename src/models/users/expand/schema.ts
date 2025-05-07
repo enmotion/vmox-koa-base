@@ -6,9 +6,9 @@ import type { IUser } from "../base/schema";
 // 定义用户接口
 export interface ExpandUser extends IUser {
   avatar: string; // 用户头像
-  phone: string; // 用户电话
+  phone: object; // 用户电话
   email: string; // 用户邮箱
-  age:number,
+  age: number,
   updatedAt: Date; // 修改时间
 }
 // 定义用户模型的结构
@@ -17,9 +17,15 @@ export default{
     type: String,
   },
   phone: {
-    type: String,
+    type: Object,
     sparse: true, // 稀疏
     unique: [true,'该电话已被占用'], // 唯一
+    validate:{
+      validator:(value)=> {
+        return (typeof value == 'number' && !isNaN(value)) || typeof value == 'string'
+      },
+      message:"电话必须为字符或者数值"
+    },
   },
   email: {
     type: String,
@@ -27,8 +33,8 @@ export default{
     unique: [true,'该邮箱已被占用'], // 唯一
   },
   age:{
-    type: Number,
-    min:0,
+    type:Number,
+    min:[0,'不能小于0'],
   },
   updatedAt: {
     type: Date,

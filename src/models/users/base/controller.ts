@@ -9,10 +9,10 @@
 // src/model/user/userController.ts
 import { ParameterizedContext } from 'koa';
 import useUserService from './service';
-import useCoreSchema from "./schema";
 import type { IUser } from "./schema";
+import { Schema } from 'mongoose';
 
-export default function useUserController<T extends IUser>(service:ReturnType<typeof useUserService<T>>){
+export default function useUserController<T extends IUser>(service:ReturnType<typeof useUserService<T>>, schema:Schema<T>){
   return {
     register:async (ctx:ParameterizedContext)=>{
       try{
@@ -29,7 +29,7 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
       }catch(err){
         const errdata = Object(err);
         const fieldName = Object.keys(errdata.keyPattern)[0];
-        const zhName = useCoreSchema.path(fieldName).options.zhName;
+        const zhName = schema.path(fieldName).options.zhName;
         return ctx.body = {...errdata,zhName:zhName}
       }
     },

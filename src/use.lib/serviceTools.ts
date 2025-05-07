@@ -15,9 +15,9 @@ import type { AppResponse } from "@type/index";
  */
 export function mongoDBErrorTransform(err:any,schema:Schema){
   try{
-    console.log(err)
+    console.log(err,String(err));
     // 获取错误名称
-    const res : AppResponse = { code:204, data:{ name:err.name }, msg:'' }
+    const res : AppResponse = { code:400, data:{ name:err.name }, msg:'' }
     // // 数据库错误
     if(['MongoServerError','MongooseError'].includes(res.data?.name)){
       // 数据库错误在此处理, 两个错误类型的返回结构不太一样 MongooseError 将错误信息 封装在了 cause 对象里

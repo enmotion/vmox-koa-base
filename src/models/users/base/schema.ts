@@ -7,7 +7,7 @@
 
 "use strict"
 // src/model/user/User.ts
-import { Document, Schema } from 'mongoose';
+import { Document, SchemaDefinition, } from 'mongoose';
 import uniqid from "uniqid"
 // 定义用户接口
 export interface IUser extends Document {
@@ -18,7 +18,7 @@ export interface IUser extends Document {
 }
 
 // 定义用户模型的结构
-export default new Schema<IUser>({
+export default {
   uid: {
     type: String,
     index:true,
@@ -38,4 +38,4 @@ export default new Schema<IUser>({
     type: Date,
     default: Date.now, // 默认创建时间为当前时间
   },
-});
+} as SchemaDefinition<IUser>;
