@@ -1,4 +1,11 @@
-'use strict';
+/*
+ * @Author: enmotion 
+ * @Date: 2025-05-07 12:25:12 
+ * @Last Modified by: enmotion
+ * @Last Modified time: 2025-05-07 12:26:00
+ */
+
+"use strict"
 // src/model/user/User.ts
 import { Document, Schema } from 'mongoose';
 import uniqid from "uniqid"

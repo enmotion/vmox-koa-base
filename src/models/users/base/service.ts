@@ -5,9 +5,8 @@
  * @Last Modified time: 2025-04-29 12:55:04
  */
 'use strict';
-import mongoose from "mongoose";
 import { mongoDBErrorTransform } from "@lib/serviceTools";
-import type { Model, MongooseError, Schema } from "mongoose";
+import type { Model, Schema } from "mongoose";
 import type { IUser } from "./schema";
 
 /**
@@ -18,7 +17,6 @@ import type { IUser } from "./schema";
 export default function useUserService<T extends IUser>(model:Model<T>, schema:Schema){
   async function createUser(user:T){
     try{
-      const d:Record<string,any>={}
       const data = await new model(user).save();
       return data
     }catch(err){

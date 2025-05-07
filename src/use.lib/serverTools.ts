@@ -1,10 +1,11 @@
-/**
- * @ Author: enmotion
- * @ Create Time: 2025-04-15 16:07:22
- * @ Modified time: 2025-04-28 11:52:52
- * @ Modified time: 2025-04-28 15:45:05
- * @ Description:
+/*
+ * @Author: enmotion 
+ * @Date: 2025-05-07 12:25:12 
+ * @Last Modified by: enmotion
+ * @Last Modified time: 2025-05-07 12:25:33
  */
+
+"use strict"
 
 import detect from "detect-port"; // detect-port 是一个用于检测端口是否可用的库
 import os from "os"; // os 模块用于获取本机 IP 地址

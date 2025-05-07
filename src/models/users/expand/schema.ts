@@ -1,10 +1,7 @@
 'use strict';
 // src/model/user/User.ts
-import { mergeAll } from 'ramda';
-import { Document, Schema, SchemaDefinition } from 'mongoose';
+import { SchemaDefinition } from 'mongoose';
 import type { IUser } from "../base/schema";
-import userBaseSchema from "../base/schema";
-import uniqid from "uniqid"
 // 定义用户接口
 // 定义用户接口
 export interface ExpandUser extends IUser {
@@ -27,7 +24,7 @@ export default{
   email: {
     type: String,
     sparse: true, // 稀疏
-    unique: [true,'该电话已被占用'], // 唯一
+    unique: [true,'该邮箱已被占用'], // 唯一
   },
   age:{
     type: Number,

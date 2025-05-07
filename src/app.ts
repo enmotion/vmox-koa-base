@@ -6,16 +6,13 @@
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
-import path from "path"; // Node.js 核心模块，用于处理和转换文件路径。
-import fs from 'fs'; // Node.js 核心文件系统模块，用于读取本地文件。
-import { mongoose } from "./database"
 import StaticServer from "koa-static"; // koa-static 是一个用于提供静态文件服务的 Koa 中间件。
 import KoaWebSocket from "koa-websocket"; // koa-websocket 是一个用于支持 WebSocket 的 Koa 中间件。
 import Router from "koa-router"; // koa-router 是一个用于处理路由的 Koa 中间件库。
 import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体的 Koa 中间件。
-import { getLocalServerIP } from '@lib/serverTools';
-import { userUserModel } from "./models/users"
-const router = new Router();
+import { userRouter } from "./models/users"
+
+// const userModel = userUserModel(mongoose,'/users') // 实例化用户模块
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。
 // const options = {
 //   key: fs.readFileSync(path.join(__dirname,'ssl','mid.wow11.key')),
@@ -41,10 +38,10 @@ app.use(KoaBody({
 
 // 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
 app.use(StaticServer('public'));
-app.use(userUserModel(mongoose,'/users').router.routes());
+app.use(userRouter.routes());
 // app.use(appSystemModel(mongoose,'/system').router.routes())
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
-app.use(router.allowedMethods())
+app.use(new Router().allowedMethods())
 
 // 简单的中间件处理示例，所有的 GET 请求都会返回 "Hello, Koa with TypeScript! 12313132"。
 // 这段代码位置需要注意：在 Koa 中中间件的执行顺序是从上到下。如果上面的中间件已经处理了某些请求，那么下面的中间件将不再执行。

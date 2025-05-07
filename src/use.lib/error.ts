@@ -1,9 +1,11 @@
 /*
  * @Author: enmotion 
- * @Date: 2025-04-29 11:31:56 
- * @Last Modified by: enmotion
- * @Last Modified time: 2025-04-29 12:46:53
+ * @Date: 2025-05-07 12:25:12 
+ * @Last Modified by:   enmotion 
+ * @Last Modified time: 2025-05-07 12:25:12 
  */
+
+"use strict"
 
 // 定义标准错误返回对象的类型
 export type ErrorResponse = {

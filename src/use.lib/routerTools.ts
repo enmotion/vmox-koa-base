@@ -1,4 +1,11 @@
-'use strict';
+/*
+ * @Author: enmotion 
+ * @Date: 2025-05-07 12:25:12 
+ * @Last Modified by:   enmotion 
+ * @Last Modified time: 2025-05-07 12:25:12 
+ */
+
+"use strict"
 import { keys } from "ramda";
 // 引入 Koa 的路由模块
 import Router from 'koa-router';
@@ -14,7 +21,7 @@ import type { IRouterAllowedMethodsOptions } from "koa-router";
 export type ControllerRouterMapping<T extends Record<string,any>> = {
   routerPath:`/${string}`
   // HTTP 请求方法，涵盖了标准的 HTTP 方法
-  httpMethod: 'post' | 'get' | 'delete' | 'put' | 'head' | 'options' | 'patch';
+  method: 'post' | 'get' | 'delete' | 'put' | 'head' | 'options' | 'patch';
   // 处理该请求的控制器方法的名称
   handlerName: keyof T;
 };
@@ -42,7 +49,7 @@ export function mappingControllersAndRouter<T extends Record<string,any>>(
    */
   routerMapping.forEach((item,index)=>{
     if(!!(controllers as Record<string,any>)[item.handlerName as string]){
-      router[item.httpMethod](item.routerPath,(controllers as Record<string,any>)[item.handlerName as string])
+      router[item.method](item.routerPath,(controllers as Record<string,any>)[item.handlerName as string])
     }
   })
   // 返回配置好的路由实例
