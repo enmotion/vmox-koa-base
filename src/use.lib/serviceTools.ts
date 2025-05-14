@@ -35,3 +35,10 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
     throw error
   }
 }
+export function resPacket(data:any,msg:string='操作成功',code:number=200,){
+  return {
+    code,
+    data,
+    msg
+  }
+}

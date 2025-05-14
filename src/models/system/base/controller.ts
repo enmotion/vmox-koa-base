@@ -10,6 +10,7 @@
 import { ParameterizedContext } from 'koa';
 import useUserService from './service';
 import { Schema } from 'mongoose';
+import { resPacket } from '@lib/serviceTools';
 
 export default function useSystemController<T extends Record<string,any>>(service:ReturnType<typeof useUserService<T>>){
   return {
@@ -17,7 +18,7 @@ export default function useSystemController<T extends Record<string,any>>(servic
       try{
         const result = await service.registerSystem(ctx.request.body as any)
         console.log('ssss',result)
-        return ctx.body = result
+        return ctx.body = resPacket(null)
       }catch(err:any){
         console.log('ssss-eer')
         return ctx.body = err

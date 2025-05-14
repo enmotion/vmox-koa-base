@@ -21,7 +21,7 @@ export default function useSystemService<T extends Record<string,any>>(){
       const data = await userService.createUser(user)
       return data
     }catch(err){
-      return err
+      throw err
       // throw mongoDBErrorTransform(err, schema)
     }
   }
