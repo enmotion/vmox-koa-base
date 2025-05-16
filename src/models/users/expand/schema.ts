@@ -15,11 +15,13 @@ export interface ExpandUser extends IUser {
 export default{
   avatar: {
     type: String,
+    name:'用户头像'
   },
   phone: {
     type: Object,
+    name:'用户手机',
     sparse: true, // 稀疏
-    unique: [true,'该电话已被占用'], // 唯一
+    unique: [true,'该手机号码已被占用'], // 唯一
     validate:{
       validator:(value)=> {
         return (typeof value == 'number' && !isNaN(value)) || typeof value == 'string'
@@ -29,15 +31,18 @@ export default{
   },
   email: {
     type: String,
+    name:'用户邮箱',
     sparse: true, // 稀疏
-    unique: [true,'该邮箱已被占用'], // 唯一
+    unique: [true,'该邮箱地址已被占用'], // 唯一
   },
   age:{
     type:Number,
+    name:'用户年龄',
     min:[0,'不能小于0'],
   },
   updatedAt: {
     type: Date,
+    name:'更新时间',
     default: Date.now, // 默认创建时间为当前时间
   },
 } as SchemaDefinition<ExpandUser>

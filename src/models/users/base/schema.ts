@@ -22,20 +22,24 @@ export default {
   uid: {
     type: String,
     index:true,
+    name:'用户ID',
     unique: [true, '该用户ID已被占用'],
     default:()=>uniqid().toUpperCase()
   },
   username: {
     type: String,
+    name:'用户名称',
     required: [true, '缺少用户名，创建失败'],
     unique:  [true, '该用户名已被占用'], // 用户名唯一
   },
   password: {
     type: String,
+    name:'用户密码',
     required: [true, '缺少密码创建失败'],
   }, 
   createdAt: {
     type: Date,
+    name:'创建时间',
     default: Date.now, // 默认创建时间为当前时间
   },
 } as SchemaDefinition<IUser>;

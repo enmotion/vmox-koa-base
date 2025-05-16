@@ -6,6 +6,7 @@
  */
 
 "use strict"
+import * as R from "ramda";
 // src/model/user/userController.ts
 import { ParameterizedContext } from 'koa';
 import useUserService from './service';
@@ -19,6 +20,9 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
         const result = await service.createUser(ctx.request.body as any)
         return ctx.body = JSON.stringify(result)
       }catch(err:any){
+        // if(!!err.msg && err.data?.errorName === "MongoServerError" && err.data?.errorCode === 11000 && R.keys(err.data?.options).length >= 2){
+        //   err.msg = R.values(err.data.options).map(item=>item.name).join("+")+', 组合值已被占用'
+        // }
         throw err
       }
     },

@@ -9,6 +9,6 @@
 
 export type AppResponse = {
   code:number,
-  msg:string|null,
+  msg?:string|null,
   data:Record<string,any>
 }
