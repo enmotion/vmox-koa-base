@@ -35,7 +35,7 @@ const _routerPrefix = '/users';
  * 这里使用 add 方法将扩展模式配置添加到基础模式上，并将结果强制转换为 Schema 类型。
  */
 export const userSchema = new mongoose.Schema<ExpandUser>(mergeDeepRight(userBaseSchema,userExpandSchemaConfig) as SchemaDefinition<ExpandUser>,{strict:true});
-
+userSchema.index({age:1,avatar:1},{unique:true})
 /**
  * 根据定义好的用户模式和集合名称，创建一个用户模型。
  * 该模型用于与 MongoDB 中的用户集合进行交互，并且使用 ExpandUser 类型进行类型检查。
