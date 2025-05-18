@@ -8,8 +8,9 @@
  * 使用泛型T扩展自IUser接口，确保类型安全
  */
 "use strict";
+import * as R from "ramda";
 import MongoDB from "mongodb";
-import { mongoDBErrorTransform } from "@lib/serviceTools";
+import { getPaginationAndSort, mongoDBErrorTransform, Pagination } from "@lib/serviceTools";
 import type { Model, RootFilterQuery, MongooseUpdateQueryOptions } from "mongoose";
 import type { IUser } from "./schema";
 export class UserService<T extends IUser> {
@@ -37,7 +38,7 @@ export class UserService<T extends IUser> {
    * @param user 包含uid的用户对象
    * @returns 删除结果
    */
-  public remove = async (filter:RootFilterQuery<T>) => {
+  public deleteMany = async (filter:RootFilterQuery<T>) => {
     try {
       const data = await this.model.deleteMany(filter);
       return data;
@@ -51,7 +52,7 @@ export class UserService<T extends IUser> {
    * @param user 包含uid和更新字段的用户对象
    * @returns 更新结果
    */
-  public update = async (filter:RootFilterQuery<T>, update:Record<string,any>, operation?:(MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null) => {
+  public updateMany = async (filter:RootFilterQuery<T>, update:Record<string,any>, operation?:(MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null) => {
     try {
       const data = await this.model.updateMany(
         filter,
@@ -81,14 +82,12 @@ export class UserService<T extends IUser> {
       throw mongoDBErrorTransform(err, this.model.schema);
     }
   };
-
-
   /**
    * 查找单个用户(返回第一个匹配文档)
    * @param user 查询条件对象
    * @returns 用户文档或null
    */
-  public find = async (filter:RootFilterQuery<T>) => {
+  public findOne = async (filter:RootFilterQuery<T>) => {
     try {
       const data = await this.model.findOne(filter)
       return data;
@@ -101,11 +100,14 @@ export class UserService<T extends IUser> {
    * @param user 查询条件对象
    * @returns 用户文档或null
    */
-  public search = async (filter:RootFilterQuery<T>) => {
+  public find = async (filter:RootFilterQuery<T>, page:{size:number,current:number}|false, sort:Record<string,-1|1|'desc'|'asc'> ) => {
     try {
-      const data = await this.model.find(filter)
-      console.log(data)
-      return data;
+      const items = !!page ? await this.model.find(filter).sort(sort).skip((page?.size??0) * (page?.current??0)).limit(page?.size??10) : await this.model.find(filter).sort(sort)
+      const total = await this.model.countDocuments(filter)
+      return {
+        items:items,
+        total:total,
+      };
     } catch (err) {
       throw mongoDBErrorTransform(err, this.model.schema);
     }

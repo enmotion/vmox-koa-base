@@ -94,48 +94,81 @@ export function packResponse(res:Partial<{code:number,data:any,msg:string}>){
   return response
 }
 
+// 定义Mongoose支持的查询操作符类型（包含比较/逻辑/范围等操作符）
+export type MongooseOperators = 
+  '$eq' | '$ne' | '$not' |        // 等于/不等于/逻辑非
+  '$gt' | '$gte' | '$lt' | '$lte' | // 大于/大于等于/小于/小于等于
+  '$range' |                      // 自定义范围操作符（非原生MongoDB操作符）
+  '$in' | '$nin' |                // 包含/不包含于数组
+  '$regex' | '$exists'            // 正则匹配/字段存在性检查
+// 实际已经扩展为全部方法了
 /**
- * 将条件对象按照映射规则转换为目标字段结构
- * @param condition 原始条件对象（包含嵌套结构）
- * @param mapping 字段映射配置（格式：{ "原始路径": "目标字段" }）
- * @returns 转换后的新对象
+ * 将嵌套结构的查询条件转换为平面结构的MongoDB查询对象
+ * @param condition - 原始查询条件对象（支持嵌套字段路径如"user.address.city"）
+ * @param mapping - 字段映射配置表（格式: { "原字段路径": "目标字段路径.$操作符" }）
+ * @returns 符合Mongoose查询语法的平面结构对象
  */
-export function conditionMappingToField(
-  condition: Record<string, any>,       // 原始数据对象（可包含嵌套字段）
-  mapping: Record<string, string> = {}  // 字段映射配置（默认空对象）
+export function conditionMappingToRootFilterQuery(
+  condition: Record<string, any>,      // 支持多级嵌套的查询条件
+  mapping: Record<string, string> = {} // 字段路径映射规则（默认空配置）
 ): Record<string, any> {                // 返回转换后的平面结构对象
-  const result: Record<string, any> = {} // 初始化结果对象
-  // 遍历映射配置（Object.entries将对象转为[key,value]数组）
-  Object.entries(mapping).forEach(([key, value]) => {
-    // 使用Ramda的path方法获取嵌套值：
-    // 1. key.split(".") 将路径字符串转为数组（如"a.b" => ["a","b"]）
-    // 2. 从condition对象深层获取对应值
-    result[value] = R.path(key.split("."), condition)
-    condition = R.dissocPath(key.split("."), condition)
-    // 示例说明：
-    // 当 mapping = { "user.address.city": "city" }
-    // 且 condition = { user: { address: { city: "北京" } } }
-    // 结果 => { city: "北京" }
-  })
-  return R.mergeDeepRight(condition, result)
+  let result: Record<string, any> = {} // 存储转换后的平面查询对象
+  
+  // 遍历映射配置处理字段转换
+  Object.entries(mapping).forEach(([originPath, targetPath]) => {
+    const originPaths = originPath.split(".");
+    const targetPaths = targetPath.split('.');
+    let value = R.path(originPaths, condition); // 从原始对象获取值
+    if (value !== undefined && value !== null) {
+      // 处理特殊$range操作符（转换为$gte/$lte范围查询）
+      if (Array.isArray(value) && targetPaths[targetPaths.length-1] === '$range') {
+        const rangeValue: Record<string, any> = {};
+        value[0] !== undefined && (rangeValue['$gte'] = value[0]);
+        value[1] !== undefined && (rangeValue['$lte'] = value[1]);
+        value = rangeValue;
+        targetPaths.pop(); // 移除末尾的$range标记
+      }
+      // 将处理后的值写入结果对象的目标路径
+      result = R.assocPath(targetPaths, value, result);
+      // 移除已处理的原始字段（避免重复处理）
+      condition = R.dissocPath([originPaths[0]], condition);
+    }
+  });
+  // 合并剩余未映射字段和已转换字段
+  return R.mergeDeepRight(condition, result);
 }
 
-
-// export type MongooseLogicOprator = "$or"|'$and'|'$nor'|'$not'
-// export type SearchFieldTransformConfig = Record<string,{
-//   key?:string,
-//   oprator: '$eq' | '$ne' | '$gt' | '$gte' | '$lt' | '$lte' | '$range' |'$in' | '$nin' | '$regex' | "$all"
-// }>
-
-// export function searchFieldTransform<T>(data:Record<string,any>, transformConfig?:SearchFieldTransformConfig, logicOprator:MongooseLogicOprator):RootFilterQuery<T>{
-//   const config:Record<string,any> = {}
-//   Object.entries(data).map(([key,value])=>{
-//     const filed = transformConfig?.[key]?.key ?? key;
-//     const oprator = transformConfig?.[key]?.['oprator']??'$eq'
-//     if([''])
-//     config[filed] ={
-//       oprator:value
-//     }
-//   });
-//   return config as RootFilterQuery<T>
-// }
+/**
+ * 分页和排序参数类型
+ * @template T 原始查询参数类型
+ */
+export type Pagination<T extends Record<string,any>> = Omit<T,'pagination'|'sort'> & {
+  page:{size:number,current:number}|false // 分页配置，false表示不分页
+  sort:Record<string,-1|1|'desc'|'asc'>   // 排序配置
+}
+/**
+ * 从查询参数中提取分页和排序信息
+ * @param query 包含分页和排序的查询参数
+ * @returns 处理后的分页和排序对象
+ */
+export function getPaginationAndSort<T extends Record<string,any>>(query:Partial<Pagination<T>>){
+  // 合并默认值和传入的查询参数
+  const queryData:Pagination<T> = R.mergeAll([
+    {page:false, sort:{}}, // 默认值
+    R.pick(['page','sort'],query) // 从查询参数中提取page和sort
+  ]) as Pagination<T>;
+  
+  // 规范化排序字段的值
+  Object.entries(queryData.sort).map(([key,value])=>{
+    if(['DESC','ASC','desc','asc',1,-1].includes(value)){
+      // 将字符串形式的排序转换为统一格式
+      queryData.sort[key] = [1,-1].includes(value as number) 
+        ? value 
+        : R.toLower(value as string) as 'desc'|'asc'
+    }
+  })
+  !!queryData.page && (queryData.page.current = Math.max(0,queryData.page.current-1))
+  return {
+    ...queryData,
+  }
+}
