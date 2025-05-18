@@ -43,7 +43,7 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
     }
     // 处理数据验证错误
     if(['ValidationError'].includes(res.data.errorName)){
-      Object.keys(err?.cause?.keyPattern /*?? err?.errors*/ ?? err?.keyPattern).forEach((key:string)=>{
+      Object.keys(err?.cause?.keyPattern ?? err?.errors ?? err?.keyPattern).forEach((key:string)=>{
         res.data['options'][key] = schema.path(key).options
       });
       res.msg = String(err).split(":")[2].replace(/^\s/g,'');

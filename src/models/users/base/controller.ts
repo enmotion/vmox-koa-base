@@ -23,7 +23,6 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
         const data = fieldsFilter.call(await service.createUser(ctx.request.body as any))
         ctx.body = packResponse({data})
       }catch(err:any){
-        console.log(err,'1111111')
         if(!!err.msg && err.data?.errorName === "MongoServerError" && err.data?.errorCode === 11000 && R.keys(err.data?.options).length >= 2){
           err.msg = R.values(err.data.options).map(item=>item.name).join("+")+', 组合值已被占用'
         }
@@ -33,12 +32,12 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
     login:async (ctx:ParameterizedContext)=>{
       try{
         const queryData = R.pick(['username','password'],R.mergeAll([{username:null,password:null},ctx.request.body??{}]));
-        const user = fieldsFilter.call(await service.findOneUser(queryData as any));
-        if(!!user){
-          const token = JWT.sign(R.pick(['username','uid'],user), process.env.APP_JWT_KEY as string, {expiresIn:'24h'});
+        const data = fieldsFilter.call(await service.findOneUser(queryData as any));
+        if(!!data){
+          const token = JWT.sign(R.pick(['username','uid'],data), process.env.APP_JWT_KEY as string, {expiresIn:'24h'});
           ctx.body = packResponse({
-            data:R.mergeDeepRight(user,{token}),
-            msg:`欢迎回来 ${ user.nickname ?? user.username }`
+            data:R.mergeDeepRight(data,{token}),
+            msg:`欢迎回来 ${ data.nickname ?? data.username }`
           })
         }else{
           ctx.body = packResponse({
@@ -53,13 +52,11 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
     },
     create:async (ctx:ParameterizedContext)=>{
       try{
-        const res = await service.createUser(ctx.query as any)
-        return ctx.body = JSON.stringify(res)
+        const body = R.mergeAll([ctx.request?.body??{},{createUser:ctx.token.uid,createType:'admin'}])
+        const data = fieldsFilter.call(await service.createUser(body as any))
+        return ctx.body = packResponse({data})
       }catch(err){
-        const errdata = Object(err);
-        const fieldName = Object.keys(errdata.keyPattern)[0];
-        const zhName = schema.path(fieldName).options.zhName;
-        return ctx.body = {...errdata,zhName:zhName}
+        throw err
       }
     },
     delete:async (ctx:ParameterizedContext)=>{

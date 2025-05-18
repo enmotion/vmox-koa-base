@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-05-07 23:31:57
+ * @ Modified time: 2025-05-18 14:54:22
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -10,7 +10,9 @@ import StaticServer from "koa-static"; // koa-static 是一个用于提供静态
 import KoaWebSocket from "koa-websocket"; // koa-websocket 是一个用于支持 WebSocket 的 Koa 中间件。
 import Router from "koa-router"; // koa-router 是一个用于处理路由的 Koa 中间件库。
 import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体的 Koa 中间件。
-import errosMiddleware from "./middlewares/error"
+import authMiddleware from "./middlewares/auth"; // token 鉴权 中间件
+import errosMiddleware from "./middlewares/error" // 错误处理 中间件
+
 import { userRouter } from "./models/users"
 import { systemRouter } from '@model/system';
 
@@ -25,6 +27,7 @@ import { systemRouter } from '@model/system';
 // const app = process.env.KOA_APP_NODE_ENV == "development" ? KoaWebSocket(new Koa()) : KoaWebSocket(new Koa(), {}, options);
 const app = new Koa()
 // 使用 KoaBody 中间件来解析请求体。可以处理 JSON、表单等格式。但这里没有启用文件上传功能（formidable 配置被注释掉了）。
+app.use(errosMiddleware);
 app.use(KoaBody({ 
   multipart: true, // 允许上传文件
   // formidable: {
@@ -40,7 +43,7 @@ app.use(KoaBody({
 
 // 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
 app.use(StaticServer('public'));
-app.use(errosMiddleware);
+app.use(authMiddleware);
 app.use(userRouter.routes());
 app.use(systemRouter.routes());
 // app.use(appSystemModel(mongoose,'/system').router.routes())

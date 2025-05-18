@@ -60,12 +60,12 @@ export const userController = useBaseUserController<ExpandUser>(userService, use
  * 路由映射配置数组包含了每个路由的路径、请求方法和对应的控制器方法名。
  */
 export const userRouter = mappingControllersAndRouter<ReturnType<typeof useBaseUserController>>(_routerPrefix, userController, [
-  { routerPath: '/login', method: 'post', handlerName: 'login' },
-  { routerPath: '/register', method: 'post', handlerName: 'register' },
-  { routerPath: '/create', method: 'get', handlerName: 'create' },
-  { routerPath: '/delete', method: 'delete', handlerName: 'delete' },
-  { routerPath: '/update', method: 'put', handlerName: 'update' },
-  { routerPath: '/find', method: 'get', handlerName: 'find' }
+  { routerPath: '/pub/login', method: 'post', handlerName: 'login' },
+  { routerPath: '/pub/register', method: 'post', handlerName: 'register' },
+  { routerPath: '/user', method: 'post', handlerName: 'create' },
+  { routerPath: '/user', method: 'delete', handlerName: 'delete' },
+  { routerPath: '/user', method: 'put', handlerName: 'update' },
+  { routerPath: '/user/query', method: 'get', handlerName: 'find' }
 ]);
 
 // 导出扩展用户类型，方便其他模块使用

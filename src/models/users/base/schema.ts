@@ -32,10 +32,10 @@ export interface IUser{
   createType:"register"|"admin" // 创建方式 注册|管理员创建
   username: string;     // 用户名
   password: string;     // 用户密码
-  createdUser:string;   // 创建用户 系统创建时为空
-  createdAt: Date;      // 创建时间
-  updatedUser:string;   // 修改用户
-  updatedAt: Date;      // 修改时间
+  createUser:string;   // 创建用户 系统创建时为空
+  createAt: Date;      // 创建时间
+  updateUser:string;   // 修改用户
+  updateAt: Date;      // 修改时间
 }
 /**
  * 用户文档类型
@@ -103,15 +103,26 @@ export default {
     required: [true, '缺少密码创建失败'],
     minlength: [8, '密码长度不能少于8位']
   },
-  createdUser:{
+  createUser:{
     type:String,
     name:'创建用户',
     sparse:true,
   },
-  createdAt: {
+  createAt: {
     type: Date,
     name:'创建时间',
+    required:true,
     default: Date.now, // 默认创建时间为当前时间
     immutable: true,
+  },
+  updateUser:{
+    type:String,
+    name:'更新用户',
+    sparse:true,
+  },
+  updateAt: {
+    type: Date,
+    name:'更新时间',
+    default: Date.now, // 默认更新时间为创建时间
   },
 } as SchemaDefinition<IUser>;
