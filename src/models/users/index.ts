@@ -26,7 +26,7 @@ import { mappingControllersAndRouter } from "@lib/routerTools";
 import { mergeDeepRight } from "ramda";
 
 // 定义 MongoDB 数据库集合的名称（类似于关系型数据库中的表名）
-const _mongoDbCollectionName: string = 'user-collection'; 
+const _mongoDbCollectionName: string = 'userse-collection'; 
 // 定义路由前缀，用于区分不同模块的路由
 const _routerPrefix = '/users';
 

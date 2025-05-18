@@ -1,5 +1,5 @@
-import useSystemService from "./base/service";
-import useSystemController from "./base/controller";
+import useSystemService from "./core/service";
+import useSystemController from "./core/controller";
 import { mappingControllersAndRouter } from "@lib/routerTools";
 
 export const systemService = useSystemService()

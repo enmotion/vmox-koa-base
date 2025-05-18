@@ -8,7 +8,7 @@
 "use strict"
 import * as R from "ramda";
 import type { Schema } from "mongoose";
-import type { AppResponse } from "@type/index";
+import type { RecordResponse } from "@type/index";
 
 /**
  * Schema 配置项类型定义
@@ -22,14 +22,14 @@ export type SchemaOption = Omit<Record<string,any>,'name'|'key'>&{name:string,ke
  * MongoDB 错误转换器
  * @param {any} err - 原始错误对象
  * @param {Schema} schema - Mongoose Schema 实例
- * @returns {AppResponse} 标准化错误响应
+ * @returns {RecordResponse} 标准化错误响应
  * @throws 处理过程中的异常
  * @description 将 MongoDB/Mongoose 原生错误转换为标准化响应格式
  */
 export function mongoDBErrorTransform(err:any,schema:Schema){
   try{
     // 初始化响应结构
-    const res : AppResponse = { code:400, data:{ errorName:err.name, errorCode:err.code ?? err.cause?.code } }
+    const res : RecordResponse<Record<string,any>> = { code:400, data:{ errorName:err.name, errorCode:err.code ?? err.cause?.code } }
     res.data['options'] = {} // 存储字段配置信息
 
     // 处理 MongoDB 原生错误
@@ -43,7 +43,7 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
     }
     // 处理数据验证错误
     if(['ValidationError'].includes(res.data.errorName)){
-      Object.keys(err?.cause?.keyPattern ?? err?.errors ?? err?.keyPattern).forEach((key:string)=>{
+      Object.keys(err?.cause?.keyPattern /*?? err?.errors*/ ?? err?.keyPattern).forEach((key:string)=>{
         res.data['options'][key] = schema.path(key).options
       });
       res.msg = String(err).split(":")[2].replace(/^\s/g,'');
@@ -51,7 +51,7 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
     return res;
   }catch(error){
     console.log("-----")
-    console.log(error)
+    console.log(error,'ssssss')
     console.log("-----")
     throw error
   }

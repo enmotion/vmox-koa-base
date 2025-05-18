@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-05-18 14:54:22
+ * @ Modified time: 2025-05-18 17:17:47
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -13,7 +13,7 @@ import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体
 import authMiddleware from "./middlewares/auth"; // token 鉴权 中间件
 import errosMiddleware from "./middlewares/error" // 错误处理 中间件
 
-import { userRouter } from "./models/users"
+import { userRouter } from "./models/users-class"
 import { systemRouter } from '@model/system';
 
 // const userModel = userUserModel(mongoose,'/users') // 实例化用户模块
