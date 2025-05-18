@@ -35,7 +35,7 @@ const _routerPrefix = '/users';
  * 这里使用 add 方法将扩展模式配置添加到基础模式上，并将结果强制转换为 Schema 类型。
  */
 export const userSchema = new mongoose.Schema<ExpandUser>(mergeDeepRight(userBaseSchema,userExpandSchemaConfig) as SchemaDefinition<ExpandUser>,{strict:true});
-// userSchema.index({age:1,avatar:1},{unique:true})
+userSchema.index({age:1,avatar:1},{unique:true,sparse:true})
 /**
  * 根据定义好的用户模式和集合名称，创建一个用户模型。
  * 该模型用于与 MongoDB 中的用户集合进行交互，并且使用 ExpandUser 类型进行类型检查。
@@ -60,6 +60,7 @@ export const userController = useBaseUserController<ExpandUser>(userService, use
  * 路由映射配置数组包含了每个路由的路径、请求方法和对应的控制器方法名。
  */
 export const userRouter = mappingControllersAndRouter<ReturnType<typeof useBaseUserController>>(_routerPrefix, userController, [
+  { routerPath: '/login', method: 'post', handlerName: 'login' },
   { routerPath: '/register', method: 'post', handlerName: 'register' },
   { routerPath: '/create', method: 'get', handlerName: 'create' },
   { routerPath: '/delete', method: 'delete', handlerName: 'delete' },

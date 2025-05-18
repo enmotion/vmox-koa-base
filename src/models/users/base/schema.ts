@@ -10,7 +10,7 @@
 import { Document, SchemaDefinition, } from 'mongoose';
 import uniqid from "uniqid"
 // 定义用户接口
-export interface IUser extends Document {
+export interface IUser {
   uid:string;
   username: string;
   password: string;
@@ -36,7 +36,7 @@ export default {
     type: String,
     name:'用户密码',
     required: [true, '缺少密码创建失败'],
-  }, 
+  },
   createdAt: {
     type: Date,
     name:'创建时间',

@@ -40,9 +40,17 @@ export default function useUserService<T extends IUser>(model:Model<T>){
       throw mongoDBErrorTransform(err, model.schema)
     }
   }
+  async function findOneUser(user:T){
+    try{
+      const data = await model.findOne(user)
+      return data
+    }catch(err){
+      throw mongoDBErrorTransform(err, model.schema)
+    }
+  }
   async function findUser(user:T){
     try{
-      const data = await model.find({uid:user.uid})
+      const data = await model.find(user)
       return data
     }catch(err){
       throw mongoDBErrorTransform(err, model.schema)
@@ -52,6 +60,7 @@ export default function useUserService<T extends IUser>(model:Model<T>){
     createUser,
     deleteUser,
     updateUser,
+    findOneUser,
     findUser,
   }
 }

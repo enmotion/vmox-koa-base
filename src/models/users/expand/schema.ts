@@ -5,6 +5,7 @@ import type { IUser } from "../base/schema";
 // 定义用户接口
 // 定义用户接口
 export interface ExpandUser extends IUser {
+  nickname: string, // 用户昵称
   avatar: string; // 用户头像
   phone: object; // 用户电话
   email: string; // 用户邮箱
@@ -13,8 +14,15 @@ export interface ExpandUser extends IUser {
 }
 // 定义用户模型的结构
 export default{
+  nickname:{
+    type:String,
+    sparse:true,
+    unique:[true, '该昵称已经被占用'],
+    name:'用户昵称'
+  },
   avatar: {
     type: String,
+    sparse:true,
     name:'用户头像'
   },
   phone: {
@@ -37,6 +45,7 @@ export default{
   },
   age:{
     type:Number,
+    sparse:true,
     name:'用户年龄',
     min:[0,'不能小于0'],
   },
