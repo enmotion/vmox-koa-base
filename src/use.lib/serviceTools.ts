@@ -41,16 +41,18 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
       // 从错误消息中提取有效信息
       res.msg = String(err).split(":")[1].replace(/^\s/g,'');
     }
-
     // 处理数据验证错误
     if(['ValidationError'].includes(res.data.errorName)){
-      Object.keys(err?.cause?.keyPattern ?? err?.keyPattern).forEach((key:string)=>{
+      Object.keys(err?.cause?.keyPattern /*?? err?.errors*/ ?? err?.keyPattern).forEach((key:string)=>{
         res.data['options'][key] = schema.path(key).options
       });
       res.msg = String(err).split(":")[2].replace(/^\s/g,'');
     }
     return res;
   }catch(error){
+    console.log("-----")
+    console.log(error)
+    console.log("-----")
     throw error
   }
 }

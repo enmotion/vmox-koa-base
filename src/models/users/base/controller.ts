@@ -19,10 +19,11 @@ import { packResponse,fieldsFilter } from "@lib/serviceTools";
 export default function useUserController<T extends IUser>(service:ReturnType<typeof useUserService<T>>, schema:Schema<T>){
   return {
     register:async (ctx:ParameterizedContext)=>{
-      try{  
+      try{
         const data = fieldsFilter.call(await service.createUser(ctx.request.body as any))
         ctx.body = packResponse({data})
       }catch(err:any){
+        console.log(err,'1111111')
         if(!!err.msg && err.data?.errorName === "MongoServerError" && err.data?.errorCode === 11000 && R.keys(err.data?.options).length >= 2){
           err.msg = R.values(err.data.options).map(item=>item.name).join("+")+', 组合值已被占用'
         }
@@ -32,13 +33,12 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
     login:async (ctx:ParameterizedContext)=>{
       try{
         const queryData = R.pick(['username','password'],R.mergeAll([{username:null,password:null},ctx.request.body??{}]));
-        const res = fieldsFilter.call(await service.findOneUser(queryData as any),{omit:['_id']});
-        if(!!res){
-          const token = JWT.sign(R.pick(['username','uid'],res),'sere', {expiresIn:'24h'});
+        const user = fieldsFilter.call(await service.findOneUser(queryData as any));
+        if(!!user){
+          const token = JWT.sign(R.pick(['username','uid'],user), process.env.APP_JWT_KEY as string, {expiresIn:'24h'});
           ctx.body = packResponse({
-            data:R.mergeDeepRight(res,{token}),
-            code:200,
-            msg:`欢迎回来 ${ res.nickname ?? res.username }`
+            data:R.mergeDeepRight(user,{token}),
+            msg:`欢迎回来 ${ user.nickname ?? user.username }`
           })
         }else{
           ctx.body = packResponse({

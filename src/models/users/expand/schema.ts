@@ -1,6 +1,6 @@
 'use strict';
 // src/model/user/User.ts
-import { SchemaDefinition } from 'mongoose';
+import { Document, SchemaDefinition } from 'mongoose';
 import type { IUser } from "../base/schema";
 // 定义用户接口
 // 定义用户接口
@@ -12,6 +12,9 @@ export interface ExpandUser extends IUser {
   age: number,
   updatedAt: Date; // 修改时间
 }
+
+export type ExpandUserDocument = Document<ExpandUser>
+
 // 定义用户模型的结构
 export default{
   nickname:{

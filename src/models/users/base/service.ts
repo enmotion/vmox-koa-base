@@ -21,6 +21,7 @@ export default function useUserService<T extends IUser>(model:Model<T>){
       const data = await new model(user).save();
       return data
     }catch(err){
+      console.log(err)
       throw mongoDBErrorTransform(err, model.schema)
     }
   }
