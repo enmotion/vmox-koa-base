@@ -8,8 +8,9 @@
  * 使用泛型T扩展自IUser接口，确保类型安全
  */
 "use strict";
+import MongoDB from "mongodb";
 import { mongoDBErrorTransform } from "@lib/serviceTools";
-import type { Model } from "mongoose";
+import type { Model, RootFilterQuery, MongooseUpdateQueryOptions } from "mongoose";
 import type { IUser } from "./schema";
 export class UserService<T extends IUser> {
   public model: Model<T>;
@@ -36,25 +37,26 @@ export class UserService<T extends IUser> {
    * @param user 包含uid的用户对象
    * @returns 删除结果
    */
-  public remove = async (user: T) => {
+  public remove = async (filter:RootFilterQuery<T>) => {
     try {
-      const data = await this.model.deleteMany({ uid: user.uid });
+      const data = await this.model.deleteMany(filter);
       return data;
     } catch (err) {
       throw mongoDBErrorTransform(err, this.model.schema);
     }
   };
+
   /**
    * 更新用户(根据uid更新单个文档)
    * @param user 包含uid和更新字段的用户对象
    * @returns 更新结果
    */
-  public update = async (user: T) => {
+  public update = async (filter:RootFilterQuery<T>, update:Record<string,any>, operation?:(MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null) => {
     try {
-      const data = await this.model.updateOne(
-        { uid: user.uid },
-        { $set: user },
-        { runValidators: true }
+      const data = await this.model.updateMany(
+        filter,
+        { $set: update },
+        operation
       );
       return data;
     } catch (err) {
@@ -63,13 +65,46 @@ export class UserService<T extends IUser> {
   };
 
   /**
+   * 更新用户(根据uid更新单个文档)
+   * @param user 包含uid和更新字段的用户对象
+   * @returns 更新结果
+   */
+  public updateOne = async (filter:RootFilterQuery<T>, update:Record<string,any>, operation?:(MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null) => {
+    try {
+      const data = await this.model.updateOne(
+        filter,
+        update,
+        operation
+      );
+      return data;
+    } catch (err) {
+      throw mongoDBErrorTransform(err, this.model.schema);
+    }
+  };
+
+
+  /**
    * 查找单个用户(返回第一个匹配文档)
    * @param user 查询条件对象
    * @returns 用户文档或null
    */
-  public search = async (user: T, onlyOne:boolean = true) => {
+  public find = async (filter:RootFilterQuery<T>) => {
     try {
-      const data = await this.model.findOne(user);
+      const data = await this.model.findOne(filter)
+      return data;
+    } catch (err) {
+      throw mongoDBErrorTransform(err, this.model.schema);
+    }
+  };
+  /**
+   * 查找单个用户(返回第一个匹配文档)
+   * @param user 查询条件对象
+   * @returns 用户文档或null
+   */
+  public search = async (filter:RootFilterQuery<T>) => {
+    try {
+      const data = await this.model.find(filter)
+      console.log(data)
       return data;
     } catch (err) {
       throw mongoDBErrorTransform(err, this.model.schema);

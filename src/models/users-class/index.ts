@@ -81,7 +81,7 @@ export const userRouter = mappingControllersAndRouter<ExpandUserControllers<Expa
     { routerPath: '/pub/register', method: 'post', handlerName: 'register' },
     { routerPath: '/create', method: 'post', handlerName: 'create' },
     { routerPath: '/delete', method: 'delete', handlerName: 'delete' },
-    { routerPath: '/update', method: 'put', handlerName: 'update' },
+    { routerPath: '/update', method: 'put', handlerName: 'updateOne' },
     { routerPath: '/find', method: 'get', handlerName: 'find' },
     { routerPath: '/page', method: 'get', handlerName: 'page' }
   ]

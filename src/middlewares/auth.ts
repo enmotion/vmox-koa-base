@@ -13,11 +13,9 @@ async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
       ctx.token = decoded;
       await next();
     }catch(err:any){
-      console.log(err,err.name,11111)
       if(['JsonWebTokenError','TokenExpiredError'].includes(err?.name)){
         throw err
       }else{
-        console.log(err,22222)
         console.log(pathname,JSON.stringify(err));
         ctx.throw(400,err||'authentication is required or invalid')
       }

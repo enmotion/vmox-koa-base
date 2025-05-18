@@ -22,7 +22,6 @@ async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
     // 执行后续中间件链
     await next();    
   } catch (err:any) {
-    console.log(err)
     // 识别标准业务错误（包含code字段）
     if(!!err.code){
       // 生产环境隐藏错误详情防止信息泄露
