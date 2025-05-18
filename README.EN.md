@@ -52,7 +52,7 @@ The project uses `dotenv` to manage environment variables. Below is a breakdown 
    APP_NAME = koa-base
    APP_VERSION = 0.0.0
    APP_DB_URL = ""
-   APP_DB_PW = ""
+   APP_DB_PASSWORD = ""
    ```
 
 2. **Environment-specific files**:
@@ -64,7 +64,7 @@ The project uses `dotenv` to manage environment variables. Below is a breakdown 
    - `APP_NAME`: Name of the application.
    - `APP_VERSION`: Application version.
    - `APP_DB_URL`: Database connection URL.
-   - `APP_DB_PW`: Database password.
+   - `APP_DB_PASSWORD`: Database password.
 
 4. **PM2 Configuration**:
    - Located in `ecosystem.config.js`.

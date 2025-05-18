@@ -1,7 +1,7 @@
 /**
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:31:05
- * @ Modified time: 2025-04-28 17:18:50
+ * @ Modified time: 2025-05-18 13:02:28
  * @ Description: 该脚本用于启动服务器，加载环境变量，并输出服务器访问地址。
  */
 
@@ -30,7 +30,8 @@ if (nodeEnv !== 'production') {
   dotenv.config({ path: path.resolve(__dirname, `../.env`) });
 }
 // 引入应用实例，这个 app 应该是一个 koa 应用实例或者类似的服务器应用实例
-import app from '../src/app'; // 必须在环境变量读取后引入
+import app from '../src/app'; // 必须在环境变量读取后引入 否则 app 中将无法正确引入环境变量
+
 // 尝试从环境变量中获取端口号。如果环境变量中没有 APP_PORT 字段，则使用默认值 '0'。
 // 将获取到的端口号字符串转换为整数。如果转换失败（例如值为 '0' 或者非数字字符串），则使用默认端口号 3000
 const port = parseInt(process.env.APP_PORT as string) || 3000;

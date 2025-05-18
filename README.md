@@ -43,7 +43,7 @@ vmox-koa-base/
    APP_NAME = koa-base
    APP_VERSION = 0.0.0
    APP_DB_URL = ""
-   APP_DB_PW = ""
+   APP_DB_PASSWORD = ""
    ```
 
 2. **环境特定文件**:
@@ -55,7 +55,7 @@ vmox-koa-base/
    - `APP_NAME`: 应用名称。
    - `APP_VERSION`: 应用版本。
    - `APP_DB_URL`: 数据库连接地址。
-   - `APP_DB_PW`: 数据库密码。
+   - `APP_DB_PASSWORD`: 数据库密码。
 
 4. **PM2 配置**:
    - 配置文件位于 `ecosystem.config.js`。
