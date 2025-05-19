@@ -32,10 +32,11 @@ export interface IUser{
   createType:"register"|"admin" // 创建方式 注册|管理员创建
   username: string;     // 用户名
   password: string;     // 用户密码
-  createUser:string;   // 创建用户 系统创建时为空
-  createAt: Date;      // 创建时间
-  updateUser:string;   // 修改用户
-  updateAt: Date;      // 修改时间
+  status:boolean;       // 用户状态
+  createUser:string;    // 创建用户 系统创建时为空
+  createAt: Date;       // 创建时间
+  updateUser:string;    // 修改用户
+  updateAt: Date;       // 修改时间
 }
 /**
  * 用户文档类型
@@ -96,6 +97,11 @@ export default {
     trim: true,  // 自动去除前后空格
     required: [true, '缺少用户名，创建失败'],
     unique:  [true, '该用户名已被占用'], // 用户名唯一
+  },
+  status: {
+    type: Boolean,
+    name:'用户状态',
+    default:true
   },
   password: {
     type: String,

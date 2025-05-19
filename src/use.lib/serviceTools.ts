@@ -48,6 +48,7 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
       });
       res.msg = String(err).split(":")[2].replace(/^\s/g,'');
     }
+    console.log(res,err,'511111')
     return res;
   }catch(error){
     console.log("-----")
@@ -119,7 +120,7 @@ export function conditionMappingToRootFilterQuery(
     const originPaths = originPath.split(".");
     const targetPaths = targetPath.split('.');
     let value = R.path(originPaths, condition); // 从原始对象获取值
-    if (value !== undefined && value !== null) {
+    if (!!value) {
       // 处理特殊$range操作符（转换为$gte/$lte范围查询）
       if (Array.isArray(value) && targetPaths[targetPaths.length-1] === '$range') {
         const rangeValue: Record<string, any> = {};
@@ -131,6 +132,8 @@ export function conditionMappingToRootFilterQuery(
       // 将处理后的值写入结果对象的目标路径
       result = R.assocPath(targetPaths, value, result);
       // 移除已处理的原始字段（避免重复处理）
+      condition = R.dissocPath([originPaths[0]], condition);
+    }else{
       condition = R.dissocPath([originPaths[0]], condition);
     }
   });

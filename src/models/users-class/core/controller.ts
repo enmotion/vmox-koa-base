@@ -79,7 +79,8 @@ export class UserControllers<T extends IUser> {
       const data = fieldsFilter.call(
         await this.service.findOne(body as any)
       ); // 返回值 字段过滤
-      if (!!data) {
+      console.log(data,body,123)
+      if (!!data && !!data.status) {
         const token = JWT.sign(
           R.pick(["username", "uid"], data),
           process.env.APP_JWT_KEY as string,
@@ -93,7 +94,7 @@ export class UserControllers<T extends IUser> {
         ctx.body = packResponse({
           code: 400,
           data: null,
-          msg: "用户名或密码,缺失或错误",
+          msg: (R.isEmpty(data) || R.isNil(data)) ? "用户名或密码,缺失错误" : "用户已被禁用",
         });
       }
     } catch (err: any) {
@@ -116,6 +117,7 @@ export class UserControllers<T extends IUser> {
   };
   // 删除操作
   public deleteMany = async (ctx: ParameterizedContext) => {
+    console.log()
     if(!!ctx.query?.uid && typeof ctx.query.uid === 'string'){
       const uid  = ctx.query.uid.split(",")
       const data = await this.service.deleteMany({uid:{$in:uid}})
@@ -146,7 +148,6 @@ export class UserControllers<T extends IUser> {
     const body = ctx.request?.body as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
       const filter = conditionMappingToRootFilterQuery(body,{"uids":"uid"}) // 请求值与查询条件的转换
-      console.log(filter,1111)
       const data = await this.service.updateOne({uid:{$in:filter.uid as string[]}},R.omit(['uid'],filter));
       ctx.body = packResponse({ 
         code:data.matchedCount > 0 ? 200:400, 
@@ -156,6 +157,21 @@ export class UserControllers<T extends IUser> {
       ctx.body = packResponse({code:300,msg:'请提供需要删除的用户ID'})
     }
   };
+
+  public createOrUpdate = async (ctx:ParameterizedContext)=>{
+    const body:Record<string,any> = ctx.request.body;
+    if(!R.isNil(body) && !R.isEmpty(body)){
+      const data:Record<string,any> = await this.service.createOrUpdate(body as T)
+      const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
+      ctx.body = packResponse({
+        code:success ? 200:400,
+        data:data,
+        msg:success ? '操作成功' : '出现异常'
+      })
+    }else{
+      ctx.body = packResponse({code:300,msg:'缺少用户信息'})
+    }
+  }
   // 查找操作
   public findOne = async (ctx: ParameterizedContext) => {
     const query:Record<string,any> = ctx.query;
@@ -178,12 +194,13 @@ export class UserControllers<T extends IUser> {
   };
   // 分页查找操作
   public find = async (ctx: ParameterizedContext) => {
-    const query:Partial<Pagination<T>> = ctx.request.body??{};  
+    const query:Partial<Pagination<T>> = ctx.request.body??{};
     const filter = conditionMappingToRootFilterQuery(
       R.omit(['page','sort'],query),
       {
-        "createAts":"createAt.$range",
-        "username":"username.$not.$regex"
+        "username":"username.$regex",
+        "uid":"uid.$regex",
+        "status":"status.$not"
       }
     ) as RootFilterQuery<T>// 请求值与查询条件的转换
     const { page, sort} = getPaginationAndSort<T>(query) // 分页与排序转换

@@ -25,14 +25,28 @@ export class UserService<T extends IUser> {
    */
   public create = async (user: T) => {
     try {
+      console.log('create', !!this.model)
       const data = this.model && (await new this.model(user).save());
+      console.log('sss')
       return data;
     } catch (err) {
       // 转换MongoDB错误为业务可读错误
       throw mongoDBErrorTransform(err, this.model?.schema);
     }
   };
-
+  public createOrUpdate = async (user:T) =>{
+    try{
+      if(!user.uid){
+        const data = (await this.create(user))
+        return data
+      }else{
+        const data = (await this.updateOne({uid:user.uid},user))
+        return data
+      }
+    }catch (err) {
+      throw err //组合方法直接抛出错误即可，
+    }
+  }
   /**
    * 删除用户(根据uid删除多个匹配文档)
    * @param user 包含uid的用户对象
@@ -74,7 +88,7 @@ export class UserService<T extends IUser> {
     try {
       const data = await this.model.updateOne(
         filter,
-        update,
+        R.omit(['uid','createAt','createUser'],update),
         operation
       );
       return data;
