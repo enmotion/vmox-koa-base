@@ -200,7 +200,6 @@ export class UserControllers<T extends IUser> {
       {
         "username":"username.$regex",
         "uid":"uid.$regex",
-        "status":"status.$not"
       }
     ) as RootFilterQuery<T>// 请求值与查询条件的转换
     const { page, sort} = getPaginationAndSort<T>(query) // 分页与排序转换

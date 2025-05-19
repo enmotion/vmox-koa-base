@@ -83,6 +83,7 @@ export const userRouter = mappingControllersAndRouter<ExpandUserControllers<Expa
     { routerPath:'/createOrUpdate',method:'post',handlerName:'createOrUpdate'},
     { routerPath: '/delete', method: 'delete', handlerName: 'deleteMany' },
     { routerPath: '/update', method: 'put', handlerName: 'updateOne' },
+    { routerPath: '/updateMany', method: 'put', handlerName: 'updateMany' },
     { routerPath: '/findOne', method: 'get', handlerName: 'findOne' },
     { routerPath: '/find', method: 'post', handlerName: 'find' }
   ]
