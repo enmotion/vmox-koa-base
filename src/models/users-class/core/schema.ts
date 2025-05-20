@@ -89,6 +89,7 @@ export default {
     type:String,
     enum:["register","admin"],
     required:true,
+    immutable: true,
     default:"register"
   },
   username: {

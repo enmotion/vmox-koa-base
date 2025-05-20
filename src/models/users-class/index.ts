@@ -35,7 +35,7 @@ const _routerPrefix = '/users'; // API路由前缀
  */
 export const userSchema = new mongoose.Schema<ExpandUser>(
   userSchemaConfig as SchemaDefinition<ExpandUser>,
-  { strict: true }
+  { strict: true, timestamps:true }
 );
 userSchema.index({ age: 1, avatar: 1 }, { unique: true, sparse: true });
 

@@ -25,9 +25,7 @@ export class UserService<T extends IUser> {
    */
   public create = async (user: T) => {
     try {
-      console.log('create', !!this.model)
       const data = this.model && (await new this.model(user).save());
-      console.log('sss')
       return data;
     } catch (err) {
       // 转换MongoDB错误为业务可读错误
@@ -70,7 +68,7 @@ export class UserService<T extends IUser> {
     try {
       const data = await this.model.updateMany(
         filter,
-        { $set: update },
+        { $set: R.omit(['uid','createAt','createUser','createType'],update) },
         operation
       );
       return data;
@@ -88,7 +86,7 @@ export class UserService<T extends IUser> {
     try {
       const data = await this.model.updateOne(
         filter,
-        R.omit(['uid','createAt','createUser'],update),
+        R.omit(['uid','createAt','createUser','createType'],update),
         operation
       );
       return data;
@@ -116,7 +114,7 @@ export class UserService<T extends IUser> {
    */
   public find = async (filter:RootFilterQuery<T>, page:{size:number,current:number}|false, sort:Record<string,-1|1|'desc'|'asc'> ) => {
     try {
-      const items = !!page ? await this.model.find(filter).sort(sort).skip((page?.size??0) * (page?.current??0)).limit(page?.size??10) : await this.model.find(filter).sort(sort)
+      const items = !!page ? await this.model.find(filter,null).sort(sort).skip((page?.size??0) * (page?.current??0)).limit(page?.size??10) : await this.model.find(filter).sort(sort)
       const total = await this.model.countDocuments(filter)
       return {
         items:items,

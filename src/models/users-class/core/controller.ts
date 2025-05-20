@@ -161,7 +161,8 @@ export class UserControllers<T extends IUser> {
   public createOrUpdate = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const data:Record<string,any> = await this.service.createOrUpdate(body as T)
+      const extraData = !!ctx.token?.uid ? { createUser:ctx.token.uid, createType:'admin'} : {}
+      const data:Record<string,any> = await this.service.createOrUpdate(R.mergeAll([body,extraData]) as T)
       const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
       ctx.body = packResponse({
         code:success ? 200:400,
