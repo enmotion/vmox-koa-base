@@ -44,7 +44,7 @@ export class UserControllers<T extends IUser> {
       // 创建用户数据并过滤返回值
       const body = conditionMappingToRootFilterQuery(ctx.request?.body??{}) // 请求值与查询条件的转换
       const data = fieldsFilter.call(
-        await this.service.create(body as any)
+        await this.service.save(body as any,)
       ); // 返回值 字段过滤
       ctx.body = packResponse({ data });
     } catch (err: any) {
@@ -109,7 +109,7 @@ export class UserControllers<T extends IUser> {
         ctx.request?.body ?? {},
         { createUser: ctx.token.uid, createType: "admin" },
       ]);
-      const data = fieldsFilter.call(await this.service.create(body as any)); // 返回值 字段过滤
+      const data = fieldsFilter.call(await this.service.save(body as any)); // 返回值 字段过滤
       return (ctx.body = packResponse({ data }));
     } catch (err) {
       throw err;
@@ -158,11 +158,12 @@ export class UserControllers<T extends IUser> {
     }
   };
 
-  public createOrUpdate = async (ctx:ParameterizedContext)=>{
+  public save = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !!ctx.token?.uid ? { createUser:ctx.token.uid, createType:'admin'} : {}
-      const data:Record<string,any> = await this.service.createOrUpdate(R.mergeAll([body,extraData]) as T)
+      console.log(R.mergeAll([body,extraData]))
+      const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
       ctx.body = packResponse({
         code:success ? 200:400,
