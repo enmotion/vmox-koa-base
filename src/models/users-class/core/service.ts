@@ -11,7 +11,7 @@
 import * as R from "ramda";
 import MongoDB from "mongodb";
 import { getPaginationAndSort, mongoDBErrorTransform, Pagination } from "@lib/serviceTools";
-import type { Model, RootFilterQuery, SaveOptions } from "mongoose";
+import type { Model, MongooseUpdateQueryOptions, SaveOptions } from "mongoose";
 import type { IUser } from "./schema";
 import { CoreService } from "src/frame-work-core/service";
 
@@ -22,9 +22,9 @@ export class UserService<T extends IUser> extends CoreService<T>{
   }
   public override save(user:T,options?:SaveOptions):Promise<any>{
     if(!!user.uid){
-      return this.updateOne({uid:user.uid},user);
+      return this.updateOne({uid:user.uid},user, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
     }else{
-      return super.save(user)
+      return super.save(user,options)
     }
   }
 }
