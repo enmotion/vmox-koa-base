@@ -2,7 +2,7 @@
  * @Author: enmotion
  * @Date: 2025-04-29 08:50:46
  * @Last Modified by: enmotion
- * @Last Modified time: 2025-04-29 12:55:04
+ * @Last Modified time: 2025-05-22 10:36:38
  *
  * 服务内核模块 - 提供基于Mongoose的文档CRUD操作
  * 使用泛型T扩展自Idoc接口，确保类型安全
@@ -19,8 +19,9 @@ import type {
   RootFilterQuery,
   MongooseUpdateQueryOptions,
   MongooseBaseQueryOptions,
+  PipelineStage,
+  AggregateOptions
 } from "mongoose";
-
 /**
  * @class VmoXCoreService
  * @classdesc 抽象核心服务层 - 封装通用 CRUD 操作及统一配置的基类
@@ -164,7 +165,7 @@ export class CoreService<T extends Record<string, any>> {
    */
   public async deleteMany (filter: RootFilterQuery<T>, options?: (MongoDB.DeleteOptions & MongooseBaseQueryOptions<T>) | null) {
     try {
-      const data = await this.model.deleteMany(filter, options);
+      const data = await this.model.deleteMany(filter, options as MongooseBaseQueryOptions<T>);
       return data;
     } catch (err) {
       // 将MongoDB原生错误转换为包含字段验证等上下文的业务错误
@@ -232,7 +233,7 @@ export class CoreService<T extends Record<string, any>> {
         {
           $set: R.omit(this.immutableKeys, update),
         },
-        options
+        options as MongooseUpdateQueryOptions<T>
       );
       return data;
     } catch (err) {
@@ -293,7 +294,7 @@ export class CoreService<T extends Record<string, any>> {
       const data = await this.model.updateOne(
         filter,
         R.omit(this.immutableKeys, update),
-        options
+        options as MongooseUpdateQueryOptions<T>
       );
       return data;
     } catch (err) {
@@ -457,4 +458,12 @@ export class CoreService<T extends Record<string, any>> {
       throw mongoDBErrorTransform(err, this.model.schema);
     }
   };
+
+  public async  aggregate(pipeline:PipelineStage[],options?:AggregateOptions){
+    try{
+      this.model.aggregate(pipeline,options)
+    }catch(err){
+      throw mongoDBErrorTransform(err, this.model.schema);
+    }
+  }
 }
