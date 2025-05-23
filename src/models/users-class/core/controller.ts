@@ -131,10 +131,12 @@ export class UserControllers<T extends IUser> {
   };
   // 更新操作
   public updateMany = async (ctx: ParameterizedContext) => {
-    const body = ctx.request?.body as Record<string,any>
+    const body = R.clone(ctx.request?.body) as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
       const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
-      const data = await this.service.updateMany({uid:{$in:filter.uid as string[]}},R.omit(['uid'],filter));
+      body.updatedUser = ctx.token.uid;
+      body.updatedAt = Date.now()
+      const data = await this.service.updateMany({uid:{$in:filter.uid as string[]}},R.omit(['uid'],body));
       ctx.body = packResponse({ 
         code:data.matchedCount > 0 ? 200:400, 
         msg:data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的用户', 
@@ -145,10 +147,12 @@ export class UserControllers<T extends IUser> {
   };
   // 更新操作
   public updateOne = async (ctx: ParameterizedContext) => {
-    const body = ctx.request?.body as Record<string,any>
+    const body = R.clone(ctx.request?.body) as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
       const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
-      const data = await this.service.updateOne({uid:{$in:filter.uid as string[]}},R.omit(['uid'],filter));
+      body.updatedUser = ctx.token.uid;
+      body.updatedAt = Date.now()
+      const data = await this.service.updateOne({uid:{$in:filter.uid as string[]}},R.omit(['uid'],body));
       ctx.body = packResponse({ 
         code:data.matchedCount > 0 ? 200:400, 
         msg:data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的用户', 
@@ -242,6 +246,23 @@ export class UserControllers<T extends IUser> {
       { 
         $unwind: {
           path: '$createdUserInfo',
+          preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+        } 
+      },
+      {
+        $lookup:{
+          from:this.service.model.collection.name,
+          localField: 'updatedUser', 
+          foreignField: 'uid',    // 目标集合的关联字段
+          as: 'updatedUserInfo',       // 存储匹配结果的临时字段
+          pipeline:[
+            {$project:{username:1,nickname:1}}
+          ]
+        },
+      },
+      { 
+        $unwind: {
+          path: '$updatedUserInfo',
           preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
         } 
       },

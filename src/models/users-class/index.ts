@@ -37,7 +37,7 @@ export const userSchema = new mongoose.Schema<ExpandUser>(
   userSchemaConfig as SchemaDefinition<ExpandUser>,
   { strict: true, timestamps:true }
 );
-userSchema.index({ age: 1, avatar: 1 }, { unique: true, sparse: true });
+// userSchema.index({ age: 1, avatar: 1 }, { unique: true, sparse: true });
 
 /**
  * Mongoose用户模型

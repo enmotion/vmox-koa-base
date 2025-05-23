@@ -489,13 +489,13 @@ export class CoreService<T extends Record<string, any>> {
       !R.isNil(page) && facet.items.push({$limit:page.size})
       // 组装全部管道信息
       const usePipeLine = [
-        {$match:filter}, 
+        {$match:filter},
         ...pipeline,
         {$facet:facet},
         {$project: {
           items: 1,
           total: { $arrayElemAt: ['$total.count', 0] } // 将总数从数组提取为数字
-        }}
+        }},
       ]
       // console.log('------------------------------------------')
       // console.log(JSON.stringify(usePipeLine))

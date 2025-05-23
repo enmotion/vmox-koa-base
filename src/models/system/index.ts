@@ -6,5 +6,6 @@ export const systemService = useSystemService()
 export const systemController = useSystemController(systemService)
 export const systemRouter = mappingControllersAndRouter<ReturnType<typeof useSystemController>>('/system',systemController,[
   {routerPath:'/register',method:'post',handlerName:'register'},
-  {routerPath:'/sse2',method:'get',handlerName:'login'}
+  {routerPath:'/sse2',method:'get',handlerName:'login'},
+  {routerPath:'/pub/upload',method:'post',handlerName:'upload'}
 ])

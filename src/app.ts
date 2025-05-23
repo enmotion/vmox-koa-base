@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-05-23 16:03:03
+ * @ Modified time: 2025-05-23 18:14:53
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -34,12 +34,12 @@ app.use(StaticServer('public'));
 app.use(KoaBody({ 
   multipart: true, // 允许上传文件
   formidable: {
-    uploadDir: path.join(__dirname, 'uploads'), // 上传目录
+    uploadDir: path.join(__dirname, '../uploads'), // 上传目录
     keepExtensions: true,  // 保留文件扩展名
     maxFileSize: 10 * 1024 * 1024, // 最大文件大小（10MB）
     onFileBegin: (name, file) => { // 文件上传前的处理
       console.log(`开始上传文件: ${file.originalFilename}`);
-    }
+    },
   },
   jsonLimit:'1mb', // 设置 JSON 数据大小限制为 1MB
   formLimit:'1mb', // 设置表单数据大小限制为 1MB
