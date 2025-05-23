@@ -14,6 +14,7 @@ import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体
 import authMiddleware from "./middlewares/auth"; // token 鉴权 中间件
 import errosMiddleware from "./middlewares/error" // 错误处理 中间件
 import fs from 'fs';
+import { swaggerMiddleware } from './config/swagger';
 
 import { userRouter } from "./models/users-class"
 import { systemRouter } from '@model/system';
@@ -36,10 +37,16 @@ if (!fs.existsSync(uploadDir)) {
 
 // 使用 KoaBody 中间件来解析请求体。可以处理 JSON、表单等格式。但这里没有启用文件上传功能（formidable 配置被注释掉了）。
 app.use(errosMiddleware);
+
 // 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
 app.use(StaticServer('public'));
 // Add static file serving for uploads directory
 app.use(StaticServer(path.join(__dirname, '../public')));
+
+// 添加 Swagger 中间件（放在路由之前）
+app.use(swaggerMiddleware);
+
+// 使用 KoaBody 中间件来解析请求体。可以处理 JSON、表单等格式。但这里没有启用文件上传功能（formidable 配置被注释掉了）。
 app.use(KoaBody({ 
   multipart: true, // 允许上传文件
   formidable: {
