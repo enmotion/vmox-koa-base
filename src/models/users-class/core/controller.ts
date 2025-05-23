@@ -14,7 +14,7 @@ import type { IUser } from "./schema";  // 用户模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import * as JWT from "jsonwebtoken";  // JWT令牌生成
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
-import { packResponse, fieldsFilter, conditionMappingToRootFilterQuery } from "@lib/serviceTools";  // 响应处理工具
+import { packResponse, fieldsFilter, getFilter } from "@lib/serviceTools";  // 响应处理工具
 
 /**
  * 用户控制器类
@@ -42,7 +42,7 @@ export class UserControllers<T extends IUser> {
   public register = async (ctx: ParameterizedContext) => {
     try {
       // 创建用户数据并过滤返回值
-      const body = conditionMappingToRootFilterQuery(ctx.request?.body??{}) // 请求值与查询条件的转换
+      const body = getFilter(ctx.request?.body??{}) // 请求值与查询条件的转换
       const data = fieldsFilter.call(
         await this.service.save(body as any,)
       ); // 返回值 字段过滤
@@ -75,7 +75,7 @@ export class UserControllers<T extends IUser> {
         ["username", "password"],
         R.mergeAll([{ username: null, password: null }, ctx.request.body ?? {}])
       );
-      const body = conditionMappingToRootFilterQuery(queryData??{}) // 请求值与条件的转换
+      const body = getFilter(queryData??{}) // 请求值与条件的转换
       const data = fieldsFilter.call(
         await this.service.findOne(body as any)
       ); // 返回值 字段过滤
@@ -133,7 +133,7 @@ export class UserControllers<T extends IUser> {
   public updateMany = async (ctx: ParameterizedContext) => {
     const body = ctx.request?.body as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const filter = conditionMappingToRootFilterQuery(body,{"uids":"uid"}) // 请求值与查询条件的转换
+      const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
       const data = await this.service.updateMany({uid:{$in:filter.uid as string[]}},R.omit(['uid'],filter));
       ctx.body = packResponse({ 
         code:data.matchedCount > 0 ? 200:400, 
@@ -147,7 +147,7 @@ export class UserControllers<T extends IUser> {
   public updateOne = async (ctx: ParameterizedContext) => {
     const body = ctx.request?.body as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const filter = conditionMappingToRootFilterQuery(body,{"uids":"uid"}) // 请求值与查询条件的转换
+      const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
       const data = await this.service.updateOne({uid:{$in:filter.uid as string[]}},R.omit(['uid'],filter));
       ctx.body = packResponse({ 
         code:data.matchedCount > 0 ? 200:400, 
@@ -178,8 +178,7 @@ export class UserControllers<T extends IUser> {
   public findOne = async (ctx: ParameterizedContext) => {
     const query:Record<string,any> = ctx.query;
     if(!R.isNil(query) && !R.isEmpty(query)){
-      const filter = conditionMappingToRootFilterQuery(query) // 请求值与查询条件的转换
-      
+      const filter = getFilter(query) // 请求值与查询条件的转换
       const data = fieldsFilter.call(await this.service.findOne(filter)); // 返回值 字段过滤
       ctx.body = packResponse({
         code:!R.isNil(data)? 200 : 400, 
@@ -197,7 +196,7 @@ export class UserControllers<T extends IUser> {
   // 分页查找操作
   public find = async (ctx: ParameterizedContext) => {
     const query:Record<string,any> = ctx.request.body??{};
-    const filter = conditionMappingToRootFilterQuery(
+    const filter = getFilter(
       R.omit(['page','sort'],query),
       {
         "username":"username.$regex",
@@ -207,9 +206,6 @@ export class UserControllers<T extends IUser> {
     ) as RootFilterQuery<T>// 请求值与查询条件的转换
     const page = getPagination(query.page) // 分页与排序转换
     const sort = getSort(query.sort) // 分页与排序转换
-    console.log("-----------------------------------")
-    console.log(sort, page, filter)
-    console.log("-----------------------------------")
     const data = await this.service.find(filter, page, sort,{password:0} );
 
     ctx.body = packResponse({
@@ -221,39 +217,39 @@ export class UserControllers<T extends IUser> {
 
   public aggregate = async (ctx: ParameterizedContext)=>{
     const query:Record<string,any> = ctx.request.body??{};
-    const filter = conditionMappingToRootFilterQuery(
+    const filter = getFilter(
       R.omit(['page','sort'],query),
       {
-        "username":"username.$regex",
-        "nickname":"nickname.$regex",
+        "username":"username/$regex",
+        "nickname":["nickname",(value)=>{console.log(value);return {$regex:value, $options:'i'}}],
         "uid":"uid.$regex",
       }
     ) as RootFilterQuery<T>// 请求值与查询条件的转换
     const page = getPagination(query.page) // 分页与排序转换
     const sort = getSort(query.sort) // 分页与排序转换
-    console.log("-----------------------------------")
-    console.log(sort, page, filter)
-    console.log("-----------------------------------")
-    const data = await this.service.aggregate(filter, {password:0}, page, sort, [
+    const data = await this.service.aggregate(filter, { password:0 }, page, sort, [
       {
         $lookup:{
           from:this.service.model.collection.name,
           localField: 'createdUser', 
           foreignField: 'uid',    // 目标集合的关联字段
-          as: 'creatorInfo'       // 存储匹配结果的临时字段
+          as: 'createdUserInfo',       // 存储匹配结果的临时字段
+          pipeline:[
+            {$project:{username:1,nickname:1}}
+          ]
         },
       },
       { 
         $unwind: {
-          path: '$creatorInfo',
+          path: '$createdUserInfo',
           preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
         } 
       },
-      {
-        $addFields: {
-          createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
-        }
-      },      
+      // {
+      //   $addFields: {
+      //     createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+      //   }
+      // },      
     ])
     ctx.body = packResponse({
       code:!R.isEmpty(data[0].items)? 200 : 400, 

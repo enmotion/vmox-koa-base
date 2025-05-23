@@ -104,41 +104,78 @@ export type MongooseOperators =
   '$in' | '$nin' |                // 包含/不包含于数组
   '$regex' | '$exists'            // 正则匹配/字段存在性检查
 // 实际已经扩展为全部方法了
+
 /**
- * 将嵌套结构的查询条件转换为平面结构的MongoDB查询对象
- * @param condition - 原始查询条件对象（支持嵌套字段路径如"user.address.city"）
- * @param mapping - 字段映射配置表（格式: { "原字段路径": "目标字段路径.$操作符" }）
- * @returns 符合Mongoose查询语法的平面结构对象
+ * 将嵌套结构的查询条件转换为平面结构的 MongoDB/Mongoose 查询对象
+ * 
+ * 功能说明：
+ * 1. 根据字段映射规则（mapping），将原始嵌套条件中的字段路径转换为目标路径，并处理特殊操作符（如自定义的 $range）。
+ * 2. 支持动态值转换（通过映射配置中的函数）。
+ * 3. 自动清理已映射的原始字段，避免重复处理。
+ * 4. 保留未映射的字段，并合并到最终结果中。
+ * 
+ * @param condition - 原始查询条件对象，支持多级嵌套结构（例如 `{ user: { address: { city: "NY" } } }`）。
+ * @param mapping - 字段映射配置表，格式为：
+ *   - Key: 原始字段路径（用斜杠 `/` 分隔，例如 "user/address/city"）。
+ *   - Value: 目标配置，可以是以下两种形式：
+ *     a) 字符串：目标字段路径，可包含操作符（例如 "location.city.$eq"）。
+ *     b) 元组 [string, (value: any) => any]：
+ *        - 字符串: 目标字段路径
+ *        - 函数: 对原始值的转换函数
+ * 示例映射：
+ *   { 
+ *     "user/age": "age.$eq", // 将 user.age 转换为 age 字段的等于条件
+ *     "range": ["price.$range", (v) => [v.min, v.max]] // 自定义值转换
+ *   }
+ * 
+ * @returns 符合 Mongoose 查询语法的平面结构对象，合并了映射后的字段和未映射的原始字段。
  */
-export function conditionMappingToRootFilterQuery(
+
+export function getFilter(
   condition: Record<string, any>,      // 支持多级嵌套的查询条件
-  mapping: Record<string, string> = {} // 字段路径映射规则（默认空配置）
+  mapping: Record<string, string|[string,(value:any)=>any]> = {} // 字段路径映射规则（默认空配置）
 ): Record<string, any> {                // 返回转换后的平面结构对象
-  let result: Record<string, any> = {} // 存储转换后的平面查询对象
-  
-  // 遍历映射配置处理字段转换
+  // 初始化一个空对象，用于存储转换后的平面查询对象
+  let result: Record<string, any> = {};
+
+  // 遍历映射配置，对每个映射规则进行处理，实现字段的转换
   Object.entries(mapping).forEach(([originPath, targetPath]) => {
-    const originPaths = originPath.split(".");
-    const targetPaths = targetPath.split('.');
-    let value = R.path(originPaths, condition); // 从原始对象获取值
+    // 将原始字段路径按斜杠分割成数组，便于后续从原始对象中获取对应的值
+    const originPaths = originPath.split("/");
+    // 判断目标路径是否为数组，如果是数组，取数组第一项并按斜杠分割；否则直接按斜杠分割目标路径
+    const targetPaths = Array.isArray(targetPath) ? targetPath[0].split('/') : targetPath.split('/');
+    // 使用 Ramda 库的 path 函数，根据分割后的原始路径数组从原始对象中获取对应的值
+    let value = R.path(originPaths, condition);
+
+    // 检查获取的值是否存在，如果存在则进行后续处理
     if (!!value) {
-      // 处理特殊$range操作符（转换为$gte/$lte范围查询）
-      if (Array.isArray(value) && targetPaths[targetPaths.length-1] === '$range') {
+      // 如果目标路径是数组，说明需要对值进行额外处理，调用数组第二项的函数处理值；否则直接使用该值
+      value = Array.isArray(targetPath) ? targetPath[1](value) : value;
+
+      // 处理特殊的 $range 操作符，如果值是数组且目标路径的最后一项是 $range
+      if (Array.isArray(value) && targetPaths[targetPaths.length - 1] === '$range') {
+        // 初始化一个空对象，用于存储转换后的范围查询条件
         const rangeValue: Record<string, any> = {};
+        // 如果数组的第一项存在，则将其作为 $gte（大于等于）条件添加到范围查询对象中
         value[0] !== undefined && (rangeValue['$gte'] = value[0]);
+        // 如果数组的第二项存在，则将其作为 $lte（小于等于）条件添加到范围查询对象中
         value[1] !== undefined && (rangeValue['$lte'] = value[1]);
+        // 将处理后的范围查询对象赋值给 value
         value = rangeValue;
-        targetPaths.pop(); // 移除末尾的$range标记
+        // 移除目标路径数组的最后一项，即移除 $range 标记
+        targetPaths.pop();
       }
-      // 将处理后的值写入结果对象的目标路径
+      // 使用 Ramda 库的 assocPath 函数，将处理后的值写入结果对象的目标路径
       result = R.assocPath(targetPaths, value, result);
-      // 移除已处理的原始字段（避免重复处理）
-      condition = R.dissocPath([originPaths[0]], condition);
-    }else{
-      condition = R.dissocPath([originPaths[0]], condition);
+      // 使用 Ramda 库的 dissocPath 函数，从原始查询条件对象中移除已处理的原始字段，避免重复处理
+      condition = R.dissocPath(originPaths, condition);
+    } else {
+      // 如果获取的值不存在，同样从原始查询条件对象中移除该原始字段
+      condition = R.dissocPath(originPaths, condition);
     }
   });
-  // 合并剩余未映射字段和已转换字段
+
+  // 使用 Ramda 库的 mergeDeepRight 函数，将剩余未映射的字段和已转换的字段合并到一个对象中并返回
   return R.mergeDeepRight(condition, result);
 }
 
