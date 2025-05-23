@@ -2,12 +2,13 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-05-18 17:17:47
+ * @ Modified time: 2025-05-23 16:03:03
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
 import StaticServer from "koa-static"; // koa-static 是一个用于提供静态文件服务的 Koa 中间件。
 import KoaWebSocket from "koa-websocket"; // koa-websocket 是一个用于支持 WebSocket 的 Koa 中间件。
+import path from "path";
 import Router from "koa-router"; // koa-router 是一个用于处理路由的 Koa 中间件库。
 import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体的 Koa 中间件。
 import authMiddleware from "./middlewares/auth"; // token 鉴权 中间件
@@ -28,21 +29,22 @@ import { systemRouter } from '@model/system';
 const app = new Koa()
 // 使用 KoaBody 中间件来解析请求体。可以处理 JSON、表单等格式。但这里没有启用文件上传功能（formidable 配置被注释掉了）。
 app.use(errosMiddleware);
+// 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
+app.use(StaticServer('public'));
 app.use(KoaBody({ 
   multipart: true, // 允许上传文件
-  // formidable: {
-  //   //上传文件存储目录
-  //   uploadDir:  path.join(__dirname, `/public/uploads/`),
-  //   //允许保留后缀名
-  //   keepExtensions: true,
-  // },
+  formidable: {
+    uploadDir: path.join(__dirname, 'uploads'), // 上传目录
+    keepExtensions: true,  // 保留文件扩展名
+    maxFileSize: 10 * 1024 * 1024, // 最大文件大小（10MB）
+    onFileBegin: (name, file) => { // 文件上传前的处理
+      console.log(`开始上传文件: ${file.originalFilename}`);
+    }
+  },
   jsonLimit:'1mb', // 设置 JSON 数据大小限制为 1MB
   formLimit:'1mb', // 设置表单数据大小限制为 1MB
   textLimit:'1mb'  // 设置文本数据大小限制为 1MB
 }));
-
-// 使用 koa-static 中间件来提供静态文件服务，default ./public 作为静态资源目录。
-app.use(StaticServer('public'));
 app.use(authMiddleware);
 app.use(userRouter.routes());
 app.use(systemRouter.routes());

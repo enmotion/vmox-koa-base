@@ -25,7 +25,7 @@ import type {
 } from "mongoose";
 
 /**
- * @class VmoXCoreService
+ * @class CoreService
  * @classdesc 抽象核心服务层 - 封装通用 CRUD 操作及统一配置的基类
  * @template T - 泛型参数，代表 Mongoose 文档结构类型，需继承自键值对对象 `Record<string, any>`
  * 
@@ -36,7 +36,7 @@ import type {
  * 
  * @example
  * // 子类示例 - 用户服务继承核心类
- * class UserService extends VmoXCoreService<User> {
+ * class UserService extends CoreService<User> {
  *   constructor() {
  *     super(userModel); // 传入用户模型实例
  *   }
@@ -482,6 +482,7 @@ export class CoreService<T extends Record<string, any>> {
           {$count:'count'}
         ]
       } // 准备组装分页信息与排序信息
+      
       !R.isNil(projection) && facet.items.push({$project:projection})
       !R.isNil(sort) && facet.items.push({$sort:sort})
       !R.isNil(page) && facet.items.push({$skip:((page.size ?? 0) * (page.current ?? 0))})
@@ -496,7 +497,10 @@ export class CoreService<T extends Record<string, any>> {
           total: { $arrayElemAt: ['$total.count', 0] } // 将总数从数组提取为数字
         }}
       ]
-      const data = await this.model.aggregate(usePipeLine, options)
+      // console.log('------------------------------------------')
+      // console.log(JSON.stringify(usePipeLine))
+      // console.log('------------------------------------------')
+      const data = await this.model.aggregate(usePipeLine as any, options)
       return data
     }catch(err){
       throw mongoDBErrorTransform(err, this.model.schema);

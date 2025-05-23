@@ -105,6 +105,7 @@ export type MongooseOperators =
   '$regex' | '$exists'            // 正则匹配/字段存在性检查
 // 实际已经扩展为全部方法了
 
+export type MongooseFilterMapping = Record<string, string|[string,(value:any)=>any]>
 /**
  * 将嵌套结构的查询条件转换为平面结构的 MongoDB/Mongoose 查询对象
  * 
@@ -133,7 +134,7 @@ export type MongooseOperators =
 
 export function getFilter(
   condition: Record<string, any>,      // 支持多级嵌套的查询条件
-  mapping: Record<string, string|[string,(value:any)=>any]> = {} // 字段路径映射规则（默认空配置）
+  mapping: MongooseFilterMapping = {} // 字段路径映射规则（默认空配置）
 ): Record<string, any> {                // 返回转换后的平面结构对象
   // 初始化一个空对象，用于存储转换后的平面查询对象
   let result: Record<string, any> = {};
@@ -266,7 +267,7 @@ export function getSort(sort: unknown):Sort | null {
     const data = R.clone(sort) as Sort
     // 遍历并标准化每个排序值
     Object.entries(data).forEach(([key,value])=>{
-      data[key] = typeof value == 'number' ? value : value?.toLowerCase() as 'desc'|'asc' ?? undefined
+      data[key] = typeof value == 'number' ? value : (value?.toLowerCase()=='desc'?-1:1)
     })
     return data as Sort
   }else{
