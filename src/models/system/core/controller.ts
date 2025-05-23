@@ -35,7 +35,7 @@ export default function useSystemController<T extends Record<string,any>>(servic
 
         // 创建可读流并保存到指定路径
         const reader = fs.createReadStream(file.filepath);
-        const uploadPath = path.join(__dirname, '../uploads', file.originalFilename || 'upload');
+        const uploadPath = path.join(__dirname, '../../uploads', file.originalFilename || 'upload');
         const writer = fs.createWriteStream(uploadPath);
 
         reader.pipe(writer);
