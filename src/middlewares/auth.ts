@@ -20,6 +20,20 @@ async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
           data: null
         }
       }
+      if(currentUser?.powVersion && ctx.token.powVersion < currentUser?.powVersion){
+        throw {
+          code: 401,
+          msg: '该账号的权限已变更，需要重新登录',
+          data: null
+        }
+      }
+      if(!currentUser?.status){
+        throw {
+          code: 401,
+          msg: '该用户已经被禁用',
+          data: null
+        }
+      }
       await next();
     }catch(err:any){
       if(['JsonWebTokenError','TokenExpiredError'].includes(err?.name)){

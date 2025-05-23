@@ -88,10 +88,10 @@ export class UserControllers<T extends IUser> {
       ) // 请求值与条件的转换
       const data:any = await this.service.findOne(filter as any,undefined,{lean:true})
       if (!!data && !!data.status) {
-        data.loginTimes ++
+        data.loginTimes ++ // 登录次数递增
         await this.service.updateOne({uid:data.uid},{loginTimes:data.loginTimes})
         const token = JWT.sign(
-          R.pick(["username", "uid","loginTimes"], data),
+          R.pick(["username", "uid","loginTimes",'powVersion'], data),
           process.env.APP_JWT_KEY as string,
           { expiresIn: "24h" }
         );
