@@ -10,7 +10,7 @@
 "use strict";
 import * as R from "ramda";
 import MongoDB from "mongodb";
-import { getPaginationAndSort, mongoDBErrorTransform, Pagination } from "@lib/serviceTools";
+import { getPagination, getSort, mongoDBErrorTransform } from "@lib/serviceTools";
 import type { Model, RootFilterQuery, MongooseUpdateQueryOptions } from "mongoose";
 import type { IUser } from "./schema";
 export class UserService<T extends IUser> {

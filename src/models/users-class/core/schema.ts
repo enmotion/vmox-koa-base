@@ -85,13 +85,6 @@ export default {
     unique: [true, '该用户ID已被占用'],
     default:()=>uniqid()
   },
-  createType:{
-    type:String,
-    enum:["register","admin"],
-    required:true,
-    immutable: true,
-    default:"register"
-  },
   username: {
     type: String,
     name:'用户名称',
@@ -110,25 +103,32 @@ export default {
     required: [true, '缺少密码创建失败'],
     minlength: [8, '密码长度不能少于8位']
   },
-  createUser:{
+  createdType:{
+    type:String,
+    enum:["register","admin"],
+    required:true,
+    immutable: true,
+    default:"register"
+  },
+  createdUser:{
     type:String,
     name:'创建用户',
     sparse:true,
     immutable: true,
   },
-  createAt: {
+  createdAt: {
     type: Date,
     name:'创建时间',
     required:true,
     default: Date.now, // 默认创建时间为当前时间
     immutable: true,
   },
-  updateUser:{
+  updatedUser:{
     type:String,
     name:'更新用户',
     sparse:true,
   },
-  updateAt: {
+  updatedAt: {
     type: Date,
     name:'更新时间',
     sparse:true,

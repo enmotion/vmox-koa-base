@@ -7,6 +7,7 @@
 
 "use strict"
 import * as R from "ramda";
+import { unknown, z } from "zod";
 import type { Schema, RootFilterQuery} from "mongoose";
 import type { RecordResponse } from "@type/index";
 
@@ -141,37 +142,97 @@ export function conditionMappingToRootFilterQuery(
   return R.mergeDeepRight(condition, result);
 }
 
+
+/*------------------------------------------------------------------------------------*/
+
 /**
- * 分页和排序参数类型
- * @template T 原始查询参数类型
+ * 分页参数验证Schema
+ * 使用Zod库定义分页参数的数据结构和验证规则
  */
-export type Pagination<T extends Record<string,any>> = Omit<T,'pagination'|'sort'> & {
-  page:{size:number,current:number}|false // 分页配置，false表示不分页
-  sort:Record<string,-1|1|'desc'|'asc'>   // 排序配置
+export type Page = { current: number, size: number };
+
+const pageSchemaZod = z.object({
+  /**
+   * 当前页码字段验证规则
+   * - 必须是数字类型（非数字时报错："页码必须是数字"）
+   * - 必须是整数（小数时报错："页码必须是整数"）
+   * - 必须是正数（0或负数时报错："页码必须大于0"）
+   * - 描述信息：说明页码从1开始计数
+   */
+  current: z.number({ message: '页码必须是数字' })
+    .int('页码必须是整数')
+    .positive('页码必须大于0')
+    .describe('当前页码，从1开始计数'),
+
+  /**
+   * 分页大小字段验证规则
+   * - 必须是数字类型（非数字时报错："分页大小必须是数字"）
+   * - 必须是整数（小数时报错："分页大小必须是整数"）
+   * - 必须是正数（0或负数时报错："分页大小必须大于0"）
+   * - 最大值限制500（超过时报错："分页大小不能超过500"）
+   * - 描述信息：说明这是每页显示记录数
+   */
+  size: z.number({ message: '分页大小必须是数字' })
+    .int('分页大小必须是整数')
+    .positive('分页大小必须大于0')
+    .max(500, '分页大小不能超过500')
+    .describe('每页显示记录数')
+})
+
+/**
+ * 获取验证后的分页参数
+ * @param page 待验证的分页参数对象（包含current和size字段）
+ * @returns 验证通过返回原对象，失败返回undefined
+ * @note 使用safeParse进行非抛出式验证，避免try-catch
+ * @note 返回类型明确表示为包含page和size字段的对象或void
+ * @warning 输入参数类型为any，建议后续改为unknown更安全
+ */
+export function getPagination(page: unknown, startWidth1:boolean = true):Page | null {
+  // 使用safeParse进行验证（不会抛出异常）
+  const result = pageSchemaZod.safeParse(page);
+  const data = R.clone(page) as Page;
+  startWidth1 && (data.current = Math.max(0,data.current-1)) // 确保当前页-1且不可低于0 
+  // 验证成功返回原始数据，失败返回undefined
+  // 注意：这里返回的是原始输入data 而非result.data，保持与历史版本兼容
+  return result.success ? data : null;
 }
+
+/*------------------------------------------------------------------------------------*/
+
+// 定义标准化后的排序类型，仅包含小写形式和数字
+export type Sort = Record<string, 1 | -1 | 'desc' | 'asc'>;
+
+// 使用zod创建排序值的验证模式
+const sortSchemaZod = z.object({}).catchall(
+  z.union([
+    z.literal(1),      // 允许数字1
+    z.literal(-1),     // 允许数字-1
+    z.literal('DESC'), // 允许大写DESC
+    z.literal('ASC'),  // 允许大写ASC
+    z.literal('desc'), // 允许小写desc
+    z.literal('asc'),  // 允许小写asc
+  ])
+).describe("值必须是-1,1,desc,asc"); // 添加模式描述
+
 /**
- * 从查询参数中提取分页和排序信息
- * @param query 包含分页和排序的查询参数
- * @returns 处理后的分页和排序对象
+ * 处理排序参数并标准化
+ * @param sort 未知类型的排序参数
+ * @returns 标准化后的Sort对象或null(验证失败时)
  */
-export function getPaginationAndSort<T extends Record<string,any>>(query:Partial<Pagination<T>>){
-  // 合并默认值和传入的查询参数
-  const queryData:Pagination<T> = R.mergeAll([
-    {page:false, sort:{}}, // 默认值
-    R.pick(['page','sort'],query) // 从查询参数中提取page和sort
-  ]) as Pagination<T>;
-  
-  // 规范化排序字段的值
-  Object.entries(queryData.sort).map(([key,value])=>{
-    if(['DESC','ASC','desc','asc',1,-1].includes(value)){
-      // 将字符串形式的排序转换为统一格式
-      queryData.sort[key] = [1,-1].includes(value as number) 
-        ? value 
-        : R.toLower(value as string) as 'desc'|'asc'
-    }
-  })
-  !!queryData.page && (queryData.page.current = Math.max(0,queryData.page.current-1))
-  return {
-    ...queryData,
+export function getSort(sort: unknown):Sort | null {
+  // 检查输入是否为有效对象
+  if (!sort || typeof sort !== 'object') return null;
+  // 使用safeParse进行验证（不会抛出异常）
+  const result = sortSchemaZod.safeParse(sort);
+  if(result.success){
+    // 深度克隆输入对象避免污染原数据
+    const data = R.clone(sort) as Sort
+    // 遍历并标准化每个排序值
+    Object.entries(data).forEach(([key,value])=>{
+      data[key] = typeof value == 'number' ? value : value?.toLowerCase() as 'desc'|'asc' ?? undefined
+    })
+    return data as Sort
+  }else{
+    return null
   }
 }

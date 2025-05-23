@@ -11,10 +11,10 @@ import * as R from "ramda";  // 函数式编程工具库
 import { ParameterizedContext } from "koa";  // Koa上下文类型
 import { UserService } from "./service";  // 用户服务层
 import type { IUser } from "./schema";  // 用户模型接口
-import { getPaginationAndSort } from "@lib/serviceTools";
+import { getPagination, getSort } from "@lib/serviceTools";
 import * as JWT from "jsonwebtoken";  // JWT令牌生成
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
-import { packResponse, fieldsFilter, conditionMappingToRootFilterQuery, Pagination } from "@lib/serviceTools";  // 响应处理工具
+import { packResponse, fieldsFilter, conditionMappingToRootFilterQuery } from "@lib/serviceTools";  // 响应处理工具
 
 /**
  * 用户控制器类
@@ -107,7 +107,7 @@ export class UserControllers<T extends IUser> {
     try {
       const body = R.mergeAll([
         ctx.request?.body ?? {},
-        { createUser: ctx.token.uid, createType: "admin" },
+        { createdUser: ctx.token.uid, createdType: "admin" },
       ]);
       const data = fieldsFilter.call(await this.service.save(body as any)); // 返回值 字段过滤
       return (ctx.body = packResponse({ data }));
@@ -161,7 +161,7 @@ export class UserControllers<T extends IUser> {
   public save = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const extraData = !!ctx.token?.uid ? { createUser:ctx.token.uid, createType:'admin'} : {}
+      const extraData = !!ctx.token?.uid ? { createdUser:ctx.token.uid, createdType:'admin'} : {}
       console.log(R.mergeAll([body,extraData]))
       const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
@@ -196,17 +196,21 @@ export class UserControllers<T extends IUser> {
   };
   // 分页查找操作
   public find = async (ctx: ParameterizedContext) => {
-    const query:Partial<Pagination<T>> = ctx.request.body??{};
+    const query:Record<string,any> = ctx.request.body??{};
     const filter = conditionMappingToRootFilterQuery(
       R.omit(['page','sort'],query),
       {
         "username":"username.$regex",
+        "nickname":"nickname.$regex",
         "uid":"uid.$regex",
       }
     ) as RootFilterQuery<T>// 请求值与查询条件的转换
-    const { page, sort} = getPaginationAndSort<T>(query) // 分页与排序转换
-    const data = await this.service.find(filter, page, sort);
-    data.items = data.items.map(item=>fieldsFilter.call(item)) // 返回值 字段过滤
+    const page = getPagination(query.page) // 分页与排序转换
+    const sort = getSort(query.sort) // 分页与排序转换
+    console.log("-----------------------------------")
+    console.log(sort, page, filter)
+    console.log("-----------------------------------")
+    const data = await this.service.find(filter, page, sort,{password:0} );
 
     ctx.body = packResponse({
       code:!R.isEmpty(data.items)? 200 : 400, 
@@ -214,4 +218,47 @@ export class UserControllers<T extends IUser> {
       data
     })
   };
+
+  public aggregate = async (ctx: ParameterizedContext)=>{
+    const query:Record<string,any> = ctx.request.body??{};
+    const filter = conditionMappingToRootFilterQuery(
+      R.omit(['page','sort'],query),
+      {
+        "username":"username.$regex",
+        "nickname":"nickname.$regex",
+        "uid":"uid.$regex",
+      }
+    ) as RootFilterQuery<T>// 请求值与查询条件的转换
+    const page = getPagination(query.page) // 分页与排序转换
+    const sort = getSort(query.sort) // 分页与排序转换
+    console.log("-----------------------------------")
+    console.log(sort, page, filter)
+    console.log("-----------------------------------")
+    const data = await this.service.aggregate(filter, {password:0}, page, sort, [
+      {
+        $lookup:{
+          from:this.service.model.collection.name,
+          localField: 'createdUser', 
+          foreignField: 'uid',    // 目标集合的关联字段
+          as: 'creatorInfo'       // 存储匹配结果的临时字段
+        },
+      },
+      { 
+        $unwind: {
+          path: '$creatorInfo',
+          preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+        } 
+      },
+      {
+        $addFields: {
+          createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+        }
+      },      
+    ])
+    ctx.body = packResponse({
+      code:!R.isEmpty(data[0].items)? 200 : 400, 
+      msg:!R.isEmpty(data[0].items)?'操作成功':'未找到符合条件的用户',
+      data:data[0]
+    })
+  }
 }

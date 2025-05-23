@@ -11,6 +11,7 @@
 import * as R from "ramda";
 import MongoDB from "mongodb";
 import { mongoDBErrorTransform } from "@lib/serviceTools";
+import type { Page, Sort } from "@lib/serviceTools"
 import type {
   Model,
   SaveOptions,
@@ -22,6 +23,7 @@ import type {
   PipelineStage,
   AggregateOptions
 } from "mongoose";
+
 /**
  * @class VmoXCoreService
  * @classdesc 抽象核心服务层 - 封装通用 CRUD 操作及统一配置的基类
@@ -440,11 +442,17 @@ export class CoreService<T extends Record<string, any>> {
    * @returns 返回匹配文档的数组（Mongoose文档实例或普通对象）
    * @throws 转换后的业务可读错误（通过mongoDBErrorTransform处理原生错误）
    */
-  public async find (filter: RootFilterQuery<T>, page: { size: number; current: number } | null | false, sort: Record<string, -1 | 1 | "desc" | "asc">):Promise<{ items: T[]; total: number }> {
+  public async find (
+    filter: RootFilterQuery<T>, 
+    page?: Page | null , 
+    sort?: Sort | null,
+    projection?:ProjectionType<T> | null ,
+    options?:QueryOptions<T> | null 
+  ):Promise<{ items: T[]; total: number }> {
     try {
       const items = !!page
         ? await this.model
-            .find(filter, null)
+            .find(filter, projection, options)
             .sort(sort)
             .skip((page?.size ?? 0) * (page?.current ?? 0))
             .limit(page?.size ?? 10)
@@ -459,9 +467,37 @@ export class CoreService<T extends Record<string, any>> {
     }
   };
 
-  public async  aggregate(pipeline:PipelineStage[],options?:AggregateOptions){
+  public async aggregate(
+    filter:RootFilterQuery<T>,
+    projection?:ProjectionType<T> | null ,
+    page?: Page | null , 
+    sort?: Sort | null,
+    pipeline:PipelineStage[]=[], 
+    options?:AggregateOptions
+  ){
     try{
-      this.model.aggregate(pipeline,options)
+      const facet:Record<string,any> = {
+        items:[],
+        total:[
+          {$count:'count'}
+        ]
+      } // 准备组装分页信息与排序信息
+      !R.isNil(projection) && facet.items.push({$project:projection})
+      !R.isNil(sort) && facet.items.push({$sort:sort})
+      !R.isNil(page) && facet.items.push({$skip:((page.size ?? 0) * (page.current ?? 0))})
+      !R.isNil(page) && facet.items.push({$limit:page.size})
+      // 组装全部管道信息
+      const usePipeLine = [
+        {$match:filter}, 
+        ...pipeline,
+        {$facet:facet},
+        {$project: {
+          items: 1,
+          total: { $arrayElemAt: ['$total.count', 0] } // 将总数从数组提取为数字
+        }}
+      ]
+      const data = await this.model.aggregate(usePipeLine, options)
+      return data
     }catch(err){
       throw mongoDBErrorTransform(err, this.model.schema);
     }
