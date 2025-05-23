@@ -15,6 +15,7 @@ import { getPagination, getSort } from "@lib/serviceTools";
 import * as JWT from "jsonwebtoken";  // JWT令牌生成
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
 import { packResponse, fieldsFilter, getFilter } from "@lib/serviceTools";  // 响应处理工具
+import koaBody from "koa-body";
 
 /**
  * 用户控制器类
@@ -75,14 +76,22 @@ export class UserControllers<T extends IUser> {
         ["username", "password"],
         R.mergeAll([{ username: null, password: null }, ctx.request.body ?? {}])
       );
-      const body = getFilter(queryData??{}) // 请求值与条件的转换
-      const data = fieldsFilter.call(
-        await this.service.findOne(body as any)
-      ); // 返回值 字段过滤
-      console.log(data,body,123)
+      // 通过账号或昵称 匹配密码找到用户
+      const filter = getFilter(
+        queryData,
+        {
+          "username":['$or',(value:any)=>([
+            {username:value},
+            {nickname:value}
+          ])]
+        },
+      ) // 请求值与条件的转换
+      const data:any = await this.service.findOne(filter as any,undefined,{lean:true})
       if (!!data && !!data.status) {
+        data.loginTimes ++
+        await this.service.updateOne({uid:data.uid},{loginTimes:data.loginTimes})
         const token = JWT.sign(
-          R.pick(["username", "uid"], data),
+          R.pick(["username", "uid","loginTimes"], data),
           process.env.APP_JWT_KEY as string,
           { expiresIn: "24h" }
         );
@@ -94,7 +103,7 @@ export class UserControllers<T extends IUser> {
         ctx.body = packResponse({
           code: 400,
           data: null,
-          msg: (R.isEmpty(data) || R.isNil(data)) ? "用户名或密码,缺失错误" : "用户已被禁用",
+          msg: (R.isEmpty(data) || R.isNil(data)) ? "用户名或密码,缺失错误" : "该用户已被禁用",
         });
       }
     } catch (err: any) {

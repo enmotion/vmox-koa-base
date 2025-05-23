@@ -133,12 +133,13 @@ export type MongooseFilterMapping = Record<string, string|[string,(value:any)=>a
  */
 
 export function getFilter(
-  condition: Record<string, any>,      // 支持多级嵌套的查询条件
-  mapping: MongooseFilterMapping = {} // 字段路径映射规则（默认空配置）
+  query: Record<string, any>,      // 支持多级嵌套的查询条件
+  mapping: MongooseFilterMapping = {}, // 字段路径映射规则（默认空配置）
+  only:boolean = false // 是否只提取only数据，原本的对象数据需要经过 mapping 过滤
 ): Record<string, any> {                // 返回转换后的平面结构对象
   // 初始化一个空对象，用于存储转换后的平面查询对象
   let result: Record<string, any> = {};
-
+  let condition:Record<string,any> = R.clone(query)
   // 遍历映射配置，对每个映射规则进行处理，实现字段的转换
   Object.entries(mapping).forEach(([originPath, targetPath]) => {
     // 将原始字段路径按斜杠分割成数组，便于后续从原始对象中获取对应的值
@@ -177,7 +178,7 @@ export function getFilter(
   });
 
   // 使用 Ramda 库的 mergeDeepRight 函数，将剩余未映射的字段和已转换的字段合并到一个对象中并返回
-  return R.mergeDeepRight(condition, result);
+  return only ? result : R.mergeDeepRight(condition, result);
 }
 
 

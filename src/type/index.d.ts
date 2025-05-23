@@ -50,3 +50,11 @@ export type RecordResponse<T extends any> = {
   msg?:string,
   data:T | AppListResponse<T>
 }
+
+export type ExpandUser = {
+  uid: string;
+  username: string;
+  email: string;
+  loginTimes: number;
+  // ... 其他属性 ...
+};

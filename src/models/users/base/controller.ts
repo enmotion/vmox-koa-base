@@ -34,7 +34,7 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
         const queryData = R.pick(['username','password'],R.mergeAll([{username:null,password:null},ctx.request.body??{}]));
         const data = fieldsFilter.call(await service.findOneUser(queryData as any));
         if(!!data){
-          const token = JWT.sign(R.pick(['username','uid'],data), process.env.APP_JWT_KEY as string, {expiresIn:'24h'});
+          const token = JWT.sign(R.pick(['username','uid','loginTimes'],data), process.env.APP_JWT_KEY as string, {expiresIn:'24h'});
           ctx.body = packResponse({
             data:R.mergeDeepRight(data,{token}),
             msg:`欢迎回来 ${ data.nickname ?? data.username }`

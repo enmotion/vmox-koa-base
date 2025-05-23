@@ -361,7 +361,11 @@ export class CoreService<T extends Record<string, any>> {
    * @returns 返回匹配的文档（格式化后的Mongoose文档实例）或null
    * @throws 转换后的业务可读错误（通过mongoDBErrorTransform处理原生错误）
    */
-  public async findOne (filter: RootFilterQuery<T>, projection?:ProjectionType<T> | null, options?: QueryOptions<T> | null) {
+  public async findOne (
+    filter: RootFilterQuery<T>, 
+    projection:ProjectionType<T> | null | undefined = {__v:0,_id:0}, 
+    options?: QueryOptions<T> | null
+  ) {
     try {
       const data = await this.model.findOne(filter, projection, options);
       return data;
@@ -446,7 +450,7 @@ export class CoreService<T extends Record<string, any>> {
     filter: RootFilterQuery<T>, 
     page?: Page | null , 
     sort?: Sort | null,
-    projection?:ProjectionType<T> | null ,
+    projection:ProjectionType<T> | null | undefined ={__v:0,_id:0},
     options?:QueryOptions<T> | null 
   ):Promise<{ items: T[]; total: number }> {
     try {
@@ -469,7 +473,7 @@ export class CoreService<T extends Record<string, any>> {
 
   public async aggregate(
     filter:RootFilterQuery<T>,
-    projection?:ProjectionType<T> | null ,
+    projection:ProjectionType<T> | null | undefined ={__v:0,_id:0},
     page?: Page | null , 
     sort?: Sort | null,
     pipeline:PipelineStage[]=[], 

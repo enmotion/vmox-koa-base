@@ -12,7 +12,13 @@ export interface ExpandUser extends IUser {
   age: number,
   updatedAt: Date; // 修改时间
 }
-
+const user:Partial<ExpandUser> ={
+  loginTimes:0,
+  createUser:"",
+  createAt:new Date(),
+  updateUser:"",
+  updateAt:new Date(),
+}
 export type ExpandUserDocument = Document<ExpandUser>
 
 // 定义用户模型的结构

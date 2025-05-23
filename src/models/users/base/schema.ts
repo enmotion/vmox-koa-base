@@ -29,13 +29,16 @@ import uniqid from "uniqid"
 
 export interface IUser{
   uid:string; // 用户ID
-  createType:"register"|"admin" // 创建方式 注册|管理员创建
-  username: string;     // 用户名
-  password: string;     // 用户密码
-  createUser:string;   // 创建用户 系统创建时为空
-  createAt: Date;      // 创建时间
-  updateUser:string;   // 修改用户
-  updateAt: Date;      // 修改时间
+  createType:"register"|"admin";    // 创建方式 注册|管理员创建
+  username: string;                 // 用户名
+  password: string;                 // 用户密码
+  loginTimes:number;                // 用户登录次数
+  powVersion:number;                // 用户权限版本
+  powers:string[];                  // 用户权限点
+  createUser:string;                // 创建用户 系统创建时为空
+  createAt: Date;                   // 创建时间
+  updateUser:string;                // 修改用户
+  updateAt: Date;                   // 修改时间
 }
 /**
  * 用户文档类型
@@ -102,6 +105,19 @@ export default {
     name:'用户密码',
     required: [true, '缺少密码创建失败'],
     minlength: [8, '密码长度不能少于8位']
+  },
+  loginTimes:{
+    type: Number,
+    name:'登录次数',
+    min: [0, '用户登录次数不可以为负数'],
+    required: [true, '缺少密码创建失败'],
+    default:0,
+  },
+  authVersion:{
+    type: Number,
+    name:'权限版本',
+    min: [0, '权限版本不可为0'],
+    default:0,
   },
   createUser:{
     type:String,
