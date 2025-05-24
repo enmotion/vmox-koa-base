@@ -2,12 +2,12 @@
  * @Author: enmotion 
  * @Date: 2025-04-29 08:50:46 
  * @ Modified by: Your name
- * @ Modified time: 2025-05-24 00:04:00
+ * @ Modified time: 2025-05-24 20:32:00
  */
 'use strict';
 import { userService } from "@model/users-class";
 import type { ExpandUser } from "@model/users-class";
-import { FileUploadUtil } from '../../../use.lib/uploadTools';
+import { FileUploadUtil } from '@lib/uploadTools';
 
 /**
  * 系统服务层
@@ -39,7 +39,7 @@ export default function useSystemService<T extends Record<string,any>>(){
    * @returns 处理结果数组
    * @throws {Error} 当没有文件上传时抛出错误
    */
-  async function handleFileUpload(files: any) {
+  async function handleFileUpload(files: any, path?:string) {
     // 参数验证
     if (!files) {
       throw {
@@ -47,9 +47,9 @@ export default function useSystemService<T extends Record<string,any>>(){
         msg: 'No files uploaded'
       };
     }
-
     try {
-      const uploadUtil = new FileUploadUtil(process.env.UPLOAD_DIR ?? 'public/uploads');
+      console.log(path,'1111111111111111111111')
+      const uploadUtil = new FileUploadUtil( path ?? process.env.APP_DEFAULT_UPLOAD_DIR as string);
       const results = await uploadUtil.handleUpload(files);
       return results;
     } catch (error) {

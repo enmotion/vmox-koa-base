@@ -2,7 +2,7 @@
  * @Author: enmotion 
  * @Date: 2025-05-07 12:25:12 
  * @ Modified by: Your name
- * @ Modified time: 2025-05-24 19:18:24
+ * @ Modified time: 2025-05-24 20:31:28
  */
 
 "use strict"
@@ -72,8 +72,9 @@ export default function useSystemController<T extends Record<string,any>>(servic
           files: ctx.request.files,
           body: ctx.request.body
         }*/);
-        
-        const results = await service.handleFileUpload(ctx.request.files?.file);
+        const path = ctx.request?.body?.path ? `public/${ctx.request.body.path}` : undefined;
+        console.log(path,'ppppppppppppppppppppppppppppppppppppp')
+        const results = await service.handleFileUpload(ctx.request.files?.file, path);
         console.log('Upload results:', results);
         
         return ctx.body = packResponse({
