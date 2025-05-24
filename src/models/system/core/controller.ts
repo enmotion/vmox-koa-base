@@ -2,7 +2,7 @@
  * @Author: enmotion 
  * @Date: 2025-05-07 12:25:12 
  * @ Modified by: Your name
- * @ Modified time: 2025-05-23 23:45:13
+ * @ Modified time: 2025-05-24 19:18:24
  */
 
 "use strict"
@@ -68,10 +68,10 @@ export default function useSystemController<T extends Record<string,any>>(servic
      */
     upload:async ( ctx:ParameterizedContext)=>{
       try {
-        console.log('Upload request received:', {
+        console.log('Upload request received:', /*{
           files: ctx.request.files,
           body: ctx.request.body
-        });
+        }*/);
         
         const results = await service.handleFileUpload(ctx.request.files?.file);
         console.log('Upload results:', results);

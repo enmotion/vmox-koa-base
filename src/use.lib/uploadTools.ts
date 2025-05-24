@@ -74,7 +74,8 @@ export class FileUploadUtil {
   }>> {
     // 确保files是数组形式
     const fileArray = Array.isArray(files) ? files : [files];
-    console.log('Files to process:', fileArray);
+    console.log('#############################################');
+    console.log('Files to process:', fileArray.map(file => file.originalFilename));
     
     const results: Array<{
       filename: string;
@@ -86,7 +87,8 @@ export class FileUploadUtil {
     // 处理每个文件
     for (const file of fileArray) {
       try {
-        console.log('Processing file:', file);
+        console.log('-----------------------------------------');
+        console.log('Processing file:', file.originalFilename);
         
         // 步骤1: 读取文件内容
         const fileBuffer = fs.readFileSync(file.filepath);
@@ -170,6 +172,7 @@ export class FileUploadUtil {
     }
     // 打印所有文件处理完成事件
     console.log(`所有文件处理完成，共处理 ${results.length} 个文件`);
+    console.log('#############################################');
     return results;
   }
 } 
