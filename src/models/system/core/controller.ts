@@ -2,17 +2,17 @@
  * @Author: enmotion 
  * @Date: 2025-05-07 12:25:12 
  * @ Modified by: Your name
- * @ Modified time: 2025-05-24 20:31:28
+ * @ Modified time: 2025-05-27 23:39:52
  */
 
 "use strict"
 // src/model/user/userController.ts
 import { ParameterizedContext } from 'koa';
-import useUserService from './service';
+import useSystemService from './service';
 import { Schema } from 'mongoose';
 import { packResponse } from '@lib/serviceTools';
 
-export default function useSystemController<T extends Record<string,any>>(service:ReturnType<typeof useUserService<T>>){
+export default function useSystemController<T extends Record<string,any>>(service:ReturnType<typeof useSystemService<T>>){
   return {
     /**
      * @swagger
@@ -68,12 +68,12 @@ export default function useSystemController<T extends Record<string,any>>(servic
      */
     upload:async ( ctx:ParameterizedContext)=>{
       try {
-        console.log('Upload request received:', /*{
+        console.log('Upload request received:', {
           files: ctx.request.files,
           body: ctx.request.body
-        }*/);
-        const path = ctx.request?.body?.path ? `public/${ctx.request.body.path}` : undefined;
-        console.log(path,'ppppppppppppppppppppppppppppppppppppp')
+        });
+        const path = ctx.request?.body?.path ? `${ctx.request.body.path}` : undefined;
+        console.log('Upload path:', path);
         const results = await service.handleFileUpload(ctx.request.files?.file, path);
         console.log('Upload results:', results);
         

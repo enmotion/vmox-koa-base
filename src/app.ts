@@ -2,12 +2,13 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-05-23 23:34:22
+ * @ Modified time: 2025-05-26 15:59:50
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
 import StaticServer from "koa-static"; // koa-static 是一个用于提供静态文件服务的 Koa 中间件。
 import KoaWebSocket from "koa-websocket"; // koa-websocket 是一个用于支持 WebSocket 的 Koa 中间件。
+import cors from "@koa/cors";
 import path from "path";
 import Router from "koa-router"; // koa-router 是一个用于处理路由的 Koa 中间件库。
 import KoaBody from 'koa-body'; // koa-body 是一个用于处理 POST 请求体的 Koa 中间件。
@@ -35,6 +36,10 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+// 设置上传目录环境变量
+process.env.APP_DEFAULT_UPLOAD_DIR = 'public/uploads';
+
+app.use(cors())
 // 使用 KoaBody 中间件来解析请求体。可以处理 JSON、表单等格式。但这里没有启用文件上传功能（formidable 配置被注释掉了）。
 app.use(errosMiddleware);
 

@@ -2,7 +2,7 @@
  * @Author: enmotion 
  * @Date: 2025-04-29 08:50:46 
  * @ Modified by: Your name
- * @ Modified time: 2025-05-24 20:32:00
+ * @ Modified time: 2025-05-27 23:40:36
  */
 'use strict';
 import { userService } from "@model/users-class";
@@ -48,8 +48,7 @@ export default function useSystemService<T extends Record<string,any>>(){
       };
     }
     try {
-      console.log(path,'1111111111111111111111')
-      const uploadUtil = new FileUploadUtil( path ?? process.env.APP_DEFAULT_UPLOAD_DIR as string);
+      const uploadUtil = new FileUploadUtil(process.env.APP_DEFAULT_UPLOAD_DIR as string, path);
       const results = await uploadUtil.handleUpload(files);
       return results;
     } catch (error) {
