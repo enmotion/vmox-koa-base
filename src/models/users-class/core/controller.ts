@@ -174,7 +174,7 @@ export class UserControllers<T extends IUser> {
   public save = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const extraData = !!ctx.token?.uid ? { createdUser:ctx.token.uid, createdType:'admin'} : {}
+      const extraData = !body?.uid ? { createdUser:ctx.token.uid, createdType:'admin'} : {updatedUser:ctx.token.uid}
       console.log(R.mergeAll([body,extraData]))
       const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0

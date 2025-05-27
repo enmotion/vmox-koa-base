@@ -21,7 +21,7 @@ export class UserService<T extends IUser> extends CoreService<T>{
   }
   public override save(user:T,options?:SaveOptions):Promise<any>{
     if(!!user.uid){
-      return super.updateOne({uid:user.uid},user, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
+      return super.updateOne({uid:user.uid}, user, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
     }else{
       return super.save(user,options)
     }
