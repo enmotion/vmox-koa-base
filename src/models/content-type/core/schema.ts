@@ -239,26 +239,30 @@ export const tagAssociationSchemaConfig: SchemaDefinition<ITagAssociation> = {
     type: String,
     name: '分类ID',
     required: [true, '分类ID不能为空'],
-    ref: 'Category'
+    ref: 'Category',
+    immutable: true
   },
   tagId: {
     type: String,
     name: '标签ID',
     required: [true, '标签ID不能为空'],
-    ref: 'Tag'
+    ref: 'Tag',
+    immutable: true
   },
   parentAssociationId: {
     type: String,
     name: '父级关联ID',
     sparse: true,
-    ref: 'TagAssociation'
+    ref: 'TagAssociation',
+    immutable: true
   },
   order: {
     type: Number,
     name: '排序值',
     required: [true, '排序值不能为空'],
     min: [0, '排序值不能小于0'],
-    default: 0
+    default: 0,
+    immutable: true
   },
   createdUser: {
     type: String,
@@ -272,15 +276,5 @@ export const tagAssociationSchemaConfig: SchemaDefinition<ITagAssociation> = {
     required: true,
     default: Date.now,
     immutable: true
-  },
-  updatedUser: {
-    type: String,
-    name: '更新者',
-    sparse: true
-  },
-  updatedAt: {
-    type: Date,
-    name: '更新时间',
-    sparse: true
   }
 }; 
