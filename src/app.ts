@@ -17,8 +17,8 @@ import errosMiddleware from "./middlewares/error" // 错误处理 中间件
 import fs from 'fs';
 import { swaggerMiddleware } from './config/swagger';
 
-import { userRouter } from "./models/users-class"
-import { systemRouter } from '@model/system';
+import { userRouter } from "./modules/users-class"
+import { systemRouter } from 'src/modules/system';
 
 // const userModel = userUserModel(mongoose,'/users') // 实例化用户模块
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。

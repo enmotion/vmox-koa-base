@@ -5,8 +5,8 @@
  * @ Modified time: 2025-05-27 23:40:36
  */
 'use strict';
-import { userService } from "@model/users-class";
-import type { ExpandUser } from "@model/users-class";
+import { userService } from "src/modules/users-class";
+import type { ExpandUser } from "src/modules/users-class";
 import { FileUploadUtil } from '@lib/uploadTools';
 
 /**

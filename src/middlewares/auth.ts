@@ -1,7 +1,7 @@
 'use strict';
 import type { ParameterizedContext, Next} from "koa";
 import * as jwt from 'jsonwebtoken'; // import jwt module for token
-import { userService } from "@model/users-class";
+import { userService } from "src/modules/users-class";
 
 async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
   const pathname:string = ctx.URL.pathname;
