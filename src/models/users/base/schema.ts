@@ -21,10 +21,10 @@ import uniqid from "uniqid"
  * @property {'register'|'admin'} createType - 账户创建方式：用户注册/管理员创建
  * @property {string} username - 唯一登录标识，需做前后空格过滤处理
  * @property {string} password - 使用bcrypt加密后的密码哈希值
- * @property {string} [createdUser] - 创建者ID(管理员操作时记录)，系统创建可为空
- * @property {Date} createdAt - 记录创建时间(自动生成，不可修改)
- * @property {string} [updatedUser] - 最后修改人ID(用于操作审计)
- * @property {Date} updatedAt - 最后修改时间(自动更新)
+ * @property {string} [createUser] - 创建者ID(管理员操作时记录)，系统创建可为空
+ * @property {Date} createAt - 记录创建时间(自动生成，不可修改)
+ * @property {string} [updateUser] - 最后修改人ID(用于操作审计)
+ * @property {Date} updateAt - 最后修改时间(自动更新)
  */
 
 export interface IUser{
@@ -72,7 +72,7 @@ export type IUserDocument = Document<IUser>
  *   @property {String} name - 字段显示名称
  *   @property {Array} required - 必填约束及错误提示
  *   @property {Boolean} [select=false] - 查询时默认不返回
- * @property {Object} createdAt - 创建时间配置
+ * @property {Object} createAt - 创建时间配置
  *   @property {Date} type - 字段类型
  *   @property {String} name - 字段显示名称
  *   @property {Function} default - 默认值(Date.now)

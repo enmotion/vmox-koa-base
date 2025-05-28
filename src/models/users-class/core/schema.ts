@@ -30,6 +30,7 @@ import uniqid from "uniqid"
 export interface IUser{
   uid:string; // 用户ID
   createType:"register"|"admin"     // 创建方式 注册|管理员创建
+  isSuper:boolean,                  // 是否为超管
   username: string;                 // 用户名
   password: string;                 // 用户密码
   loginTimes:number;                // 用户登录次数
@@ -125,6 +126,10 @@ export default {
     required:true,
     immutable: true,
     default:"register"
+  },
+  isSuper:{
+    type:Boolean,
+    default:false
   },
   createdUser:{
     type:String,
