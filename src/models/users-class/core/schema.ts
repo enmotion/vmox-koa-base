@@ -18,7 +18,7 @@ import uniqid from "uniqid"
 * 用户实体接口
  * @interface IUser
  * @property {string} uid - 系统生成的唯一ID
- * @property {'register'|'admin'} createType - 账户创建方式：用户注册/管理员创建
+ * @property {'register'|'admin'} createdType - 账户创建方式：用户注册/管理员创建
  * @property {string} username - 唯一登录标识，需做前后空格过滤处理
  * @property {string} password - 使用bcrypt加密后的密码哈希值
  * @property {string} [createdUser] - 创建者ID(管理员操作时记录)，系统创建可为空
@@ -28,18 +28,18 @@ import uniqid from "uniqid"
  */
 
 export interface IUser{
-  uid:string; // 用户ID
-  createType:"register"|"admin"     // 创建方式 注册|管理员创建
-  isSuper:boolean,                  // 是否为超管
-  username: string;                 // 用户名
-  password: string;                 // 用户密码
-  loginTimes:number;                // 用户登录次数
-  powVersion:number;                // 用户权限版本
-  status:boolean;                   // 用户状态
-  createUser:string;                // 创建用户 系统创建时为空
-  createAt: Date;                   // 创建时间
-  updateUser:string;                // 修改用户
-  updateAt: Date;                   // 修改时间
+  uid:string;                        // 用户ID
+  isSuper:boolean,                   // 是否为超管
+  username: string;                  // 用户名
+  password: string;                  // 用户密码
+  loginCount:number;                 // 用户登录次数
+  powVersion:number;                 // 用户权限版本
+  status:boolean;                    // 用户状态
+  createdType:"register"|"admin";    // 创建方式 注册|管理员创建
+  createdUser:string;                // 创建用户 系统创建时为空
+  createdAt: Date;                   // 创建时间
+  updatedUser:string;                // 修改用户
+  updatedAt: Date;                   // 修改时间
 }
 /**
  * 用户文档类型
@@ -58,7 +58,7 @@ export type IUserDocument = Document<IUser>
  *   @property {String} name - 字段显示名称
  *   @property {Array} unique - 唯一性约束及错误提示
  *   @property {Function} default - 默认值生成函数
- * @property {Object} createType - 账户创建类型配置
+ * @property {Object} createdType - 账户创建类型配置
  *   @property {String} type - 字段类型
  *   @property {Array} enum - 限定值范围['register','admin']
  *   @property {Boolean} required - 必填字段约束
@@ -79,8 +79,7 @@ export type IUserDocument = Document<IUser>
  *   @property {Function} default - 默认值(Date.now)
  *   @property {Boolean} [immutable=true] - 禁止修改
  */
-
-export default {
+export const userBaseSchema:SchemaDefinition<IUser> = {
   uid: {
     type: String,
     index:true,
@@ -90,10 +89,10 @@ export default {
   },
   username: {
     type: String,
-    name:'用户名称',
+    name:'用户账号',
     trim: true,  // 自动去除前后空格
-    required: [true, '缺少用户名，创建失败'],
-    unique:  [true, '该用户名已被占用'], // 用户名唯一
+    required: [true, '缺少用户账号，创建失败'],
+    unique:  [true, '该用户账号已被占用'], // 用户名唯一
   },
   status: {
     type: Boolean,
@@ -106,19 +105,24 @@ export default {
     required: [true, '缺少密码创建失败'],
     minlength: [8, '密码长度不能少于8位']
   },
-  loginTimes:{
+  loginCount:{
     type: Number,
     name:'登录次数',
     required:true,
     min: [0, '用户登录次数不可以为负数'],
     default:0,
   },
-  authVersion:{
+  powVersion:{
     type: Number,
     name:'权限版本',
     required:true,
     min: [0, '权限版本不可以为负数'],
     default:0,
+  },
+  
+  isSuper:{
+    type:Boolean,
+    default:false
   },
   createdType:{
     type:String,
@@ -126,10 +130,6 @@ export default {
     required:true,
     immutable: true,
     default:"register"
-  },
-  isSuper:{
-    type:Boolean,
-    default:false
   },
   createdUser:{
     type:String,
@@ -154,4 +154,5 @@ export default {
     name:'更新时间',
     sparse:true,
   },
-} as SchemaDefinition<IUser>;
+}
+export default userBaseSchema

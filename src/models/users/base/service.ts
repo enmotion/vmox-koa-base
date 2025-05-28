@@ -24,7 +24,7 @@ export default function useUserService<T extends IUser>(model:Model<T>){
    * @param user 用户数据对象
    * @returns 创建的文档
    */
-  async function createUser(user:T){
+  async function createdUser(user:T){
     try{
       const data = await new model(user).save();
       return data
@@ -53,7 +53,7 @@ export default function useUserService<T extends IUser>(model:Model<T>){
    * @param user 包含uid和更新字段的用户对象
    * @returns 更新结果
    */
-  async function updateUser(user:T){
+  async function updatedUser(user:T){
     try{
       const data = await model.updateOne({uid:user.uid},{$set:user},{runValidators : true })
       return data
@@ -92,9 +92,9 @@ export default function useUserService<T extends IUser>(model:Model<T>){
 
   // 暴露所有CRUD方法
   return {
-    createUser,
+    createdUser,
     deleteUser,
-    updateUser,
+    updatedUser,
     findOneUser,
     findUser,
   }

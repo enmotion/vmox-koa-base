@@ -12,7 +12,7 @@ import { mongoose } from "src/database";
 import { SchemaDefinition } from "mongoose";
 
 // 扩展模块配置
-import userSchemaConfig from "./expand/schema";
+import expandUserSchema from "./expand/schema";
 import type { ExpandUser } from "./expand/schema";
 
 // 业务逻辑层依赖
@@ -34,7 +34,7 @@ const _routerPrefix = '/users'; // API路由前缀
  * - 创建复合索引(age+avatar)
  */
 export const userSchema = new mongoose.Schema<ExpandUser>(
-  userSchemaConfig as SchemaDefinition<ExpandUser>,
+  expandUserSchema as SchemaDefinition<ExpandUser>,
   { strict: true, timestamps:true }
 );
 // userSchema.index({ age: 1, avatar: 1 }, { unique: true, sparse: true });

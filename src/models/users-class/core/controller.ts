@@ -88,10 +88,10 @@ export class UserControllers<T extends IUser> {
       ) // 请求值与条件的转换
       const data:any = await this.service.findOne(filter as any,undefined,{lean:true})
       if (!!data && !!data.status) {
-        data.loginTimes ++ // 登录次数递增
-        await this.service.updateOne({uid:data.uid},{loginTimes:data.loginTimes})
+        data.loginCount ++ // 登录次数递增
+        await this.service.updateOne({uid:data.uid},{loginCount:data.loginCount})
         const token = JWT.sign(
-          R.pick(["username", "uid","loginTimes",'powVersion'], data),
+          R.pick(["username", "uid","loginCount",'powVersion'], data),
           process.env.APP_JWT_KEY as string,
           { expiresIn: "24h" }
         );
@@ -237,11 +237,14 @@ export class UserControllers<T extends IUser> {
         "username":"username/$regex",
         "nickname":["nickname",(value)=>{console.log(value);return {$regex:value, $options:'i'}}],
         "uid":"uid.$regex",
+        "createdAt":"createdAt/$dateRange",
+        "updatedAt":"updatedAt/$dateRange"
       }
     ) as RootFilterQuery<T>// 请求值与查询条件的转换
     const page = getPagination(query.page) // 分页与排序转换
     const sort = getSort(query.sort) // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
+    console.log(filter)
     const data = await this.service.aggregate(R.mergeAll([filter,{isSuper:{$eq:false}}]), { password:0 }, page, sort, [
       {
         $lookup:{

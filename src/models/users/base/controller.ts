@@ -20,7 +20,7 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
   return {
     register:async (ctx:ParameterizedContext)=>{
       try{
-        const data = fieldsFilter.call(await service.createUser(ctx.request.body as any))
+        const data = fieldsFilter.call(await service.createdUser(ctx.request.body as any))
         ctx.body = packResponse({data})
       }catch(err:any){
         if(!!err.msg && err.data?.errorName === "MongoServerError" && err.data?.errorCode === 11000 && R.keys(err.data?.options).length >= 2){
@@ -34,7 +34,7 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
         const queryData = R.pick(['username','password'],R.mergeAll([{username:null,password:null},ctx.request.body??{}]));
         const data = fieldsFilter.call(await service.findOneUser(queryData as any));
         if(!!data){
-          const token = JWT.sign(R.pick(['username','uid','loginTimes'],data), process.env.APP_JWT_KEY as string, {expiresIn:'24h'});
+          const token = JWT.sign(R.pick(['username','uid','loginCount'],data), process.env.APP_JWT_KEY as string, {expiresIn:'24h'});
           ctx.body = packResponse({
             data:R.mergeDeepRight(data,{token}),
             msg:`欢迎回来 ${ data.nickname ?? data.username }`
@@ -52,8 +52,8 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
     },
     create:async (ctx:ParameterizedContext)=>{
       try{
-        const body = R.mergeAll([ctx.request?.body??{},{createUser:ctx.token.uid,createType:'admin'}])
-        const data = fieldsFilter.call(await service.createUser(body as any))
+        const body = R.mergeAll([ctx.request?.body??{},{createdUser:ctx.token.uid,createdType:'admin'}])
+        const data = fieldsFilter.call(await service.createdUser(body as any))
         return ctx.body = packResponse({data})
       }catch(err){
         throw err
@@ -63,7 +63,7 @@ export default function useUserController<T extends IUser>(service:ReturnType<ty
       return service.deleteUser(ctx.request.body)
     },
     update:async (ctx:ParameterizedContext)=>{
-      return service.updateUser(ctx.request.body)
+      return service.updatedUser(ctx.request.body)
     },
     find:async (ctx:ParameterizedContext)=>{
       console.log(ctx.query)

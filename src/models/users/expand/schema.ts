@@ -13,11 +13,11 @@ export interface ExpandUser extends IUser {
   updatedAt: Date; // 修改时间
 }
 const user:Partial<ExpandUser> ={
-  loginTimes:0,
-  createUser:"",
-  createAt:new Date(),
-  updateUser:"",
-  updateAt:new Date(),
+  loginCount:0,
+  createdUser:"",
+  createdAt:new Date(),
+  updatedUser:"",
+  updatedAt:new Date(),
 }
 export type ExpandUserDocument = Document<ExpandUser>
 

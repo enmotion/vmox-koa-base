@@ -12,14 +12,13 @@ export interface ExpandUser extends IUser {
   phone: object; // 用户电话
   email: string; // 用户邮箱
   age: number,
-  updatedAt: Date; // 修改时间
 }
 
 export type ExpandUserDocument = Document<ExpandUser>
 
 // 定义用户模型的结构
-export default R.mergeAll([
-  baseUserSchema as SchemaDefinition<IUser>,
+export const userExpandSchema:SchemaDefinition<ExpandUser> = R.mergeAll([
+  baseUserSchema,
   {
     nickname:{
       type:String,
@@ -57,4 +56,6 @@ export default R.mergeAll([
       min:[0,'不能小于0'],
     },
   } as SchemaDefinition<ExpandUser>
-]) as SchemaDefinition<ExpandUser>
+]);
+
+export default userExpandSchema

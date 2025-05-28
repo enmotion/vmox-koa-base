@@ -98,11 +98,11 @@ export function packResponse(res:Partial<{code:number,data:any,msg:string}>){
 
 // 定义Mongoose支持的查询操作符类型（包含比较/逻辑/范围等操作符）
 export type MongooseOperators = 
-  '$eq' | '$ne' | '$not' |        // 等于/不等于/逻辑非
-  '$gt' | '$gte' | '$lt' | '$lte' | // 大于/大于等于/小于/小于等于
-  '$range' |                      // 自定义范围操作符（非原生MongoDB操作符）
-  '$in' | '$nin' |                // 包含/不包含于数组
-  '$regex' | '$exists'            // 正则匹配/字段存在性检查
+  '$eq' | '$ne' | '$not' |            // 等于/不等于/逻辑非
+  '$gt' | '$gte' | '$lt' | '$lte' |   // 大于/大于等于/小于/小于等于
+  '$range' | '$dateRange' |           // 自定义范围操作符（非原生MongoDB操作符）
+  '$in' | '$nin' |                    // 包含/不包含于数组
+  '$regex' | '$exists'                // 正则匹配/字段存在性检查
 // 实际已经扩展为全部方法了
 
 export type MongooseFilterMapping = Record<string, string|[string,(value:any)=>any]>
@@ -162,6 +162,19 @@ export function getFilter(
         value[0] !== undefined && (rangeValue['$gte'] = value[0]);
         // 如果数组的第二项存在，则将其作为 $lte（小于等于）条件添加到范围查询对象中
         value[1] !== undefined && (rangeValue['$lte'] = value[1]);
+        // 将处理后的范围查询对象赋值给 value
+        value = rangeValue;
+        // 移除目标路径数组的最后一项，即移除 $range 标记
+        targetPaths.pop();
+      }
+      // 对日期范围进行转换
+      if (Array.isArray(value) && targetPaths[targetPaths.length - 1] === '$dateRange') {
+        // 初始化一个空对象，用于存储转换后的范围查询条件
+        const rangeValue: Record<string, any> = {};
+        // 如果数组的第一项存在，则将其作为 $gte（大于等于）条件添加到范围查询对象中
+        value[0] !== undefined && (rangeValue['$gte'] = new Date(value[0]));
+        // 如果数组的第二项存在，则将其作为 $lte（小于等于）条件添加到范围查询对象中
+        value[1] !== undefined && (rangeValue['$lte'] = new Date(value[1]));
         // 将处理后的范围查询对象赋值给 value
         value = rangeValue;
         // 移除目标路径数组的最后一项，即移除 $range 标记

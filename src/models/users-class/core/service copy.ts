@@ -68,7 +68,7 @@ export class UserService<T extends IUser> {
     try {
       const data = await this.model.updateMany(
         filter,
-        { $set: R.omit(['uid','createAt','createUser','createType'],update) },
+        { $set: R.omit(['uid','createdAt','createdUser','createdType'],update) },
         operation
       );
       return data;
@@ -86,7 +86,7 @@ export class UserService<T extends IUser> {
     try {
       const data = await this.model.updateOne(
         filter,
-        R.omit(['uid','createAt','createUser','createType'],update),
+        R.omit(['uid','createdAt','createdUser','createdType'],update),
         operation
       );
       return data;

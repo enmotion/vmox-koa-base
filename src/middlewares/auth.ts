@@ -13,7 +13,7 @@ async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
       decoded = jwt.verify(token, process.env.APP_JWT_KEY as string) as any; // 验证 token
       ctx.token = decoded;
       const currentUser = await userService.findOne({uid:ctx.token?.uid})
-      if(currentUser?.loginTimes && ctx.token.loginTimes < currentUser?.loginTimes){
+      if(currentUser?.loginCount && ctx.token.loginCount < currentUser?.loginCount){
         throw {
           code: 401,
           msg: '该账号已在别处登录',

@@ -18,27 +18,27 @@ import uniqid from "uniqid"
 * 用户实体接口
  * @interface IUser
  * @property {string} uid - 系统生成的唯一ID
- * @property {'register'|'admin'} createType - 账户创建方式：用户注册/管理员创建
+ * @property {'register'|'admin'} createdType - 账户创建方式：用户注册/管理员创建
  * @property {string} username - 唯一登录标识，需做前后空格过滤处理
  * @property {string} password - 使用bcrypt加密后的密码哈希值
- * @property {string} [createUser] - 创建者ID(管理员操作时记录)，系统创建可为空
- * @property {Date} createAt - 记录创建时间(自动生成，不可修改)
- * @property {string} [updateUser] - 最后修改人ID(用于操作审计)
- * @property {Date} updateAt - 最后修改时间(自动更新)
+ * @property {string} [createdUser] - 创建者ID(管理员操作时记录)，系统创建可为空
+ * @property {Date} createdAt - 记录创建时间(自动生成，不可修改)
+ * @property {string} [updatedUser] - 最后修改人ID(用于操作审计)
+ * @property {Date} updatedAt - 最后修改时间(自动更新)
  */
 
 export interface IUser{
   uid:string; // 用户ID
-  createType:"register"|"admin";    // 创建方式 注册|管理员创建
+  createdType:"register"|"admin";    // 创建方式 注册|管理员创建
   username: string;                 // 用户名
   password: string;                 // 用户密码
-  loginTimes:number;                // 用户登录次数
+  loginCount:number;                // 用户登录次数
   powVersion:number;                // 用户权限版本
   powers:string[];                  // 用户权限点
-  createUser:string;                // 创建用户 系统创建时为空
-  createAt: Date;                   // 创建时间
-  updateUser:string;                // 修改用户
-  updateAt: Date;                   // 修改时间
+  createdUser:string;                // 创建用户 系统创建时为空
+  createdAt: Date;                   // 创建时间
+  updatedUser:string;                // 修改用户
+  updatedAt: Date;                   // 修改时间
 }
 /**
  * 用户文档类型
@@ -57,7 +57,7 @@ export type IUserDocument = Document<IUser>
  *   @property {String} name - 字段显示名称
  *   @property {Array} unique - 唯一性约束及错误提示
  *   @property {Function} default - 默认值生成函数
- * @property {Object} createType - 账户创建类型配置
+ * @property {Object} createdType - 账户创建类型配置
  *   @property {String} type - 字段类型
  *   @property {Array} enum - 限定值范围['register','admin']
  *   @property {Boolean} required - 必填字段约束
@@ -72,7 +72,7 @@ export type IUserDocument = Document<IUser>
  *   @property {String} name - 字段显示名称
  *   @property {Array} required - 必填约束及错误提示
  *   @property {Boolean} [select=false] - 查询时默认不返回
- * @property {Object} createAt - 创建时间配置
+ * @property {Object} createdAt - 创建时间配置
  *   @property {Date} type - 字段类型
  *   @property {String} name - 字段显示名称
  *   @property {Function} default - 默认值(Date.now)
@@ -87,7 +87,7 @@ export default {
     unique: [true, '该用户ID已被占用'],
     default:()=>uniqid()
   },
-  createType:{
+  createdType:{
     type:String,
     enum:["register","admin"],
     required:true,
@@ -106,7 +106,7 @@ export default {
     required: [true, '缺少密码创建失败'],
     minlength: [8, '密码长度不能少于8位']
   },
-  loginTimes:{
+  loginCount:{
     type: Number,
     name:'登录次数',
     min: [0, '用户登录次数不可以为负数'],
@@ -119,24 +119,24 @@ export default {
     min: [0, '权限版本不可为0'],
     default:0,
   },
-  createUser:{
+  createdUser:{
     type:String,
     name:'创建用户',
     sparse:true,
   },
-  createAt: {
+  createdAt: {
     type: Date,
     name:'创建时间',
     required:true,
     default: Date.now, // 默认创建时间为当前时间
     immutable: true,
   },
-  updateUser:{
+  updatedUser:{
     type:String,
     name:'更新用户',
     sparse:true,
   },
-  updateAt: {
+  updatedAt: {
     type: Date,
     name:'更新时间',
     default: Date.now, // 默认更新时间为创建时间

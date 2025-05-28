@@ -55,6 +55,6 @@ export type ExpandUser = {
   uid: string;
   username: string;
   email: string;
-  loginTimes: number;
+  loginCount: number;
   // ... 其他属性 ...
 };
