@@ -89,7 +89,7 @@ export class UserControllers<T extends IUser> {
       const data:any = await this.service.findOne(filter as any,undefined,{lean:true})
       if (!!data && !!data.status) {
         data.loginCount ++ // 登录次数递增
-        await this.service.updateOne({uid:data.uid},{loginCount:data.loginCount})
+        await this.service.updateOne({uid:data.uid},{loginCount:data.loginCount},{timestamps:false})
         const token = JWT.sign(
           R.pick(["username", "uid","loginCount",'powVersion'], data),
           process.env.APP_JWT_KEY as string,
@@ -244,8 +244,7 @@ export class UserControllers<T extends IUser> {
     const page = getPagination(query.page) // 分页与排序转换
     const sort = getSort(query.sort) // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
-    console.log(filter)
-    const data = await this.service.aggregate(R.mergeAll([filter,{isSuper:{$eq:false}}]), { password:0 }, page, sort, [
+    const data = await this.service.aggregate(R.mergeAll([filter,{isSuper:{$eq:false}}]), { password:0,_id:0,__v:0, isSuper:0 }, page, sort, [
       {
         $lookup:{
           from:this.service.model.collection.name,

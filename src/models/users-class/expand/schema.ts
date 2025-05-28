@@ -1,23 +1,24 @@
 'use strict';
 // src/model/user/User.ts
 import * as R from "ramda";
-import { Document, SchemaDefinition } from 'mongoose';
+import { Document, Schema, SchemaDefinition } from 'mongoose';
 import baseUserSchema from "../core/schema";
 import type { IUser } from "../core/schema";
 // 定义用户接口
 // 定义用户接口
 export interface ExpandUser extends IUser {
-  nickname: string, // 用户昵称
-  avatar: string; // 用户头像
-  phone: object; // 用户电话
-  email: string; // 用户邮箱
-  age: number,
+  nickname: string,   // 用户昵称
+  avatar: string;     // 用户头像
+  phone: object;      // 用户电话
+  email: string;      // 用户邮箱
+  birth: Date,        // 用户生日
+  age?: number;       // 计算属性：年龄
 }
 
 export type ExpandUserDocument = Document<ExpandUser>
 
 // 定义用户模型的结构
-export const userExpandSchema:SchemaDefinition<ExpandUser> = R.mergeAll([
+const userExpandSchema: SchemaDefinition<ExpandUser> = R.mergeAll([
   baseUserSchema,
   {
     nickname:{
@@ -49,11 +50,10 @@ export const userExpandSchema:SchemaDefinition<ExpandUser> = R.mergeAll([
       sparse: true, // 稀疏
       unique: [true,'该邮箱地址已被占用'], // 唯一
     },
-    age:{
-      type:Number,
-      sparse:true,
-      name:'用户年龄',
-      min:[0,'不能小于0'],
+    birth:{
+      type: Date,
+      name:'用户生日',
+      sparse: true, // 稀疏
     },
   } as SchemaDefinition<ExpandUser>
 ]);
