@@ -15,7 +15,7 @@ import { CategoryService, TagService, TagAssociationService } from './core/servi
 import { CategoryController, TagController, TagAssociationController } from './core/controller';
 
 // 路由前缀配置
-const _routerPrefix = '/api/content-type';
+const _routerPrefix = '/content-type';
 
 // 创建模型
 const categoryModel = mongoose.model<ICategory>('Category', new Schema<ICategory>(categorySchemaConfig));
@@ -50,7 +50,9 @@ export const categoryRouter = mappingControllersAndRouter<CategoryController<ICa
     { routerPath: '/', method: 'put', handlerName: 'update' },
     { routerPath: '/', method: 'delete', handlerName: 'delete' },
     { routerPath: '/', method: 'get', handlerName: 'find' },
-    { routerPath: '/one', method: 'get', handlerName: 'findOne' }
+    { routerPath: '/one', method: 'get', handlerName: 'findOne' },
+    { routerPath: '/pub/stream', method: 'post', handlerName: 'stream' },
+    { routerPath: '/pub/eventStream', method: 'get', handlerName: 'eventStream' }
   ]
 );
 
