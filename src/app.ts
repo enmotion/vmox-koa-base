@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-06-06 15:13:21
+ * @ Modified time: 2025-06-06 23:56:42
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -19,8 +19,8 @@ import fs from 'fs';
 import { swaggerMiddleware } from './config/swagger';
 
 import { userRouter } from "./modules/users-class"
-import { systemRouter } from 'src/modules/system';
-import { categoryRouter, tagRouter, tagAssociationRouter } from '@model/content-type';
+import { systemRouter } from "./modules/system";
+import { categoryRouter, tagRouter, tagAssociationRouter } from './modules/content-type';
 
 // const userModel = userUserModel(mongoose,'/users') // 实例化用户模块
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。

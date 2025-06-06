@@ -16,7 +16,6 @@ import uniqid from "uniqid";
 /**
  * 分类实体接口
  * @interface ICategory
- * @property {string} _id - 系统生成的唯一ID
  * @property {string} key - 分类唯一标识
  * @property {string} name - 分类名称
  * @property {string} [description] - 分类描述
@@ -28,7 +27,6 @@ import uniqid from "uniqid";
  * @property {Date} updatedAt - 更新时间
  */
 export interface ICategory {
-  _id: string;
   key: string;
   name: string;
   description?: string;
@@ -43,7 +41,6 @@ export interface ICategory {
 /**
  * 标签实体接口
  * @interface ITag
- * @property {string} _id - 系统生成的唯一ID
  * @property {string} key - 标签唯一标识
  * @property {string} name - 标签名称
  * @property {string} [description] - 标签描述
@@ -55,7 +52,6 @@ export interface ICategory {
  * @property {Date} updatedAt - 更新时间
  */
 export interface ITag {
-  _id: string;
   key: string;
   name: string;
   description?: string;
@@ -70,7 +66,6 @@ export interface ITag {
 /**
  * 标签关联实体接口
  * @interface ITagAssociation
- * @property {string} _id - 系统生成的唯一ID
  * @property {string} categoryId - 分类ID
  * @property {string} tagId - 标签ID
  * @property {string} [parentAssociationId] - 父级关联ID
@@ -81,7 +76,6 @@ export interface ITag {
  * @property {Date} updatedAt - 更新时间
  */
 export interface ITagAssociation {
-  _id: string;
   categoryId: string;
   tagId: string;
   parentAssociationId?: string;
@@ -96,13 +90,6 @@ export interface ITagAssociation {
  * 分类Schema配置
  */
 export const categorySchemaConfig: SchemaDefinition<ICategory> = {
-  _id: {
-    type: String,
-    index: true,
-    name: '分类ID',
-    unique: [true, '该分类ID已被占用'],
-    default: () => uniqid()
-  },
   key: {
     type: String,
     name: '分类标识',
@@ -162,13 +149,6 @@ export const categorySchemaConfig: SchemaDefinition<ICategory> = {
  * 标签Schema配置
  */
 export const tagSchemaConfig: SchemaDefinition<ITag> = {
-  _id: {
-    type: String,
-    index: true,
-    name: '标签ID',
-    unique: [true, '该标签ID已被占用'],
-    default: () => uniqid()
-  },
   key: {
     type: String,
     name: '标签标识',
@@ -228,13 +208,6 @@ export const tagSchemaConfig: SchemaDefinition<ITag> = {
  * 标签关联Schema配置
  */
 export const tagAssociationSchemaConfig: SchemaDefinition<ITagAssociation> = {
-  _id: {
-    type: String,
-    index: true,
-    name: '关联ID',
-    unique: [true, '该关联ID已被占用'],
-    default: () => uniqid()
-  },
   categoryId: {
     type: String,
     name: '分类ID',

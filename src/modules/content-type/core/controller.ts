@@ -25,7 +25,6 @@ export class CategoryController<T extends ICategory> {
     this.schema = schema;
   }
   public eventStream =  async(ctx:ParameterizedContext)=>{
-    console.log(ctx,11111)
     ctx.respond = false;
     ctx.status = 200
     // 设置响应头
@@ -52,13 +51,14 @@ export class CategoryController<T extends ICategory> {
     // });
   }
   public stream = async(ctx:ParameterizedContext)=>{
+    console.log(ctx.request.headers['content-type'])
     // 设置响应头
     try{
       console.log(ctx.request.headers['content-type']);
       const streamMessage = `在使用 Koa 框架处理 HTTP 请求时，如果你遇到返回404错误但数据能够正常接收的情况，这通常表明你的请求路径没有被正确匹配到任何一个路由处理器（route handler）。下面是一些可能的原因和解决方法...`;
 
       switch (ctx.request.headers['content-type']) {
-        case 'text/plain':
+        case 'application/json;charset=UTF-8, text/plain':
           ctx.respond = false;
           ctx.status = 200;
           console.log("text/plain");
@@ -113,7 +113,7 @@ export class CategoryController<T extends ICategory> {
           //   }
           // }, 1000);
 
-        case 'application/json':
+        case 'application/json;charset=UTF-8, application/json':
           console.log("application/json");
           ctx.set('Content-Type', 'application/json');
           ctx.body = packResponse({ code: 200, msg: '成功', data: { message: streamMessage } });
