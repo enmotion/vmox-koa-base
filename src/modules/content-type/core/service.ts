@@ -17,7 +17,8 @@ export class CategoryService<T extends ICategory> extends CoreService<T> {
   }
 
   public override async save(category: T, options?: SaveOptions): Promise<any> {
-    if (category.key) {
+    console.log(category,1111)
+    if (await super.findOne({ key: category.key })) {
       return super.updateOne({ key: category.key }, category);
     }
     return super.save(category, options);

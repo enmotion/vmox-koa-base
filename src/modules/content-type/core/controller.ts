@@ -9,9 +9,10 @@
 
 import * as R from 'ramda';
 import { ParameterizedContext } from 'koa';
-import { Schema } from 'mongoose';
+import { Schema, RootFilterQuery } from 'mongoose';
 import { CategoryService } from './service';
 import { TagService } from './service';
+import { getPagination, getSort } from "@lib/serviceTools";
 import { TagAssociationService } from './service';
 import { ICategory, ITag, ITagAssociation } from './schema';
 import { packResponse, fieldsFilter, getFilter } from '@lib/serviceTools';
@@ -26,6 +27,7 @@ export class CategoryController<T extends ICategory> {
   }
   public create = async (ctx: ParameterizedContext) => {
     try {
+      console.log(ctx.request.body)
       const body = R.mergeAll([
         ctx.request?.body ?? {},
         { createdUser: ctx.token.uid, createdType: 'admin' }
@@ -91,10 +93,13 @@ export class CategoryController<T extends ICategory> {
   };
 
   public find = async (ctx: ParameterizedContext) => {
-    const query: Record<string, any> = ctx.query;
+    console.log(ctx.request.body,'111111')
+    const query: Record<string, any> = ctx.request.body;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query);
-      const data = await this.service.find(filter);
+       const filter = getFilter(R.omit(['page','sort'],query));
+      const page = getPagination(query.page) // 分页与排序转换
+      const sort = getSort(query.sort) // 分页与排序转换
+      const data = await this.service.find(filter,page,sort);
       ctx.body = packResponse({
         code: !R.isEmpty(data) ? 200 : 400,
         msg: !R.isEmpty(data) ? '操作成功' : '未找到分类',
@@ -104,6 +109,62 @@ export class CategoryController<T extends ICategory> {
       ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
     }
   };
+  public aggregate = async (ctx: ParameterizedContext)=>{
+      console.log(ctx.request.body)
+      const query:Record<string,any> = ctx.request.body??{};
+      const filter = getFilter(
+        R.omit(['page','sort'],query),        
+      ) as RootFilterQuery<T>// 请求值与查询条件的转换
+      const page = getPagination(query.page) // 分页与排序转换
+      const sort = getSort(query.sort) // 分页与排序转换
+      // 查询模式下，超级管理员在列表中不可见
+      const data = await this.service.aggregate(R.mergeAll([filter]), { password:0,_id:0,__v:0, isSuper:0 }, page, sort, [
+        {
+          $lookup:{
+            from:"user-collections",
+            localField: 'createdUser', 
+            foreignField: 'uid',    // 目标集合的关联字段
+            as: 'createdUserInfo',       // 存储匹配结果的临时字段
+            pipeline:[
+              {$project:{username:1,nickname:1}}
+            ]
+          },
+        },
+        { 
+          $unwind: {
+            path: '$createdUserInfo',
+            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+          } 
+        },
+        {
+          $lookup:{
+            from:"user-collections",
+            localField: 'updatedUser', 
+            foreignField: 'uid',    // 目标集合的关联字段
+            as: 'updatedUserInfo',       // 存储匹配结果的临时字段
+            pipeline:[
+              {$project:{username:1,nickname:1}}
+            ]
+          },
+        },
+        { 
+          $unwind: {
+            path: '$updatedUserInfo',
+            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+          } 
+        },
+        {
+          $addFields: {
+            createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+          }
+        },
+      ])
+      ctx.body = packResponse({
+        code:!R.isEmpty(data[0].items)? 200 : 400, 
+        msg:!R.isEmpty(data[0].items)?'操作成功':'未找到符合条件的用户',
+        data:data[0]
+      })
+    }
 }
 
 export class TagController<T extends ITag> {

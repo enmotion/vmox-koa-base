@@ -49,8 +49,8 @@ export const categoryRouter = mappingControllersAndRouter<CategoryController<ICa
     { routerPath: '/', method: 'post', handlerName: 'create' },
     { routerPath: '/', method: 'put', handlerName: 'update' },
     { routerPath: '/', method: 'delete', handlerName: 'delete' },
-    { routerPath: '/', method: 'get', handlerName: 'find' },
-    { routerPath: '/one', method: 'get', handlerName: 'findOne' },
+    { routerPath: '/find', method: 'post', handlerName: 'aggregate' },
+    { routerPath: '/', method: 'get', handlerName: 'findOne' },
   ]
 );
 
