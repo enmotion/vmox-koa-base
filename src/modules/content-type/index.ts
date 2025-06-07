@@ -51,8 +51,6 @@ export const categoryRouter = mappingControllersAndRouter<CategoryController<ICa
     { routerPath: '/', method: 'delete', handlerName: 'delete' },
     { routerPath: '/', method: 'get', handlerName: 'find' },
     { routerPath: '/one', method: 'get', handlerName: 'findOne' },
-    { routerPath: '/pub/stream', method: 'post', handlerName: 'stream' },
-    { routerPath: '/pub/eventStream', method: 'get', handlerName: 'eventStream' }
   ]
 );
 
