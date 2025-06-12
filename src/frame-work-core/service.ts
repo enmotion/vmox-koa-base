@@ -518,7 +518,7 @@ export class CoreService<T extends Record<string, any>> {
       // console.log(JSON.stringify(usePipeLine))
       // console.log('------------------------------------------')
       const data = await this.model.aggregate(usePipeLine as any, options)
-      return data
+      return data.map(item=>R.mergeAll([{total:0},item]))
     } catch (err) {
       throw mongoDBErrorTransform(err, this.model.schema)
     }
