@@ -220,7 +220,7 @@ export class UserControllers<T extends IUser> {
     const page = getPagination(query.page) // 分页与排序转换
     const sort = getSort(query.sort) // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
-    const data = await this.service.find(R.mergeAll([filter,{isSuper:{$eq:false}}]), page, sort,{password:0} );
+    const data = await this.service.find(R.mergeAll([filter,{super:{$eq:0}}]), page, sort,{password:0} );
 
     ctx.body = packResponse({
       code:!R.isEmpty(data.items)? 200 : 400, 
@@ -244,7 +244,7 @@ export class UserControllers<T extends IUser> {
     const page = getPagination(query.page) // 分页与排序转换
     const sort = getSort(query.sort) // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
-    const data = await this.service.aggregate(R.mergeAll([filter,{isSuper:{$eq:false}}]), { password:0,_id:0,__v:0, isSuper:0 }, page, sort, [
+    const data = await this.service.aggregate(R.mergeAll([filter,{super:{$eq:0}}]), { password:0,_id:0,__v:0 }, page, sort, [
       {
         $lookup:{
           from:this.service.model.collection.name,
