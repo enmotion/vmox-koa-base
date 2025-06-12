@@ -30,6 +30,7 @@ export interface ICategory {
   key: string;
   name: string;
   description?: string;
+  level:'system'|'custome'
   status: boolean;
   order: number;
   createdUser?: string;
