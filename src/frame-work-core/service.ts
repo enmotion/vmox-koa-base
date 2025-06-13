@@ -493,7 +493,6 @@ export class CoreService<T extends Record<string, any>> {
     options?: AggregateOptions
   ) {
     try {
-      console.log(filter,'serve')
       const facet: Record<string, any> = {
         items: [],
         total: [{ $count: 'count' }]

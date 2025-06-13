@@ -29,11 +29,9 @@ export type SchemaOption = Omit<Record<string,any>,'name'|'key'>&{name:string,ke
  */
 export function mongoDBErrorTransform(err:any,schema:Schema){
   try{
-    console.log(err,'mongoDBErrorTransform')
     // 初始化响应结构
     const res : RecordResponse<Record<string,any>> = { code:400, data:{ errorName:err.name, errorCode:err.code ?? err.cause?.code } }
     res.data['options'] = {} // 存储字段配置信息
-
     // 处理 MongoDB 原生错误
     if(['MongoServerError','MongooseError'].includes(res.data?.errorName)){
       // 提取冲突字段的 Schema 配置
@@ -50,7 +48,6 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
       });
       res.msg = String(err).split(":")[2].replace(/^\s/g,'');
     }
-    console.log(res,err,'511111')
     return res;
   }catch(error){
     console.log("-----")
@@ -243,7 +240,6 @@ const pageSchemaZod = z.object({
 export function getPagination(page: unknown, startWidth1:boolean = true):Page | null {
   // 使用safeParse进行验证（不会抛出异常）
   const result = pageSchemaZod.safeParse(page);
-  console.log(result)
   // 验证成功返回原始数据，失败返回undefined
   // 注意：这里返回的是原始输入data 而非result.data，保持与历史版本兼容
   if(result.success){

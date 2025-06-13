@@ -126,7 +126,6 @@ export class UserControllers<T extends IUser> {
   };
   // 删除操作
   public deleteMany = async (ctx: ParameterizedContext) => {
-    console.log()
     if(!!ctx.query?.uid && typeof ctx.query.uid === 'string'){
       const uid  = ctx.query.uid.split(",")
       const data = await this.service.deleteMany({uid:{$in:uid}})
@@ -175,7 +174,6 @@ export class UserControllers<T extends IUser> {
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?.uid ? { createdUser:ctx.visitor.uid, createdType:'admin'} : {updatedUser:ctx.visitor.uid}
-      console.log(R.mergeAll([body,extraData]))
       const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
       ctx.body = packResponse({
@@ -292,7 +290,6 @@ export class UserControllers<T extends IUser> {
     })
   }
   public uniqValidate = async (ctx: ParameterizedContext)=>{
-    console.log("uniq",ctx.request.body)
     const query:Record<string,any> = ctx.request.body??{};
     const filter = getFilter(
       R.omit(['page','sort'],query),
@@ -301,7 +298,6 @@ export class UserControllers<T extends IUser> {
       }
     ) as RootFilterQuery<T>// 请求值与查询条件的转换
     // 查询模式下，超级管理员在列表中不可见
-    console.log(filter,query,'11111')
     const data = await this.service.aggregate(filter, { password:0,_id:0,__v:0 }, null, null, [
       {
         $lookup:{

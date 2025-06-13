@@ -27,7 +27,6 @@ export class CategoryController<T extends ICategory> {
   }
   public create = async (ctx: ParameterizedContext) => {
     try {
-      console.log(ctx.request.body)
       const body = R.mergeAll([
         ctx.request?.body ?? {},
         { createdUser: ctx.visitor.uid, createdType: 'admin' }
@@ -43,7 +42,6 @@ export class CategoryController<T extends ICategory> {
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
-      console.log(R.mergeAll([body,extraData]))
       const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
       ctx.body = packResponse({
@@ -56,7 +54,6 @@ export class CategoryController<T extends ICategory> {
     }
   }
   public update = async (ctx: ParameterizedContext) => {
-    console.log(ctx.request.body)
     const body = R.clone(ctx.request?.body) as Record<string, any>;
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getFilter(body, { '_ids': '_ids' });
@@ -79,7 +76,6 @@ export class CategoryController<T extends ICategory> {
   };
 
   public delete = async (ctx: ParameterizedContext) => {
-    console.log(ctx.query)
     if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
       const _ids = ctx.query._id.split(',');
       const data = await this.service.deleteMany({ _id: { $in: _ids } });
@@ -200,7 +196,6 @@ export class TagController<T extends ITag> {
   }
   public create = async (ctx: ParameterizedContext) => {
     try {
-      console.log(ctx.request.body)
       const body = R.mergeAll([
         ctx.request?.body ?? {},
         { createdUser: ctx.visitor.uid, createdType: 'admin' }
@@ -216,7 +211,6 @@ export class TagController<T extends ITag> {
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
-      console.log(R.mergeAll([body,extraData]))
       const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
       ctx.body = packResponse({
@@ -229,7 +223,6 @@ export class TagController<T extends ITag> {
     }
   }
   public update = async (ctx: ParameterizedContext) => {
-    console.log(ctx.request.body)
     const body = R.clone(ctx.request?.body) as Record<string, any>;
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getFilter(body, { '_ids': '_ids' });
@@ -251,8 +244,7 @@ export class TagController<T extends ITag> {
     }
   };
 
-  public delete = async (ctx: ParameterizedContext) => {
-    console.log(ctx.query)
+  public delete = async (ctx: ParameterizedContext) => {    
     if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
       const _ids = ctx.query._id.split(',');
       const data = await this.service.deleteMany({ _id: { $in: _ids } });
