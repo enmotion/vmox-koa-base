@@ -116,7 +116,7 @@ export class UserControllers<T extends IUser> {
     try {
       const body = R.mergeAll([
         ctx.request?.body ?? {},
-        { createdUser: ctx.token.uid, createdType: "admin" },
+        { createdUser: ctx.visitor.uid, createdType: "admin" },
       ]);
       const data = fieldsFilter.call(await this.service.save(body as any)); // 返回值 字段过滤
       return (ctx.body = packResponse({ data }));
@@ -143,7 +143,7 @@ export class UserControllers<T extends IUser> {
     const body = R.clone(ctx.request?.body) as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
       const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
-      body.updatedUser = ctx.token.uid;
+      body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
       const data = await this.service.updateMany({uid:{$in:filter.uid as string[]}},R.omit(['uid'],body));
       ctx.body = packResponse({ 
@@ -159,7 +159,7 @@ export class UserControllers<T extends IUser> {
     const body = R.clone(ctx.request?.body) as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
       const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
-      body.updatedUser = ctx.token.uid;
+      body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
       const data = await this.service.updateOne({uid:{$in:filter.uid as string[]}},R.omit(['uid'],body));
       ctx.body = packResponse({ 
@@ -174,7 +174,7 @@ export class UserControllers<T extends IUser> {
   public save = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const extraData = !body?.uid ? { createdUser:ctx.token.uid, createdType:'admin'} : {updatedUser:ctx.token.uid}
+      const extraData = !body?.uid ? { createdUser:ctx.visitor.uid, createdType:'admin'} : {updatedUser:ctx.visitor.uid}
       console.log(R.mergeAll([body,extraData]))
       const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
