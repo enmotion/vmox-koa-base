@@ -85,7 +85,8 @@ export const userRouter = mappingControllersAndRouter<ExpandUserControllers<Expa
     { routerPath: '/update', method: 'put', handlerName: 'updateOne' },
     { routerPath: '/updateMany', method: 'put', handlerName: 'updateMany' },
     { routerPath: '/findOne', method: 'get', handlerName: 'findOne' },
-    { routerPath: '/find', method: 'post', handlerName: 'aggregate' }
+    { routerPath: '/find', method: 'post', handlerName: 'aggregate' },
+    { routerPath: '/uniq', method: 'post', handlerName: 'uniqValidate' }
   ]
 );
 

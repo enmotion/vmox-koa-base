@@ -30,7 +30,7 @@ export interface ICategory {
   key: string;
   name: string;
   description?: string;
-  level:'system'|'custome'
+  super:0|1
   status: boolean;
   order: number;
   createdUser?: string;
@@ -103,6 +103,12 @@ export const categorySchemaConfig: SchemaDefinition<ICategory> = {
     name: '分类名称',
     required: [true, '分类名称不能为空'],
     trim: true
+  },
+  super:{
+    type:Number,
+    enum:[0,1],
+    required:true,
+    default:0
   },
   description: {
     type: String,

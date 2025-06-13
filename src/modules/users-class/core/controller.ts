@@ -235,7 +235,7 @@ export class UserControllers<T extends IUser> {
       R.omit(['page','sort'],query),
       {
         "username":"username/$regex",
-        "nickname":["nickname",(value)=>{console.log(value);return {$regex:value, $options:'i'}}],
+        "nickname":["nickname",(value)=>{ return {$regex:value, $options:'i'}}],
         "uid":"uid.$regex",
         "createdAt":"createdAt/$dateRange",
         "updatedAt":"updatedAt/$dateRange"
@@ -245,6 +245,64 @@ export class UserControllers<T extends IUser> {
     const sort = getSort(query.sort) // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
     const data = await this.service.aggregate(R.mergeAll([filter,{super:{$eq:0}}]), { password:0,_id:0,__v:0 }, page, sort, [
+      {
+        $lookup:{
+          from:this.service.model.collection.name,
+          localField: 'createdUser', 
+          foreignField: 'uid',    // 目标集合的关联字段
+          as: 'createdUserInfo',       // 存储匹配结果的临时字段
+          pipeline:[
+            {$project:{username:1,nickname:1}}
+          ]
+        },
+      },
+      { 
+        $unwind: {
+          path: '$createdUserInfo',
+          preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+        } 
+      },
+      {
+        $lookup:{
+          from:this.service.model.collection.name,
+          localField: 'updatedUser', 
+          foreignField: 'uid',    // 目标集合的关联字段
+          as: 'updatedUserInfo',       // 存储匹配结果的临时字段
+          pipeline:[
+            {$project:{username:1,nickname:1}}
+          ]
+        },
+      },
+      { 
+        $unwind: {
+          path: '$updatedUserInfo',
+          preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+        } 
+      },
+      // {
+      //   $addFields: {
+      //     createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+      //   }
+      // },      
+    ])
+    ctx.body = packResponse({
+      code:!R.isEmpty(data[0].items)? 200 : 400, 
+      msg:!R.isEmpty(data[0].items)?'操作成功':'未找到符合条件的用户',
+      data:data[0]
+    })
+  }
+  public uniqValidate = async (ctx: ParameterizedContext)=>{
+    console.log("uniq",ctx.request.body)
+    const query:Record<string,any> = ctx.request.body??{};
+    const filter = getFilter(
+      R.omit(['page','sort'],query),
+      {
+        "uid":"uid/$not/$eq"
+      }
+    ) as RootFilterQuery<T>// 请求值与查询条件的转换
+    // 查询模式下，超级管理员在列表中不可见
+    console.log(filter,query,'11111')
+    const data = await this.service.aggregate(filter, { password:0,_id:0,__v:0 }, null, null, [
       {
         $lookup:{
           from:this.service.model.collection.name,

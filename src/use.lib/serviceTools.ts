@@ -29,6 +29,7 @@ export type SchemaOption = Omit<Record<string,any>,'name'|'key'>&{name:string,ke
  */
 export function mongoDBErrorTransform(err:any,schema:Schema){
   try{
+    console.log(err,'mongoDBErrorTransform')
     // 初始化响应结构
     const res : RecordResponse<Record<string,any>> = { code:400, data:{ errorName:err.name, errorCode:err.code ?? err.cause?.code } }
     res.data['options'] = {} // 存储字段配置信息
@@ -242,11 +243,16 @@ const pageSchemaZod = z.object({
 export function getPagination(page: unknown, startWidth1:boolean = true):Page | null {
   // 使用safeParse进行验证（不会抛出异常）
   const result = pageSchemaZod.safeParse(page);
-  const data = R.clone(page) as Page;
-  startWidth1 && (data.current = Math.max(0,data.current-1)) // 确保当前页-1且不可低于0 
+  console.log(result)
   // 验证成功返回原始数据，失败返回undefined
   // 注意：这里返回的是原始输入data 而非result.data，保持与历史版本兼容
-  return result.success ? data : null;
+  if(result.success){
+    const data = R.clone(page) as Page;
+    startWidth1 && (data.current = Math.max(0,data?.current-1)) // 确保当前页-1且不可低于0
+    return data
+  }else{
+    return null
+  }
 }
 
 /*------------------------------------------------------------------------------------*/
