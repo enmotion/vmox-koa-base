@@ -27,6 +27,7 @@ import uniqid from "uniqid";
  * @property {Date} updatedAt - 更新时间
  */
 export interface ICategory {
+  _id:string,
   key: string;
   name: string;
   description?: string;
@@ -53,9 +54,11 @@ export interface ICategory {
  * @property {Date} updatedAt - 更新时间
  */
 export interface ITag {
+  _id:string
   key: string;
   name: string;
   description?: string;
+  super:0|1
   status: boolean;
   order: number;
   createdUser?: string;
@@ -168,6 +171,12 @@ export const tagSchemaConfig: SchemaDefinition<ITag> = {
     name: '标签名称',
     required: [true, '标签名称不能为空'],
     trim: true
+  },
+  super:{
+    type:Number,
+    enum:[0,1],
+    required:true,
+    default:0
   },
   description: {
     type: String,

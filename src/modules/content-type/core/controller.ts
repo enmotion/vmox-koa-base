@@ -42,7 +42,7 @@ export class CategoryController<T extends ICategory> {
   public save = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const extraData = !body?._id ? { createdUser:ctx.visitor.uid, createdType:'admin'} : {updatedUser:ctx.visitor.uid}
+      const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
       console.log(R.mergeAll([body,extraData]))
       const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
       const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
@@ -62,7 +62,7 @@ export class CategoryController<T extends ICategory> {
       const filter = getFilter(body, { '_ids': '_ids' });
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now();
-      const data = await this.service.updateOne(
+      const data = await this.service.updateMany(
         { _id: { $in: filter._ids as string[] } },
         R.omit(['_ids'], body)
       );
@@ -131,7 +131,7 @@ export class CategoryController<T extends ICategory> {
       const filter = getFilter(
         R.omit(['page','sort'],query),
         {
-          "name":"username/$regex",
+          "name":"name/$regex",
           "key":["key",(value)=>{ return {$regex:value, $options:'i'}}],
           "description":"description/$regex",
           "createdAt":"createdAt/$dateRange",
@@ -184,10 +184,10 @@ export class CategoryController<T extends ICategory> {
       ])
       ctx.body = packResponse({
         code:!R.isEmpty(data[0].items)? 200 : 400, 
-        msg:!R.isEmpty(data[0].items)?'操作成功':'未找到符合条件的用户',
+        msg:!R.isEmpty(data[0].items)?'操作成功':'未找到符合条件的标签',
         data:data[0]
       })
-    }
+  }
 }
 
 export class TagController<T extends ITag> {
@@ -198,9 +198,9 @@ export class TagController<T extends ITag> {
     this.service = service;
     this.schema = schema;
   }
-
   public create = async (ctx: ParameterizedContext) => {
     try {
+      console.log(ctx.request.body)
       const body = R.mergeAll([
         ctx.request?.body ?? {},
         { createdUser: ctx.visitor.uid, createdType: 'admin' }
@@ -211,42 +211,60 @@ export class TagController<T extends ITag> {
       throw err;
     }
   };
-
+  
+  public save = async (ctx:ParameterizedContext)=>{
+    const body:Record<string,any> = ctx.request.body;
+    if(!R.isNil(body) && !R.isEmpty(body)){
+      const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
+      console.log(R.mergeAll([body,extraData]))
+      const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
+      const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
+      ctx.body = packResponse({
+        code:success ? 200:400,
+        data:data,
+        msg:success ? '操作成功' : '出现异常'
+      })
+    }else{
+      ctx.body = packResponse({code:300,msg:'缺少用户信息'})
+    }
+  }
   public update = async (ctx: ParameterizedContext) => {
+    console.log(ctx.request.body)
     const body = R.clone(ctx.request?.body) as Record<string, any>;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, { 'keys': 'key' });
+      const filter = getFilter(body, { '_ids': '_ids' });
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now();
-      const data = await this.service.updateOne(
-        { key: { $in: filter.key as string[] } },
-        R.omit(['key'], body)
+      const data = await this.service.updateMany(
+        { _id: { $in: filter._ids as string[] } },
+        R.omit(['_ids'], body)
       );
       ctx.body = packResponse({
         code: data.matchedCount > 0 ? 200 : 400,
         msg: data.matchedCount > 0
           ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]`
-          : '未找到可更新的标签',
+          : '未找到可更新的分类',
         data
       });
     } else {
-      ctx.body = packResponse({ code: 300, msg: '请提供需要更新的标签信息' });
+      ctx.body = packResponse({ code: 300, msg: '请提供需要更新的分类信息' });
     }
   };
 
   public delete = async (ctx: ParameterizedContext) => {
-    if (!!ctx.query?.key && typeof ctx.query.key === 'string') {
-      const keys = ctx.query.key.split(',');
-      const data = await this.service.deleteMany({ key: { $in: keys } });
+    console.log(ctx.query)
+    if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
+      const _ids = ctx.query._id.split(',');
+      const data = await this.service.deleteMany({ _id: { $in: _ids } });
       return (ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
         msg: data.deletedCount > 0
           ? `操作成功，删除[${data.deletedCount}]`
-          : '未找到可删除的标签',
+          : '未找到可删除的分类',
         data
       }));
     } else {
-      ctx.body = packResponse({ code: 300, msg: '请提供需要删除的标签标识' });
+      ctx.body = packResponse({ code: 300, msg: '请提供需要删除的分类标识' });
     }
   };
 
@@ -257,7 +275,7 @@ export class TagController<T extends ITag> {
       const data = fieldsFilter.call(await this.service.findOne(filter));
       ctx.body = packResponse({
         code: !R.isNil(data) ? 200 : 400,
-        msg: !R.isNil(data) ? '操作成功' : '未找到标签',
+        msg: !R.isNil(data) ? '操作成功' : '未找到分类',
         data
       });
     } else {
@@ -266,19 +284,83 @@ export class TagController<T extends ITag> {
   };
 
   public find = async (ctx: ParameterizedContext) => {
-    const query: Record<string, any> = ctx.query;
+    const query: Record<string, any> = ctx.request.body;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query);
-      const data = await this.service.find(filter);
+       const filter = getFilter(R.omit(['page','sort'],query));
+      const page = getPagination(query.page) // 分页与排序转换
+      const sort = getSort(query.sort) // 分页与排序转换
+      const data = await this.service.find(filter,page,sort);
       ctx.body = packResponse({
         code: !R.isEmpty(data) ? 200 : 400,
-        msg: !R.isEmpty(data) ? '操作成功' : '未找到标签',
+        msg: !R.isEmpty(data) ? '操作成功' : '未找到分类',
         data
       });
     } else {
       ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
     }
   };
+  public aggregate = async (ctx: ParameterizedContext)=>{
+      const query:Record<string,any> = ctx.request.body??{};
+      const filter = getFilter(
+        R.omit(['page','sort'],query),
+        {
+          "name":"name/$regex",
+          "key":["key",(value)=>{ return {$regex:value, $options:'i'}}],
+          "description":"description/$regex",
+          "createdAt":"createdAt/$dateRange",
+          "updatedAt":"updatedAt/$dateRange"
+        }      
+      ) as RootFilterQuery<T>// 请求值与查询条件的转换
+      const page = getPagination(query.page) // 分页与排序转换
+      const sort = getSort(query.sort) // 分页与排序转换
+      // 查询模式下，超级管理员在列表中不可见
+      const data = await this.service.aggregate(R.mergeAll([filter]), { password:0, __v:0, }, page, sort, [
+        {
+          $lookup:{
+            from:"user-collections",
+            localField: 'createdUser', 
+            foreignField: 'uid',    // 目标集合的关联字段
+            as: 'createdUserInfo',       // 存储匹配结果的临时字段
+            pipeline:[
+              {$project:{username:1,nickname:1}}
+            ]
+          },
+        },
+        { 
+          $unwind: {
+            path: '$createdUserInfo',
+            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+          } 
+        },
+        {
+          $lookup:{
+            from:"user-collections",
+            localField: 'updatedUser', 
+            foreignField: 'uid',    // 目标集合的关联字段
+            as: 'updatedUserInfo',       // 存储匹配结果的临时字段
+            pipeline:[
+              {$project:{username:1,nickname:1}}
+            ]
+          },
+        },
+        { 
+          $unwind: {
+            path: '$updatedUserInfo',
+            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+          } 
+        },
+        {
+          $addFields: {
+            createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+          }
+        },
+      ])
+      ctx.body = packResponse({
+        code:!R.isEmpty(data[0].items)? 200 : 400, 
+        msg:!R.isEmpty(data[0].items)?'操作成功':'未找到符合条件的分类',
+        data:data[0]
+      })
+  }
 }
 
 export class TagAssociationController<T extends ITagAssociation> {

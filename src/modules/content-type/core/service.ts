@@ -17,9 +17,8 @@ export class CategoryService<T extends ICategory> extends CoreService<T> {
   }
 
   public override async save(category: T, options?: SaveOptions): Promise<any> {
-    console.log(category,1111)
-    if (await super.findOne({ key: category.key })) {
-      return super.updateOne({ key: category.key }, category);
+    if (await super.findOne({ _id: category._id })) {
+      return super.updateOne({ _id: category._id }, category);
     }
     return super.save(category, options);
   }
@@ -30,11 +29,11 @@ export class TagService<T extends ITag> extends CoreService<T> {
     super(model);
   }
 
-  public override async save(tag: T, options?: SaveOptions): Promise<any> {
-    if (tag.key) {
-      return super.updateOne({ key: tag.key }, tag);
+  public override async save(category: T, options?: SaveOptions): Promise<any> {
+    if (await super.findOne({ _id: category._id })) {
+      return super.updateOne({ _id: category._id }, category);
     }
-    return super.save(tag, options);
+    return super.save(category, options);
   }
 }
 

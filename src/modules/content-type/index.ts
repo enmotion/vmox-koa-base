@@ -58,11 +58,11 @@ export const tagRouter = mappingControllersAndRouter<TagController<ITag>>(
   `${_routerPrefix}/tag`,
   tagController,
   [
-    { routerPath: '/', method: 'post', handlerName: 'create' },
+    { routerPath: '/', method: 'post', handlerName: 'save' },
     { routerPath: '/', method: 'put', handlerName: 'update' },
     { routerPath: '/', method: 'delete', handlerName: 'delete' },
-    { routerPath: '/', method: 'get', handlerName: 'find' },
-    { routerPath: '/one', method: 'get', handlerName: 'findOne' }
+    { routerPath: '/find', method: 'post', handlerName: 'aggregate' },
+    { routerPath: '/', method: 'get', handlerName: 'findOne' },
   ]
 );
 
