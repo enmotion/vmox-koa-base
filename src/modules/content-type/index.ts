@@ -22,6 +22,8 @@ const categoryModel = mongoose.model<ICategory>('Category', new Schema<ICategory
 const tagModel = mongoose.model<ITag>('Tag', new Schema<ITag>(tagSchemaConfig));
 const tagAssociationModel = mongoose.model<ITagAssociation>('TagAssociation', new Schema<ITagAssociation>(tagAssociationSchemaConfig));
 
+tagAssociationModel.schema.index({categoryId:1,tagId:1},{unique:true, sparse:true}) // 设置标签关联表双主键唯一
+
 // 创建服务实例
 const categoryService = new CategoryService<ICategory>(categoryModel);
 const tagService = new TagService<ITag>(tagModel);
@@ -70,10 +72,10 @@ export const tagAssociationRouter = mappingControllersAndRouter<TagAssociationCo
   `${_routerPrefix}/association`,
   tagAssociationController,
   [
-    { routerPath: '/', method: 'post', handlerName: 'create' },
+    { routerPath: '/', method: 'post', handlerName: 'save' },
     { routerPath: '/', method: 'put', handlerName: 'update' },
     { routerPath: '/', method: 'delete', handlerName: 'delete' },
-    { routerPath: '/', method: 'get', handlerName: 'find' },
+    { routerPath: '/find', method: 'post', handlerName: 'aggregate' },
     { routerPath: '/one', method: 'get', handlerName: 'findOne' }
   ]
 );

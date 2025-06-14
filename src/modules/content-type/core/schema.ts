@@ -80,6 +80,7 @@ export interface ITag {
  * @property {Date} updatedAt - 更新时间
  */
 export interface ITagAssociation {
+  _id:string,
   categoryId: string;
   tagId: string;
   parentAssociationId?: string;
@@ -243,7 +244,7 @@ export const tagAssociationSchemaConfig: SchemaDefinition<ITagAssociation> = {
     name: '父级关联ID',
     sparse: true,
     ref: 'TagAssociation',
-    immutable: true
+    default:''
   },
   order: {
     type: Number,

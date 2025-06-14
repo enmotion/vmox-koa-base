@@ -376,7 +376,30 @@ export class TagAssociationController<T extends ITagAssociation> {
       throw err;
     }
   };
-
+  public save = async (ctx:ParameterizedContext)=>{
+    const body:Record<string,any> = ctx.request.body;
+    if(body.tagId == body.parentAssociationId){
+      ctx.body = packResponse({
+        code:400,
+        data:null,
+        msg:"不可出现自身为父级标签"
+      })
+      return;
+    }
+    if(!R.isNil(body) && !R.isEmpty(body)){
+      const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
+      const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
+      console.log(R.mergeAll([body,extraData]),body)
+      const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
+      ctx.body = packResponse({
+        code:success ? 200:400,
+        data:data,
+        msg:success ? '操作成功' : '出现异常'
+      })
+    }else{
+      ctx.body = packResponse({code:300,msg:'缺少用户信息'})
+    }
+  }
   public update = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string, any>;
     if (!R.isNil(body) && !R.isEmpty(body)) {
@@ -406,13 +429,10 @@ export class TagAssociationController<T extends ITagAssociation> {
   };
 
   public delete = async (ctx: ParameterizedContext) => {
-    if (!!ctx.query?.categoryId && typeof ctx.query.categoryId === 'string' &&
-        !!ctx.query?.tagId && typeof ctx.query.tagId === 'string') {
-      const categoryIds = ctx.query.categoryId.split(',');
-      const tagIds = ctx.query.tagId.split(',');
+    if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
+      const _ids = ctx.query._id.split(',');
       const data = await this.service.deleteMany({
-        categoryId: { $in: categoryIds },
-        tagId: { $in: tagIds }
+        _id: { $in: _ids },
       });
       return (ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
@@ -455,4 +475,77 @@ export class TagAssociationController<T extends ITagAssociation> {
       ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
     }
   };
+  public aggregate = async (ctx: ParameterizedContext)=>{
+      const query:Record<string,any> = ctx.request.body??{};
+      const filter = getFilter(
+        R.omit(['page','sort'],query),
+        // {
+        //   "name":"name/$regex",
+        //   "key":["key",(value)=>{ return {$regex:value, $options:'i'}}],
+        //   "description":"description/$regex",
+        //   "createdAt":"createdAt/$dateRange",
+        //   "updatedAt":"updatedAt/$dateRange"
+        // }      
+      ) as RootFilterQuery<T>// 请求值与查询条件的转换
+      const page = getPagination(query.page) // 分页与排序转换
+      const sort = getSort(query.sort) // 分页与排序转换
+      // 查询模式下，超级管理员在列表中不可见
+      const data = await this.service.aggregate(R.mergeAll([filter]), { password:0, __v:0, }, page, sort, [
+        {
+          $lookup:{
+            from:"categories",
+            localField: 'categoryId', 
+            foreignField: 'key',    // 目标集合的关联字段
+            as: 'categoryInfo',       // 存储匹配结果的临时字段
+            pipeline:[
+              {$project:{name:1,key:1}}
+            ]
+          },
+        },
+        { 
+          $unwind: {
+            path: '$createdUserInfo',
+            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+          } 
+        },
+        {
+          $lookup:{
+            from:"tags",
+            localField: 'tagId', 
+            foreignField: 'key',    // 目标集合的关联字段
+            as: 'tagInfo',       // 存储匹配结果的临时字段
+            pipeline:[
+              {$project:{name:1,key:1}}
+            ]
+          },
+        },
+        {
+          $lookup:{
+            from:"tags",
+            localField: 'parentAssociationId', 
+            foreignField: 'key',    // 目标集合的关联字段
+            as: 'parentAssociationInfo',       // 存储匹配结果的临时字段
+            pipeline:[
+              {$project:{name:1,key:1}}
+            ]
+          },
+        },
+        { 
+          $unwind: {
+            path: '$updatedUserInfo',
+            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+          } 
+        },
+        {
+          $addFields: {
+            createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+          }
+        },
+      ])
+      ctx.body = packResponse({
+        code:!R.isEmpty(data[0].items)? 200 : 400, 
+        msg:!R.isEmpty(data[0].items)?'操作成功':'未找到符合条件的分类标签',
+        data:data[0]
+      })
+  }
 } 

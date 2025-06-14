@@ -43,9 +43,9 @@ export class TagAssociationService<T extends ITagAssociation> extends CoreServic
   }
 
   public override async save(association: T, options?: SaveOptions): Promise<any> {
-    if (association.categoryId && association.tagId) {
+    if (association._id) {
       return super.updateOne(
-        { categoryId: association.categoryId, tagId: association.tagId },
+        { _id:association._id},
         association
       );
     }
