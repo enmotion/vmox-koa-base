@@ -126,6 +126,10 @@ export class UserControllers<T extends IUser> {
   };
   // 删除操作
   public deleteMany = async (ctx: ParameterizedContext) => {
+    if(ctx.visitor.super!=1){
+      ctx.body = packResponse({code:300,msg:'当前用户没有此操作权限'})
+      return;
+    }
     if(!!ctx.query?.uid && typeof ctx.query.uid === 'string'){
       const uid  = ctx.query.uid.split(",")
       const data = await this.service.deleteMany({uid:{$in:uid}})

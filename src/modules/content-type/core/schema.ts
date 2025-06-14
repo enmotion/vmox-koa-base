@@ -252,7 +252,6 @@ export const tagAssociationSchemaConfig: SchemaDefinition<ITagAssociation> = {
     required: [true, '排序值不能为空'],
     min: [0, '排序值不能小于0'],
     default: 0,
-    immutable: true
   },
   createdUser: {
     type: String,
