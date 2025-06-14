@@ -7,9 +7,12 @@
  */
 'use strict';
 
-import { Model, SaveOptions } from 'mongoose';
+import { Model, MongooseBaseQueryOptions, QueryOptions, RootFilterQuery, SaveOptions } from 'mongoose';
+import mongoose from 'mongoose';
+import MongoDB from 'mongodb'
 import { CoreService } from 'src/frame-work-core/service';
 import { ICategory, ITag, ITagAssociation } from './schema';
+import { DeleteOptions, DeleteResult } from 'mongodb';
 
 export class CategoryService<T extends ICategory> extends CoreService<T> {
   public constructor(model: Model<T>) {
@@ -41,7 +44,24 @@ export class TagAssociationService<T extends ITagAssociation> extends CoreServic
   public constructor(model: Model<T>) {
     super(model);
   }
-
+  public override async deleteMany(
+    filter: RootFilterQuery<T>,
+    options?: (MongoDB.DeleteOptions & MongooseBaseQueryOptions<T>) | null
+  ): Promise<DeleteResult> {
+    const session = await mongoose.startSession();
+    session.startTransaction()
+    try{
+      const targets = await super.find(filter);
+      const updateArray = targets.items.map((item)=>super.updateMany({categoryId:item.categoryId, parentAssociationId:item.tagId},{parentAssociationId:item.parentAssociationId}))
+      await Promise.all(updateArray);
+      const data = await super.deleteMany(filter);
+      session.endSession()
+      return data;
+    }catch(err){
+      session.abortTransaction()
+      throw err
+    }
+  }
   public override async save(association: T, options?: SaveOptions): Promise<any> {
     if (association._id) {
       return super.updateOne(
