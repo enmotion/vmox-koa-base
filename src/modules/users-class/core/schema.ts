@@ -29,7 +29,7 @@ import uniqid from "uniqid"
 
 export interface IUser{
   uid:string;                        // 用户ID
-  super:0|1,                     // 是否为超级，超级不可修改删除，它只能通过数据操作，作为用户，他也代表最高权限使用者 它是每个几何中，都需要携带的扩展字段
+  super:number,                     // 是否为超级，超级不可修改删除，它只能通过数据操作，作为用户，他也代表最高权限使用者 它是每个几何中，都需要携带的扩展字段
   username: string;                  // 用户名
   password: string;                  // 用户密码
   loginCount:number;                 // 用户登录次数
@@ -121,7 +121,6 @@ export const userBaseSchema:SchemaDefinition<IUser> = {
   },
   super:{
     type:Number,
-    enum:[0,1],
     name:"是否为超级数据",
     default:0
   },

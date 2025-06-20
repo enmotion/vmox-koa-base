@@ -149,7 +149,7 @@ export class UserControllers<T extends IUser> {
       const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
-      const data = await this.service.updateMany({uid:{$in:filter.uid as string[]}},R.omit(['uid'],body));
+      const data = await this.service.updateMany({uid:{$in:filter.uid as string[]},super:{$lt:ctx.visitor.super}},R.omit(['uid'],body));
       ctx.body = packResponse({ 
         code:data.matchedCount > 0 ? 200:400, 
         msg:data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的用户', 
@@ -165,7 +165,7 @@ export class UserControllers<T extends IUser> {
       const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
-      const data = await this.service.updateOne({uid:{$in:filter.uid as string[]}},R.omit(['uid'],body));
+      const data = await this.service.updateOne({uid:{$in:filter.uid as string[]},super:{$lt:ctx.visitor.super}},R.omit(['uid'],body));
       ctx.body = packResponse({ 
         code:data.matchedCount > 0 ? 200:400, 
         msg:data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的用户', 
@@ -179,13 +179,18 @@ export class UserControllers<T extends IUser> {
     const body:Record<string,any> = ctx.request.body;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?.uid ? { createdUser:ctx.visitor.uid, createdType:'admin'} : {updatedUser:ctx.visitor.uid}
-      const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
-      const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
-      ctx.body = packResponse({
-        code:success ? 200:400,
-        data:data,
-        msg:success ? '操作成功' : '出现异常'
-      })
+      const userData = R.mergeAll([body,extraData]);
+      if(ctx.visitor.super > userData.super || ctx.visitor.uid == userData.uid){
+        const data:Record<string,any> = await this.service.save(userData as T)
+        const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
+        ctx.body = packResponse({
+          code:success ? 200:400,
+          data:data,
+          msg:success ? '操作成功' : '出现异常'
+        })
+      }else{
+        ctx.body = packResponse({code:300,msg:'你的权限等级,不允许操作此用户'})  
+      }
     }else{
       ctx.body = packResponse({code:300,msg:'缺少用户信息'})
     }
@@ -233,6 +238,7 @@ export class UserControllers<T extends IUser> {
   };
 
   public aggregate = async (ctx: ParameterizedContext)=>{
+    const visitor = ctx.visitor;
     const query:Record<string,any> = ctx.request.body??{};
     const filter = getFilter(
       R.omit(['page','sort'],query),
@@ -247,7 +253,7 @@ export class UserControllers<T extends IUser> {
     const page = getPagination(query.page) // 分页与排序转换
     const sort = getSort(query.sort) // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
-    const data = await this.service.aggregate(R.mergeAll([filter,{super:{$eq:0}}]), { password:0,_id:0,__v:0 }, page, sort, [
+    const data = await this.service.aggregate(R.mergeAll([filter,{super:{$lte:visitor.super}}]), { password:0,_id:0,__v:0 }, page, sort, [
       {
         $lookup:{
           from:this.service.model.collection.name,
