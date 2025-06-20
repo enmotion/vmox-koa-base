@@ -34,9 +34,10 @@ const categoryController = new CategoryController<ICategory>(
   categoryService,
   new Schema<ICategory>(categorySchemaConfig)
 );
-const tagController = new TagController<ITag>(
+const tagController = new TagController<ITag, ITagAssociation>(
   tagService,
-  new Schema<ITag>(tagSchemaConfig)
+  new Schema<ITag>(tagSchemaConfig),
+  tagAssociationService
 );
 const tagAssociationController = new TagAssociationController<ITagAssociation>(
   tagAssociationService,
@@ -56,7 +57,7 @@ export const categoryRouter = mappingControllersAndRouter<CategoryController<ICa
   ]
 );
 
-export const tagRouter = mappingControllersAndRouter<TagController<ITag>>(
+export const tagRouter = mappingControllersAndRouter<TagController<ITag, ITagAssociation>>(
   `${_routerPrefix}/tag`,
   tagController,
   [

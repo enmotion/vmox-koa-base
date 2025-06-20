@@ -186,12 +186,14 @@ export class CategoryController<T extends ICategory> {
   }
 }
 
-export class TagController<T extends ITag> {
+export class TagController<T extends ITag, A extends ITagAssociation> {
   public service: TagService<T>;
+  public AssociationService: TagAssociationService<A>;
   public schema: Schema<T>;
 
-  public constructor(service: TagService<T>, schema: Schema<T>) {
+  public constructor(service: TagService<T>, schema: Schema<T>, associationService: TagAssociationService<A>) {
     this.service = service;
+    this.AssociationService = associationService
     this.schema = schema;
   }
   public create = async (ctx: ParameterizedContext) => {
@@ -247,6 +249,8 @@ export class TagController<T extends ITag> {
   public delete = async (ctx: ParameterizedContext) => {    
     if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
       const _ids = ctx.query._id.split(',');
+      const { items } = await this.service.find({ _id: { $in: _ids } }); // 找到要删除的
+      this.AssociationService.deleteMany({tagId: { $in: items?.map?.(item=>item.key) } }) // 删除标签关联
       const data = await this.service.deleteMany({ _id: { $in: _ids } });
       return (ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,

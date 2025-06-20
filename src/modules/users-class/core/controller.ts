@@ -86,6 +86,7 @@ export class UserControllers<T extends IUser> {
           ])]
         },
       ) // 请求值与条件的转换
+      console.log(filter)
       const data:any = await this.service.findOne(filter as any,undefined,{lean:true})
       if (!!data && !!data.status) {
         data.loginCount ++ // 登录次数递增
