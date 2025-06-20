@@ -127,13 +127,9 @@ export class UserControllers<T extends IUser> {
   };
   // 删除操作
   public deleteMany = async (ctx: ParameterizedContext) => {
-    if(ctx.visitor.super!=1){
-      ctx.body = packResponse({code:300,msg:'当前用户没有此操作权限'})
-      return;
-    }
     if(!!ctx.query?.uid && typeof ctx.query.uid === 'string'){
       const uid  = ctx.query.uid.split(",")
-      const data = await this.service.deleteMany({uid:{$in:uid}})
+      const data = await this.service.deleteMany({uid:{$in:uid},super:{$lt:ctx.visitor.super}}); // 删除用户
       return ctx.body = packResponse({ 
         code:data.deletedCount > 0 ? 200:400, 
         msg:data.deletedCount>0 ? `操作成功，删除[${data.deletedCount}]` : '未找到可删除的用户', 
@@ -180,7 +176,7 @@ export class UserControllers<T extends IUser> {
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?.uid ? { createdUser:ctx.visitor.uid, createdType:'admin'} : {updatedUser:ctx.visitor.uid}
       const userData = R.mergeAll([body,extraData]);
-      if(ctx.visitor.super > userData.super || ctx.visitor.uid == userData.uid){
+      if(ctx.visitor.super >= userData.super || ctx.visitor.uid == userData.uid){
         const data:Record<string,any> = await this.service.save(userData as T)
         const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
         ctx.body = packResponse({
