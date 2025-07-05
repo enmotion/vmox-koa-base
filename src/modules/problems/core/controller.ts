@@ -43,7 +43,7 @@ export class ProblemControllers<T extends IProblem> {
       const extraData = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
       const problemData = R.mergeAll([body, extraData]);
       if (!problemData.super || ctx.visitor.super >= problemData.super) {
-        console.log(problemData)
+        problemData.super = problemData.super ?? ctx?.visitor?.super ?? 0 
         const data: Record<string, any> = await this.service.save(problemData as T)
         const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
         ctx.body = packResponse({
@@ -63,7 +63,7 @@ export class ProblemControllers<T extends IProblem> {
   public deleteMany = async (ctx: ParameterizedContext) => {
     if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
       const _ids = ctx.query._id.split(",")
-      const data = await this.service.deleteMany({ _id: { $in: _ids }, super: { $lt: ctx.visitor.super } }); // 删除问题集
+      const data = await this.service.deleteMany({ _id: { $in: _ids }, super: { $lte: ctx.visitor.super } }); // 删除问题集
       return ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
         msg: data.deletedCount > 0 ? `操作成功，删除[${data.deletedCount}]` : '未找到可删除的问题集',
@@ -111,9 +111,21 @@ export class ProblemControllers<T extends IProblem> {
   public aggregate = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = ctx.request.body;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(R.omit(['page','sort'],body),) // 请求值与查询条件的转换
-      const page = getPagination(body) // 分页参数
-      const sort = getSort(body) // 排序参数
+      const filter = getFilter(
+        R.omit(['page','sort'],body),
+        {
+          "title":"title/$regex",
+          "definition":"definition/$regex",
+          "example":"example/$regex",
+          "coreFix":"coreFix/$regex",
+          "difficultyLevel":"difficultyLevel",
+          "gradeLevel":"gradeLevel",
+          "createdAt":"createdAt/$dateRange",
+          "updatedAt":"updatedAt/$dateRange"
+        }
+      ) // 请求值与查询条件的转换
+      const page = getPagination(body.page) // 分页参数
+      const sort = getSort(body.sort) // 排序参数
       const data = await this.service.aggregate(filter, {__v:0}, page, sort, [
       {
         $lookup:{

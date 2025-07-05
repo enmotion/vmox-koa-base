@@ -182,7 +182,7 @@ export const problemBaseSchema: SchemaDefinition<IProblem> = {
     name: '学龄等级',
     required: [true, '缺少学龄等级，创建失败'],
     min: [1, '学龄等级不能小于1'],
-    max: [6, '学龄等级不能大于6'],
+    max: [3, '学龄等级不能大于6'],
     default: 1
   },
   super: {
