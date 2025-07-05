@@ -89,26 +89,7 @@ export const problemRouter = mappingControllersAndRouter<ExpandProblemController
     { routerPath: '/update', method: 'put', handlerName: 'updateOne' },
     { routerPath: '/updateMany', method: 'put', handlerName: 'updateMany' },
     { routerPath: '/findOne', method: 'get', handlerName: 'findOne' },
-    { routerPath: '/find', method: 'post', handlerName: 'aggregate' },
-    
-    // 扩展功能接口
-    { routerPath: '/byLevel', method: 'post', handlerName: 'getProblemsByLevel' },
-    { routerPath: '/bySuper', method: 'post', handlerName: 'getProblemsBySuper' },
-    { routerPath: '/active', method: 'get', handlerName: 'getActiveProblems' },
-    { routerPath: '/search', method: 'post', handlerName: 'searchProblemsByTitle' },
-    
-    // 扩展功能接口
-    { routerPath: '/byCategory', method: 'post', handlerName: 'getProblemsByCategory' },
-    { routerPath: '/byTags', method: 'post', handlerName: 'getProblemsByTags' },
-    { routerPath: '/byPriority', method: 'post', handlerName: 'getProblemsByPriority' },
-    { routerPath: '/highPriority', method: 'post', handlerName: 'getHighPriorityProblems' },
-    
-    // 公共接口
-    { routerPath: '/pub/list', method: 'post', handlerName: 'aggregate' },
-    { routerPath: '/pub/detail', method: 'get', handlerName: 'findOne' },
-    { routerPath: '/pub/byLevel', method: 'post', handlerName: 'getProblemsByLevel' },
-    { routerPath: '/pub/byCategory', method: 'post', handlerName: 'getProblemsByCategory' },
-    { routerPath: '/pub/search', method: 'post', handlerName: 'searchProblemsByTitle' }
+    { routerPath: '/find', method: 'post', handlerName: 'aggregate' },    
   ]
 );
 
