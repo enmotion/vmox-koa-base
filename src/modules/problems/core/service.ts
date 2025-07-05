@@ -20,7 +20,7 @@ export class ProblemService<T extends IProblem> extends CoreService<T> {
   }
   public override save(problem:T,options?:SaveOptions):Promise<any>{
     if(!!problem._id){
-      return super.updateOne({uid:problem._id}, problem, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
+      return super.updateOne({_id:problem._id}, problem, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
     }else{
       return super.save(problem,options)
     }

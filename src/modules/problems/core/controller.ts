@@ -32,37 +32,6 @@ export class ProblemControllers<T extends IProblem> {
     this.service = service;
     this.schema = schema;
   }
-
-  /**
-   * 创建问题集方法
-   * @param ctx Koa上下文对象
-   * @throws 抛出数据库操作异常
-   */
-  public create = async (ctx: ParameterizedContext) => {
-    try {
-      // 创建问题集数据并过滤返回值
-      const body = getFilter(ctx.request?.body ?? {}) // 请求值与查询条件的转换
-      const data = fieldsFilter.call(
-        await this.service.save(body as any)
-      ); // 返回值 字段过滤
-      ctx.body = packResponse({ data });
-    } catch (err: any) {
-      // 处理MongoDB唯一键冲突错误(11000)
-      if (
-        !!err.msg &&
-        err.data?.errorName === "MongoServerError" &&
-        err.data?.errorCode === 11000 &&
-        R.keys(err.data?.options).length >= 2
-      ) {
-        err.msg =
-          R.values(err.data.options)
-            .map((item) => item.name)
-            .join("+") + ", 组合值已被占用";
-      }
-      throw err;
-    }
-  };
-
   /**
    * 保存或更新问题集方法
    * @param ctx Koa上下文对象
@@ -71,11 +40,12 @@ export class ProblemControllers<T extends IProblem> {
   public save = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = ctx.request.body;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const extraData = !body?.uid ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
+      const extraData = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
       const problemData = R.mergeAll([body, extraData]);
-      if (ctx.visitor.super >= problemData.super) {
+      if (!problemData.super || ctx.visitor.super >= problemData.super) {
+        console.log(problemData)
         const data: Record<string, any> = await this.service.save(problemData as T)
-        const success = !body.uid ? !R.isEmpty(data) : data.matchedCount > 0
+        const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
         ctx.body = packResponse({
           code: success ? 200 : 400,
           data: data,
@@ -91,9 +61,9 @@ export class ProblemControllers<T extends IProblem> {
 
   // 删除操作
   public deleteMany = async (ctx: ParameterizedContext) => {
-    if (!!ctx.query?.uid && typeof ctx.query.uid === 'string') {
-      const uid = ctx.query.uid.split(",")
-      const data = await this.service.deleteMany({ uid: { $in: uid }, super: { $lt: ctx.visitor.super } }); // 删除问题集
+    if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
+      const _ids = ctx.query._id.split(",")
+      const data = await this.service.deleteMany({ _id: { $in: _ids }, super: { $lt: ctx.visitor.super } }); // 删除问题集
       return ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
         msg: data.deletedCount > 0 ? `操作成功，删除[${data.deletedCount}]` : '未找到可删除的问题集',
@@ -108,28 +78,10 @@ export class ProblemControllers<T extends IProblem> {
   public updateMany = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string, any>
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, { "uids": "uid" }) // 请求值与查询条件的转换
+      const filter = getFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
-      const data = await this.service.updateMany({ uid: { $in: filter.uid as string[] }, super: { $lt: ctx.visitor.super } }, R.omit(['uid'], body));
-      ctx.body = packResponse({
-        code: data.matchedCount > 0 ? 200 : 400,
-        msg: data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的问题集',
-        data
-      })
-    } else {
-      ctx.body = packResponse({ code: 300, msg: '请提供需要更新的问题集ID' })
-    }
-  };
-
-  // 更新操作
-  public updateOne = async (ctx: ParameterizedContext) => {
-    const body = R.clone(ctx.request?.body) as Record<string, any>
-    if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, { "uids": "uid" }) // 请求值与查询条件的转换
-      body.updatedUser = ctx.visitor.uid;
-      body.updatedAt = Date.now()
-      const data = await this.service.updateOne({ uid: { $in: filter.uid as string[] }, super: { $lt: ctx.visitor.super } }, R.omit(['uid'], body));
+      const data = await this.service.updateMany({ _id: { $in: filter._ids as string[] }, super: { $lt: ctx.visitor.super } }, R.omit(['_ids'], body));
       ctx.body = packResponse({
         code: data.matchedCount > 0 ? 200 : 400,
         msg: data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的问题集',
@@ -155,36 +107,57 @@ export class ProblemControllers<T extends IProblem> {
       ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
     }
   };
-
-  // 查找操作
-  public find = async (ctx: ParameterizedContext) => {
-    const query: Record<string, any> = ctx.query;
-    if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query) // 请求值与查询条件的转换
-      const page = getPagination(query) // 分页参数
-      const sort = getSort(query) // 排序参数
-      const data = await this.service.find(filter, page, sort); // 返回值 字段过滤
-      ctx.body = packResponse({
-        code: 200,
-        data: data,
-        msg: '查询成功'
-      });
-    } else {
-      ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
-    }
-  };
-
   // 聚合查询操作
   public aggregate = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = ctx.request.body;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body) // 请求值与查询条件的转换
+      const filter = getFilter(R.omit(['page','sort'],body),) // 请求值与查询条件的转换
       const page = getPagination(body) // 分页参数
       const sort = getSort(body) // 排序参数
-      const data = await this.service.aggregate(filter, undefined, page, sort); // 返回值 字段过滤
+      const data = await this.service.aggregate(filter, {__v:0}, page, sort, [
+      {
+        $lookup:{
+          from:"user-collections",
+          localField: 'createdUser', 
+          foreignField: 'uid',    // 目标集合的关联字段
+          as: 'createdUserInfo',       // 存储匹配结果的临时字段
+          pipeline:[
+            {$project:{username:1,nickname:1}}
+          ]
+        },
+      },
+      { 
+        $unwind: {
+          path: '$createdUserInfo',
+          preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+        } 
+      },
+      {
+        $lookup:{
+          from:"user-collections",
+          localField: 'updatedUser', 
+          foreignField: 'uid',    // 目标集合的关联字段
+          as: 'updatedUserInfo',       // 存储匹配结果的临时字段
+          pipeline:[
+            {$project:{username:1,nickname:1}}
+          ]
+        },
+      },
+      { 
+        $unwind: {
+          path: '$updatedUserInfo',
+          preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+        } 
+      },
+      // {
+      //   $addFields: {
+      //     createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+      //   }
+      // },      
+    ]); // 返回值 字段过滤
       ctx.body = packResponse({
         code: 200,
-        data: data,
+        data: data[0],
         msg: '查询成功'
       });
     } else {

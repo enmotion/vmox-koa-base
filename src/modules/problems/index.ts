@@ -83,10 +83,8 @@ export const problemRouter = mappingControllersAndRouter<ExpandProblemController
   problemController,
   [
     // 基础CRUD接口
-    { routerPath: '/create', method: 'post', handlerName: 'create' },
     { routerPath: '/save', method: 'post', handlerName: 'save' },
     { routerPath: '/delete', method: 'delete', handlerName: 'deleteMany' },
-    { routerPath: '/update', method: 'put', handlerName: 'updateOne' },
     { routerPath: '/updateMany', method: 'put', handlerName: 'updateMany' },
     { routerPath: '/findOne', method: 'get', handlerName: 'findOne' },
     { routerPath: '/find', method: 'post', handlerName: 'aggregate' },    

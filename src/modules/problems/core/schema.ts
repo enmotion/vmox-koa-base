@@ -190,7 +190,6 @@ export const problemBaseSchema: SchemaDefinition<IProblem> = {
     name: '操作权限等级',
     default: 0,
     min: [0, '权限等级不能小于0'],
-    max: [10, '权限等级不能大于10']
   },
   trainingData: {
     type: [{
