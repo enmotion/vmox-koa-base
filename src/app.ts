@@ -22,6 +22,7 @@ import { userRouter } from "./modules/users-class"
 import { systemRouter } from "./modules/system";
 import { categoryRouter, tagRouter, tagAssociationRouter } from './modules/content-type';
 import { problemRouter } from "./modules/problems"
+import { modelEssayRouter } from "./modules/model-essay";
 
 // const userModel = userUserModel(mongoose,'/users') // 实例化用户模块
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。
@@ -82,6 +83,7 @@ app.use(categoryRouter.routes());
 app.use(tagRouter.routes());
 app.use(tagAssociationRouter.routes());
 app.use(problemRouter.routes())
+app.use(modelEssayRouter.routes())
 // app.use(appSystemModel(mongoose,'/system').router.routes())
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
 app.use(new Router().allowedMethods())
