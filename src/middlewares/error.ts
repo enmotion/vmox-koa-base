@@ -19,6 +19,7 @@ import type { ParameterizedContext, Next } from "koa";
  */
 async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
   try {
+    console.log("sss")
     // 执行后续中间件链
     await next();    
   } catch (err:any) {

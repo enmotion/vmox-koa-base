@@ -381,19 +381,16 @@ export class TagAssociationController<T extends ITagAssociation> {
     }
   };
   public save = async (ctx:ParameterizedContext)=>{
-    const body:Record<string,any> = ctx.request.body;
-    if(body.tagId == body.parentAssociationId){
-      ctx.body = packResponse({
-        code:400,
-        data:null,
-        msg:"不可出现自身为父级标签"
-      })
-      return;
-    }
+    const body:Record<string,any> = R.clone(ctx.request.body);
+    const tagIds = body.tagId.filter(((item:string)=>body.parentAssociationId!==item))
+    delete body.tagId;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
-      const data:Record<string,any> = await this.service.save(R.mergeAll([body,extraData]) as T)
-      console.log(R.mergeAll([body,extraData]),body)
+      const saveTasks = tagIds.map((tagId:string)=>{
+        return this.service.save(R.mergeAll([body,extraData,{tagId}]) as T)
+      })
+      const data:Record<string,any> = await Promise.all(saveTasks)
+      // console.log(R.mergeAll([body,extraData]),body)
       const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
       ctx.body = packResponse({
         code:success ? 200:400,

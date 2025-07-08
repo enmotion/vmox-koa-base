@@ -109,7 +109,9 @@ export class ProblemControllers<T extends IProblem> {
   };
   // 聚合查询操作
   public aggregate = async (ctx: ParameterizedContext) => {
-    const body: Record<string, any> = ctx.request.body;
+    const body: Record<string, any> = !R.isEmpty(ctx.request.body) ? ctx.request.body : JSON.parse(JSON.stringify(ctx.query)) ?? {};
+    console.log(body,1111)
+    // https://rr4426xx0138.vicp.fun/problems/pub/find
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getFilter(
         R.omit(['page','sort'],body),
@@ -119,7 +121,9 @@ export class ProblemControllers<T extends IProblem> {
           "example":"example/$regex",
           "coreFix":"coreFix/$regex",
           "difficultyLevel":"difficultyLevel",
-          "gradeLevel":"gradeLevel",
+          "gradeLevel":["gradeLevel",(val:any)=>({
+            $lte:parseInt(val)
+          })],
           "createdAt":"createdAt/$dateRange",
           "updatedAt":"updatedAt/$dateRange"
         }
