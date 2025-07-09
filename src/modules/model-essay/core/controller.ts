@@ -8,13 +8,13 @@
 
 "use strict";
 import * as R from "ramda";  // 函数式编程工具库
+import { getEmbedding } from "src/sdk";
 import { ParameterizedContext } from "koa";  // Koa上下文类型
 import { ProblemService } from "./service";  // 范文服务层
 import type { IModelEssay } from "./schema";  // 范文模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
 import { packResponse, fieldsFilter, getFilter } from "@lib/serviceTools";  // 响应处理工具
-
 /**
  * 范文控制器类
  * @template T 扩展自IProblem的泛型类型
@@ -40,7 +40,8 @@ export class ProblemControllers<T extends IModelEssay> {
   public save = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = ctx.request.body;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const extraData = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
+      const extraData:Record<string,any> = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
+      extraData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量
       const problemData = R.mergeAll([body, extraData]);
       if (!problemData.super || ctx.visitor.super >= problemData.super) {
         problemData.super = problemData.super ?? ctx?.visitor?.super ?? 0
@@ -111,7 +112,6 @@ export class ProblemControllers<T extends IModelEssay> {
   // 聚合查询操作
   public aggregate = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = !R.isEmpty(ctx.request.body) ? ctx.request.body : JSON.parse(JSON.stringify(ctx.query)) ?? {};
-    console.log(body, 1111)
     // https://rr4426xx0138.vicp.fun/problems/pub/find
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getFilter(

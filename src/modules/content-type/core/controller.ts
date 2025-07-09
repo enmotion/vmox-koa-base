@@ -382,11 +382,11 @@ export class TagAssociationController<T extends ITagAssociation> {
   };
   public save = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = R.clone(ctx.request.body);
-    const tagIds = body.tagId.filter(((item:string)=>body.parentAssociationId!==item))
+    const tagIds = body.tagId?.filter(((item:string)=>body.parentAssociationId!==item))
     delete body.tagId;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
-      const saveTasks = tagIds.map((tagId:string)=>{
+      const saveTasks = tagIds?.map((tagId:string)=>{
         return this.service.save(R.mergeAll([body,extraData,{tagId}]) as T)
       })
       const data:Record<string,any> = await Promise.all(saveTasks)
@@ -396,6 +396,21 @@ export class TagAssociationController<T extends ITagAssociation> {
         code:success ? 200:400,
         data:data,
         msg:success ? '操作成功' : '出现异常'
+      })
+    }else{
+      ctx.body = packResponse({code:300,msg:'缺少用户信息'})
+    }
+  }
+  public drop = async (ctx:ParameterizedContext)=>{
+    const body:Record<string,any> = R.clone(ctx.request.body);
+    if(!R.isNil(body) && !R.isEmpty(body)){
+      const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
+      const data:Record<string,any> = this.service.save(R.mergeAll([body,extraData]) as T)
+      // console.log(R.mergeAll([body,extraData]),body)
+      ctx.body = packResponse({
+        code:200,
+        data:data,
+        msg:'操作成功'
       })
     }else{
       ctx.body = packResponse({code:300,msg:'缺少用户信息'})

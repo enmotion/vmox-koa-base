@@ -76,6 +76,7 @@ export const tagAssociationRouter = mappingControllersAndRouter<TagAssociationCo
     { routerPath: '/', method: 'post', handlerName: 'save' },
     { routerPath: '/', method: 'put', handlerName: 'update' },
     { routerPath: '/', method: 'delete', handlerName: 'delete' },
+    { routerPath: '/drop', method: 'post', handlerName: 'drop' },
     { routerPath: '/find', method: 'post', handlerName: 'aggregate' },
     { routerPath: '/one', method: 'get', handlerName: 'findOne' }
   ]
