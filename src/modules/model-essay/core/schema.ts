@@ -18,13 +18,12 @@ import uniqid from "uniqid"
  * @interface IModelEssayDocument
  * @property {string} _id - 系统生成的唯一ID
  * @property {string} title - 范文标题，必填且唯一
- * @property {string} definition - 范文定义，详细描述范文的特征和表现
- * @property {string} example - 范文范例，提供具体的错误示例
- * @property {string} coreFix - 修改核心，明确指出修改的关键点
- * @property {number} difficultyLevel - 难度等级（1-5），1为最简单，5为最复杂
- * @property {number} gradeLevel - 学龄等级（1-6），对应小学一年级到六年级
+ * @property {string} content - 范文征文内容，必填 
+ * @property {number[]} [vector] - 向量化表示，用于AI模型处理
+ * @property {string} genre - 范文范例，提供具体的错误示例
+ * @property {string} writingMethods - 修改核心，明确指出修改的关键点
+ * @property {number} sync - 同步作文标签
  * @property {number} super - 操作权限等级，默认为0，数值越大权限越高
- * @property {ITrainingData[]} trainingData - 训练数据数组，用于AI模型训练
  * @property {boolean} status - 状态标识，控制范文的启用/禁用状态
  * @property {string} createdUser - 创建用户ID
  * @property {Date} createdAt - 记录创建时间(自动生成，不可修改)
@@ -36,11 +35,16 @@ export interface IModelEssay {
   title: string;                      // 范文标题
   content:string;                     // 范文内容
   vector?: number[];                  // 向量化表示
+
+  genre:string;                       // 范文体裁
+  writingMethods:string[];            // 写作方法
+  sync:string;                        // 同步作文标签
+
+  appreciationGuide:string;          // 欣赏指导
+  from:string                         // 文章来源 投稿，采集，AI
+
   super:number;                       // 操作权限等级
   status: number;                     // 范围文状态 0:草稿, 1:待审核, 2:已审核(同步到了向量数据库)
-  genre:string;                       // 范文体裁
-  writeMethod:string[];               // 写作方法
-  sync:string;                        // 同步作文标签
   createdUser:string;                 // 创建用户 
   createdAt: Date;                    // 创建时间
   updatedUser?: string;               // 修改用户
@@ -113,7 +117,39 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     type: Array,
     name: '向量化表示',
     required:[true, '缺少向量化表示，创建失败'],
-  },                 // 向量化表示                      // 操作权限等级
+  },
+
+  genre:{
+    type: String,
+    name: '范文体裁',
+    required: [true, '缺少范文体裁，创建失败'],
+    trim: true
+  },
+  writingMethods:{
+    type: [String],
+    name: '写作方法',
+    default:[]
+  },
+  sync:{
+    type: String,
+    name: '同步作文标签',
+  },
+
+  appreciationGuide: {
+    type: String,
+    name: '欣赏指导',
+    maxlength: [2000, '欣赏指导长度不能超过5000字符'],
+    default: ''
+  },
+  from: {
+    type: String,
+    name: '文章来源',
+    required: [true, '缺少文章来源，创建失败'],
+    enum: ['UGC', 'PGC', 'AGC'],
+    default: 'PGC',
+    trim: true
+  },
+
   super: {
     type: Number,
     name: '操作权限等级',
@@ -124,21 +160,6 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     type: Number,
     name: '范文状态',
     default: 0
-  },
-  genre:{
-    type: String,
-    name: '范文体裁',
-    required: [true, '缺少范文体裁，创建失败'],
-    trim: true
-  },
-  writeMethod:{
-    type: [Array],
-    name: '写作方法',
-    default:[]
-  },
-  sync:{
-    type: String,
-    name: '同步作文标签',
   },
   createdUser: {
     type: String,
