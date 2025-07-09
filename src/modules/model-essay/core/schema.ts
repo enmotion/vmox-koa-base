@@ -103,7 +103,6 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     name: '范文标题',
     trim: true,  // 自动去除前后空格
     required: [true, '缺少范文标题，创建失败'],
-    unique: [true, '该范文标题已被占用'], // 范文标题唯一
     maxlength: [200, '范文标题长度不能超过200字符']
   },
   content: {

@@ -4,6 +4,7 @@ import * as colors from "colors";
 import mongoose from "mongoose";
 
 import { QdrantClient } from '@qdrant/js-client-rest'; // 引入向量数据建库
+
 /**
  * moongoDB 数据库连接配置
  */

@@ -86,7 +86,7 @@ export const modelEssayRouter = mappingControllersAndRouter<ExpandModelEssayCont
     { routerPath: '/updateMany', method: 'put', handlerName: 'updateMany' },
     { routerPath: '/findOne', method: 'get', handlerName: 'findOne' },
     { routerPath: '/find', method: 'post', handlerName: 'aggregate' },
-    { routerPath: '/pub/find', method: 'get', handlerName: 'aggregate' },   
+    { routerPath: '/vectorSearch', method: 'post', handlerName: 'vectorSearch' },   
   ]
 );
 

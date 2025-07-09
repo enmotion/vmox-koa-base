@@ -15,6 +15,7 @@ import type { IModelEssay } from "./schema";  // 范文模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
 import { packResponse, fieldsFilter, getFilter } from "@lib/serviceTools";  // 响应处理工具
+import { qdrantClient } from "src/database";
 /**
  * 范文控制器类
  * @template T 扩展自IProblem的泛型类型
@@ -42,10 +43,18 @@ export class ProblemControllers<T extends IModelEssay> {
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const extraData:Record<string,any> = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
       extraData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量
+      
       const problemData = R.mergeAll([body, extraData]);
       if (!problemData.super || ctx.visitor.super >= problemData.super) {
         problemData.super = problemData.super ?? ctx?.visitor?.super ?? 0
         const data: Record<string, any> = await this.service.save(problemData as T)
+        const vectorPoint = {
+          id: data._id, // 使用UUID作为默认ID
+          vector: data.vector,
+          payload: R.omit(['_id','vector','__v'], body) // 去除向量字段
+        }
+        console.log(vectorPoint, 'vectorPoint')
+        await qdrantClient.upsert('model-essay', {points:[vectorPoint]}) // 向Qdrant中插入或更新向量点
         const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
         ctx.body = packResponse({
           code: success ? 200 : 400,
@@ -109,6 +118,18 @@ export class ProblemControllers<T extends IModelEssay> {
       ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
     }
   };
+  public vectorSearch = async (ctx: ParameterizedContext) => {
+    console.log(ctx.request.body)
+    const request = R.clone(ctx.request.body) as Record<string, any>;
+    request.query =await getEmbedding(request.query) // 获取文本向量
+    const data = await qdrantClient.query('model-essay', {})
+    console.log(data, 'vectorSearch')
+    ctx.body = packResponse({
+      code: 200,
+      data: data,
+      msg: '向量检索功能正在开发中，敬请期待' 
+    });
+  }
   // 聚合查询操作
   public aggregate = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = !R.isEmpty(ctx.request.body) ? ctx.request.body : JSON.parse(JSON.stringify(ctx.query)) ?? {};
