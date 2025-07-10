@@ -7,6 +7,7 @@
  */
 
 "use strict";
+import * as colors from "colors";
 import * as R from "ramda";  // 函数式编程工具库
 import { getEmbedding } from "src/sdk";
 import { ParameterizedContext } from "koa";  // Koa上下文类型
@@ -49,13 +50,13 @@ export class ProblemControllers<T extends IModelEssay> {
         problemData.super = problemData.super ?? ctx?.visitor?.super ?? 0
         const data: Record<string, any> = await this.service.save(problemData as T)
         const vectorPoint = {
-          id: data._id, // 使用UUID作为默认ID
+          id: data.uuid, // 使用UUID作为默认ID
           vector: data.vector,
-          payload: R.omit(['_id','vector','__v'], body) // 去除向量字段
+          payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status'], data) // 去除向量字段
         }
-        console.log(vectorPoint, 'vectorPoint')
-        await qdrantClient.upsert('model-essay', {points:[vectorPoint]}) // 向Qdrant中插入或更新向量点
-        const success = !body._id ? !R.isEmpty(data) : data.matchedCount > 0
+        const res = await qdrantClient.upsert('model-essay', {points:[vectorPoint], wait:true}) // 向Qdrant中插入或更新向量点
+        console.log(res,1111)
+        const success = !!data.uuid
         ctx.body = packResponse({
           code: success ? 200 : 400,
           data: data,

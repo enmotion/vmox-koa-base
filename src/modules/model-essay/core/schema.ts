@@ -11,12 +11,14 @@
 
 "use strict"
 import { Document, SchemaDefinition } from 'mongoose';
+import { v4 } from "uuid"
 import uniqid from "uniqid"
 
 /**
  * 范文实体接口
  * @interface IModelEssayDocument
  * @property {string} _id - 系统生成的唯一ID
+ * @property {string} uuid - 系统递增值
  * @property {string} title - 范文标题，必填且唯一
  * @property {string} content - 范文征文内容，必填 
  * @property {number[]} [vector] - 向量化表示，用于AI模型处理
@@ -32,6 +34,7 @@ import uniqid from "uniqid"
  */
 export interface IModelEssay {
   _id: string;                        // 范文ID
+  uuid: string;                        // 系统递增主键
   title: string;                      // 范文标题
   content:string;                     // 范文内容
   vector?: number[];                  // 向量化表示
@@ -68,6 +71,12 @@ export type IModelEssayDocument = Document<IModelEssay>
  *   @property {String} name - 字段显示名称
  *   @property {Array} unique - 唯一性约束及错误提示
  *   @property {Function} default - 默认值生成函数
+ * @property {Object} uuid - 递增数值组件
+ *   @property {String} type - 字段类型
+ *   @property {Boolean} index - 建立索引加速查询
+ *   @property {String} name - 字段显示名称
+ *   @property {Array} unique - 唯一性约束及错误提示
+ *   @property {Function} default - 默认值生成函数
  * @property {Object} title - 范文标题配置
  *   @property {String} type - 字段类型
  *   @property {String} name - 字段显示名称
@@ -97,6 +106,12 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     name: '范文ID',
     unique: [true, '该范文ID已被占用'],
     default: () => uniqid()
+  },
+  uuid:{
+    type: String,
+    required:true,
+    index:true,
+    default:v4
   },
   title: {
     type: String,

@@ -18,11 +18,12 @@ export class ProblemService<T extends IModelEssay> extends CoreService<T> {
   public constructor(model: Model<T>) {
     super(model)
   }
-  public override save(problem:T,options?:SaveOptions):Promise<any>{
-    if(!!problem._id){
-      return super.updateOne({_id:problem._id}, problem, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
+  public override async save(modelEssay:T,options?:SaveOptions):Promise<any>{
+    if(!!modelEssay._id){
+      await super.updateOne({_id:modelEssay._id}, modelEssay, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
+      return super.findOne({_id:modelEssay._id})
     }else{
-      return super.save(problem,options)
+      return super.save(modelEssay,options)
     }
   }
 } 

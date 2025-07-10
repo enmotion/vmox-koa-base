@@ -63,6 +63,7 @@
     "ramda": "^0.30.1",
     "swagger-jsdoc": "^6.2.8",
     "uniqid": "^5.4.0",
+    "uuid": "^11.1.0",
     "zod": "^3.25.23",
     "zod-validation-error": "^3.4.1"
   }
