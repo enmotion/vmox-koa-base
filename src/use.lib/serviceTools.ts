@@ -192,7 +192,9 @@ export function getFilter(
   return only ? result : R.mergeDeepRight(condition, result);
 }
 
+export function getQdrantFilter(data:Record<string,any>,mapping:MongooseFilterMapping={}){
 
+}
 /*------------------------------------------------------------------------------------*/
 
 /**

@@ -39,6 +39,7 @@ async function initQdrantDataBase(){
         await qdrantClient.createCollection(collectionName, {
           vectors: { size: dimension, distance: "Cosine" }}
         )
+        await qdrantClient.createPayloadIndex(collectionName, { field_name:"status", field_schema:'integer'});
         console.log(colors.blue('qdrant create collection:'), colors.green(collectionName))
       }else{
         console.log(colors.blue('qdrant collection exists:'), colors.green(collectionName))

@@ -9,6 +9,7 @@
 "use strict";
 import * as colors from "colors";
 import * as R from "ramda";  // 函数式编程工具库
+import { v4 } from "uuid"
 import { getEmbedding } from "src/sdk";
 import { ParameterizedContext } from "koa";  // Koa上下文类型
 import { ProblemService } from "./service";  // 范文服务层
@@ -45,14 +46,15 @@ export class ProblemControllers<T extends IModelEssay> {
       const extraData:Record<string,any> = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
       extraData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量
       
-      const problemData = R.mergeAll([body, extraData]);
-      if (!problemData.super || ctx.visitor.super >= problemData.super) {
-        problemData.super = problemData.super ?? ctx?.visitor?.super ?? 0
-        const data: Record<string, any> = await this.service.save(problemData as T)
+      const modelEssayData = R.mergeAll([body, extraData]);
+      if (!modelEssayData.super || ctx.visitor.super >= modelEssayData.super) {
+        modelEssayData.super = modelEssayData.super ?? ctx?.visitor?.super ?? 0
+        modelEssayData.uuid = modelEssayData.uuid || v4()
+        const data: Record<string, any> = await this.service.save(modelEssayData as T)
         const vectorPoint = {
           id: data.uuid, // 使用UUID作为默认ID
           vector: data.vector,
-          payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status'], data) // 去除向量字段
+          payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'], data) // 去除向量字段
         }
         const res = await qdrantClient.upsert('model-essay', {points:[vectorPoint], wait:true}) // 向Qdrant中插入或更新向量点
         console.log(res,1111)
@@ -120,14 +122,30 @@ export class ProblemControllers<T extends IModelEssay> {
     }
   };
   public vectorSearch = async (ctx: ParameterizedContext) => {
-    console.log(ctx.request.body)
+    console.log(ctx.request.body,11111)
     const request = R.clone(ctx.request.body) as Record<string, any>;
     request.query =await getEmbedding(request.query) // 获取文本向量
-    const data = await qdrantClient.query('model-essay', {})
-    console.log(data, 'vectorSearch')
+    const data = await qdrantClient.search('model-essay', {
+      vector:request.query,      
+      filter: {
+        must: [
+          {
+            key: "status", // Payload字段名
+            match: { value: 1 } // 精确匹配status=1
+          }
+        ]
+      },
+      limit:20,
+      with_payload:true,
+      with_vector:false,
+    })
+    // console.log(data, 'vectorSearch')
     ctx.body = packResponse({
       code: 200,
-      data: data,
+      data: {
+        total:data.length,
+        items:data
+      },
       msg: '向量检索功能正在开发中，敬请期待' 
     });
   }
