@@ -131,7 +131,7 @@ export class ProblemControllers<T extends IModelEssay> {
         must: [
           {
             key: "status", // Payload字段名
-            match: { value: 1 } // 精确匹配status=1
+            match: { value: request.status??1 } // 精确匹配status=1
           }
         ]
       },
