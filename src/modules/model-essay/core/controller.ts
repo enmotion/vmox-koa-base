@@ -23,6 +23,80 @@ import { qdrantClient } from "src/database";
  * 范文控制器类
  * @template T 扩展自IProblem的泛型类型
  */
+const aggregatePiple=[
+  {
+    $lookup: {
+      from: "tags",
+      localField: 'genre',
+      foreignField: 'key',    // 目标集合的关联字段
+      as: 'generInfo',       // 存储匹配结果的临时字段
+      pipeline: [
+        { $project: { name: 1 } }
+      ]
+    },
+  },
+  {
+    $lookup: {
+      from: "tags",
+      localField: 'writingMethods',
+      foreignField: 'key',    // 目标集合的关联字段
+      as: 'writingMethodsInfo',       // 存储匹配结果的临时字段
+      pipeline: [
+        { $project: { name: 1} }
+      ]
+    },
+  },
+  {
+    $lookup: {
+      from: "tags",
+      localField: 'sync',
+      foreignField: 'key',    // 目标集合的关联字段
+      as: 'syncInfo',       // 存储匹配结果的临时字段
+      pipeline: [
+        { $project: { name: 1} }
+      ]
+    },
+  },
+  {
+    $lookup: {
+      from: "user-collections",
+      localField: 'createdUser',
+      foreignField: 'uid',    // 目标集合的关联字段
+      as: 'createdUserInfo',       // 存储匹配结果的临时字段
+      pipeline: [
+        { $project: { username: 1, nickname: 1 } }
+      ]
+    },
+  },
+  {
+    $unwind: {
+      path: '$createdUserInfo',
+      preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+    }
+  },
+  {
+    $lookup: {
+      from: "user-collections",
+      localField: 'updatedUser',
+      foreignField: 'uid',    // 目标集合的关联字段
+      as: 'updatedUserInfo',       // 存储匹配结果的临时字段
+      pipeline: [
+        { $project: { username: 1, nickname: 1 } }
+      ]
+    },
+  },
+  {
+    $unwind: {
+      path: '$updatedUserInfo',
+      preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
+    }
+  },
+  // {
+  //   $addFields: {
+  //     createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
+  //   }
+  // },      
+]
 export class ProblemControllers<T extends IModelEssay> {
   public service: ProblemService<T>;  // 范文服务实例
   public schema: Schema<T>;  // Mongoose模式实例
@@ -157,80 +231,7 @@ export class ProblemControllers<T extends IModelEssay> {
       ) // 请求值与查询条件的转换
       const page = getPagination(body.page) // 分页参数
       const sort = getSort(body.sort) // 排序参数
-      const data = await this.service.aggregate(filter, { __v: 0 }, page, sort, [
-        {
-          $lookup: {
-            from: "tags",
-            localField: 'genre',
-            foreignField: 'key',    // 目标集合的关联字段
-            as: 'generInfo',       // 存储匹配结果的临时字段
-            pipeline: [
-              { $project: { name: 1 } }
-            ]
-          },
-        },
-        {
-          $lookup: {
-            from: "tags",
-            localField: 'writingMethods',
-            foreignField: 'key',    // 目标集合的关联字段
-            as: 'writingMethodsInfo',       // 存储匹配结果的临时字段
-            pipeline: [
-              { $project: { name: 1} }
-            ]
-          },
-        },
-        {
-          $lookup: {
-            from: "tags",
-            localField: 'sync',
-            foreignField: 'key',    // 目标集合的关联字段
-            as: 'syncInfo',       // 存储匹配结果的临时字段
-            pipeline: [
-              { $project: { name: 1} }
-            ]
-          },
-        },
-        {
-          $lookup: {
-            from: "user-collections",
-            localField: 'createdUser',
-            foreignField: 'uid',    // 目标集合的关联字段
-            as: 'createdUserInfo',       // 存储匹配结果的临时字段
-            pipeline: [
-              { $project: { username: 1, nickname: 1 } }
-            ]
-          },
-        },
-        {
-          $unwind: {
-            path: '$createdUserInfo',
-            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
-          }
-        },
-        {
-          $lookup: {
-            from: "user-collections",
-            localField: 'updatedUser',
-            foreignField: 'uid',    // 目标集合的关联字段
-            as: 'updatedUserInfo',       // 存储匹配结果的临时字段
-            pipeline: [
-              { $project: { username: 1, nickname: 1 } }
-            ]
-          },
-        },
-        {
-          $unwind: {
-            path: '$updatedUserInfo',
-            preserveNullAndEmptyArrays: true // 允许未匹配到创建者（如管理员创建的数据）
-          }
-        },
-        // {
-        //   $addFields: {
-        //     createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
-        //   }
-        // },      
-      ]); // 返回值 字段过滤
+      const data = await this.service.aggregate(filter, { __v: 0 }, page, sort, aggregatePiple); // 返回值 字段过滤
       ctx.body = packResponse({
         code: 200,
         data: data[0],
@@ -259,26 +260,34 @@ export class ProblemControllers<T extends IModelEssay> {
     })
     if(!!request.query){
       request.query = await getEmbedding(request.query) // 获取文本向量
-      const data = await qdrantClient.search('model-essay', {
-        vector:request.query,      
+      const vectorDatas = await qdrantClient.query('model-essay', {
+        query:request.query,      
         filter:{
           must:must
         },
         limit:20,
         with_payload:true,
         with_vector:false,
+      })
+      const data = await this.service.aggregate(
+        {_id:{$in:vectorDatas.points.map(item=>item.id)}},
+        {__v:0},null,null,
+        aggregatePiple,
+      )
+      const items = vectorDatas.points.map(point=>{
+        return data[0].items.find((item:Record<string,any>)=>point.id == item._id)
       })
       // console.log(data, 'vectorSearch')
       ctx.body = packResponse({
         code: 200,
         data: {
-          total:data?.length,
-          items:data
+          total:items.length,
+          items:items
         },
-        msg: '向量检索功能正在开发中，敬请期待' 
+        msg: '查找成功' 
       });
     }else{
-      const data = await qdrantClient.query('model-essay', {      
+      const vectorDatas = await qdrantClient.query('model-essay', { 
         filter:{
           must:must
         },
@@ -286,14 +295,22 @@ export class ProblemControllers<T extends IModelEssay> {
         with_payload:true,
         with_vector:false,
       })
-      console.log(data, 'vectorSearch')
+      const data = await this.service.aggregate(
+       {_id:{$in:vectorDatas.points.map(item=>item.id)}},
+        {__v:0},null,null,
+        aggregatePiple,
+      )
+      const items = vectorDatas.points.map(point=>{
+        return data[0].items.find((item:Record<string,any>)=>point.id == item._id)
+      })
+      // console.log(data, 'vectorSearch')
       ctx.body = packResponse({
         code: 200,
         data: {
-          total:data.points?.length??0,
-          items:data.points
+          total:items.length,
+          items:items
         },
-        msg: '向量检索功能正在开发中，敬请期待' 
+        msg: '查找成功' 
       });
     }
   }
