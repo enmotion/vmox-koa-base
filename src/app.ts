@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-07-13 00:42:16
+ * @ Modified time: 2025-07-13 00:51:13
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -18,13 +18,13 @@ import errosMiddleware from "./middlewares/error" // 错误处理 中间件
 import fs from 'fs';
 import { swaggerMiddleware } from './config/swagger';
 
-import { userRouter } from "./modules/users-class"
-import { systemRouter } from "./modules/system";
-import { categoryRouter, tagRouter, tagAssociationRouter } from './modules/content-type';
-import { problemRouter } from "./modules/problems"
-import { modelEssayRouter } from "./modules/model-essay";
-import { expandAppRouter } from './modules/app-manage';
-import { appPublicRouter } from './modules/app-public';
+import { userRouter } from "@modules/users-class"
+import { systemRouter } from "@modules/system";
+import { categoryRouter, tagRouter, tagAssociationRouter } from '@modules/content-type';
+import { problemRouter } from "@modules/problems"
+import { modelEssayRouter } from "@modules/model-essay";
+import { expandAppRouter } from '@modules/app-manage';
+import { appPublicRouter } from '@modules/app-public';
 
 // const userModel = userUserModel(mongoose,'/users') // 实例化用户模块
 // // 读取 SSL 证书与密钥文件，用于 HTTPS 连接。这里假设 ssl 证书和密钥文件放在项目的 ssl 文件夹中。

@@ -26,7 +26,7 @@ export default {
     del({ targets: 'dist/*', hook: 'buildStart' }), // 在构建开始时删除 dist 目录
     alias({
       entries: [
-        { find: '@model', replacement: path.resolve(__dirname, 'src/modules') }, // 别名 @model 指向 src/models
+        { find: '@modules', replacement: path.resolve(__dirname, 'src/modules') }, // 别名 @model 指向 src/models
         { find: '@lib', replacement: path.resolve(__dirname, 'src/use.lib') }, // 别名 @lib 指向 src/use.lib
         { find: '@type', replacement: path.resolve(__dirname, 'src/type') }, // 别名 @type 指向 src/type
         { find: '@router', replacement: path.resolve(__dirname, 'src/router') } // 别名 @router 指向 src/router

@@ -9,8 +9,8 @@
 "use strict";
 import * as R from "ramda"; // 函数式编程工具库
 import { ParameterizedContext } from "koa"; // Koa上下文类型
-import { problemService } from "@model/problems";
-import { tagAssociationService, tagService } from "@model/content-type";
+import { problemService } from "@modules/problems";
+import { tagAssociationService, tagService } from "@modules/content-type";
 import { getPagination, getSort } from "@lib/serviceTools";
 import {
   packResponse,

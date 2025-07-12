@@ -1,9 +1,9 @@
 'use strict';
 import type { ParameterizedContext, Next} from "koa";
 import * as jwt from 'jsonwebtoken'; // import jwt module for token
-import { userService } from "../modules/users-class";
-import { expandAppService } from "../modules/app-manage/";
-import { appPublicRouter } from "../modules/app-public";
+import { userService } from "@modules/users-class";
+import { expandAppService } from "@modules/app-manage/";
+import { appPublicRouter } from "@modules/app-public";
 
 const appPublicRouterPaths = appPublicRouter.stack.map(s=>s.path)
 
