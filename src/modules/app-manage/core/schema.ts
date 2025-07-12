@@ -111,7 +111,7 @@ export const problemBaseSchema: SchemaDefinition<IApp> = {
     name: '应用KEY',
     required: [true, '缺少应用KEY，创建失败'],
     minlength: [10, '应用KEY长度不能少于10字符'],
-    maxlength: [2000, '应用KEY长度不能超过2000字符']
+    maxlength: [64, '应用KEY长度不能超过2000字符']
   },
   description: {
     type: String,

@@ -1,10 +1,28 @@
 'use strict';
 import type { ParameterizedContext, Next} from "koa";
 import * as jwt from 'jsonwebtoken'; // import jwt module for token
-import { userService } from "src/modules/users-class";
+import { userService } from "../modules/users-class";
+import { expandAppService } from "../modules/app-manage/";
+import { appPublicRouter } from "../modules/app-public";
+
+const appPublicRouterPaths = appPublicRouter.stack.map(s=>s.path)
 
 async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
   const pathname:string = ctx.URL.pathname;
+  if(pathname.includes('app/') && appPublicRouterPaths.includes(pathname)){
+    // console.log(ctx)
+    const app = await expandAppService.find({apiKey:ctx.header.apikey})
+    if(app.items[0].status){
+      await next();
+      return
+    }else{
+      throw {
+        code: 401,
+        msg: '没有合法的 apiKey 或者 当前apiKey 已经被禁用',
+        data: null
+      }
+    }
+  }
   // console.log(ctx)
   if(pathname && !pathname.includes('pub/') && pathname!='/favicon.ico'){
     let decoded:any = {};
