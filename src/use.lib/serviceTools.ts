@@ -208,7 +208,7 @@ export function getMongooseQueryFilter(
  */
 export function getQdrantFilter(
   data: Record<string, any>,
-  mapping: Record<string, { target: string; match: string | [string, (value: any) => any] }>
+  mapping: Record<string, { target: string; match: string | [string, (value: any) => any] , default?:any}>
 ): Record<string, any>[] {
   // 获取所有需要处理的源字段路径
   const sourceKeys = R.keys(mapping);
@@ -218,13 +218,12 @@ export function getQdrantFilter(
 
   // 遍历每个源字段配置
   sourceKeys.forEach((key: string, index: number) => {
+    const item = targetItems[index];
     // 使用Ramda的path方法获取嵌套数据（支持'a/b/c'格式路径）
-    const value = R.path(key.split('/'), data);
+    const value = R.path(key.split('/'), data) ?? item.default;
     
     // 仅处理非空值
     if (!R.isNil(value)) {
-      const item = targetItems[index];
-      
       // 处理匹配规则：字符串路径直接使用，数组路径需应用转换函数
       const matchData = typeof item.match === 'string' 
         ? R.assocPath(item.match.split("/"), value, {})  // 简单路径映射

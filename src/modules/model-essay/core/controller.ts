@@ -275,8 +275,9 @@ export class ProblemControllers<T extends IModelEssay> {
         aggregatePiple,
       )
       const items = vectorDatas.points.map(point=>{
-        return data[0].items.find((item:Record<string,any>)=>point.id == item._id)
+        return R.mergeAll([data[0].items.find((item:Record<string,any>)=>point.id == item._id),{score:point.score}])
       })
+       console.log(vectorDatas)
       // console.log(data, 'vectorSearch')
       ctx.body = packResponse({
         code: 200,
@@ -296,7 +297,7 @@ export class ProblemControllers<T extends IModelEssay> {
         with_vector:false,
       })
       const data = await this.service.aggregate(
-       {_id:{$in:vectorDatas.points.map(item=>item.id)}},
+        {_id:{$in:vectorDatas.points.map(item=>item.id)}},
         {__v:0},null,null,
         aggregatePiple,
       )

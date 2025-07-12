@@ -13,18 +13,18 @@ import { SchemaDefinition } from "mongoose";
 
 // 扩展模块配置
 import expandProblemSchema from "./expand/schema";
-import type { ExpandProblem } from "./expand/schema";
+import type { ExpandApp } from "./expand/schema";
 
 // 业务逻辑层依赖
-import { ExpandProblemService } from "./expand/service";
-import { ExpandProblemControllers } from "./expand/controller";
+import { ExpandAppService } from "./expand/service";
+import { ExpandAppControllers } from "./expand/controller";
 
 // 路由工具
 import { mappingControllersAndRouter } from "@lib/routerTools";
 
 // 常量定义
-const _mongoDbCollectionName = 'problem-collection'; // MongoDB集合名
-const _routerPrefix = '/problems'; // API路由前缀
+const _mongoDbCollectionName = 'app-collection'; // MongoDB集合名
+const _routerPrefix = '/app'; // API路由前缀
 
 /**
  * 问题集Schema定义
@@ -33,8 +33,8 @@ const _routerPrefix = '/problems'; // API路由前缀
  * - 设置strict模式禁止未定义字段
  * - 创建复合索引(difficultyLevel+gradeLevel+status)
  */
-export const problemSchema = new mongoose.Schema<ExpandProblem>(
-  expandProblemSchema as SchemaDefinition<ExpandProblem>,
+export const problemSchema = new mongoose.Schema<ExpandApp>(
+  expandProblemSchema as SchemaDefinition<ExpandApp>,
   { strict: true, timestamps: true }
 );
 
@@ -49,7 +49,7 @@ problemSchema.index({ tags: 1, status: 1 });
  * - 绑定到指定集合名称
  * - 泛型参数确保文档类型安全
  */
-export const problemModel = mongoose.model<ExpandProblem>(
+export const appModel = mongoose.model<ExpandApp>(
   _mongoDbCollectionName, 
   problemSchema
 );
@@ -59,7 +59,7 @@ export const problemModel = mongoose.model<ExpandProblem>(
  * - 封装CRUD等业务逻辑
  * - 泛型保持与服务层类型一致
  */
-export const problemService = new ExpandProblemService<ExpandProblem>(problemModel);
+export const expandAppService = new ExpandAppService<ExpandApp>(appModel);
 
 /**
  * 问题集控制器实例
@@ -67,8 +67,8 @@ export const problemService = new ExpandProblemService<ExpandProblem>(problemMod
  * - 依赖注入服务层实例
  * - 携带Schema用于请求验证
  */
-export const problemController = new ExpandProblemControllers<ExpandProblem>(
-  problemService, 
+export const expandAppController = new ExpandAppControllers<ExpandApp>(
+  expandAppService, 
   problemSchema
 );
 
@@ -78,9 +78,9 @@ export const problemController = new ExpandProblemControllers<ExpandProblem>(
  * - RESTful风格路由设计
  * - 方法名映射控制器实际方法
  */
-export const problemRouter = mappingControllersAndRouter<ExpandProblemControllers<ExpandProblem>>(
+export const expandAppRouter = mappingControllersAndRouter<ExpandAppControllers<ExpandApp>>(
   _routerPrefix,
-  problemController,
+  expandAppController,
   [
     // 基础CRUD接口
     { routerPath: '/save', method: 'post', handlerName: 'save' },
@@ -92,4 +92,4 @@ export const problemRouter = mappingControllersAndRouter<ExpandProblemController
 );
 
 // 类型导出
-export type { ExpandProblem }; 
+export type { ExpandApp }; 
