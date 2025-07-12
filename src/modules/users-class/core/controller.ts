@@ -14,7 +14,7 @@ import type { IUser } from "./schema";  // 用户模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import * as JWT from "jsonwebtoken";  // JWT令牌生成
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
-import { packResponse, fieldsFilter, getFilter } from "@lib/serviceTools";  // 响应处理工具
+import { packResponse, fieldsFilter, getMongooseQueryFilter } from "@lib/serviceTools";  // 响应处理工具
 import koaBody from "koa-body";
 
 /**
@@ -43,7 +43,7 @@ export class UserControllers<T extends IUser> {
   public register = async (ctx: ParameterizedContext) => {
     try {
       // 创建用户数据并过滤返回值
-      const body = getFilter(ctx.request?.body??{}) // 请求值与查询条件的转换
+      const body = getMongooseQueryFilter(ctx.request?.body??{}) // 请求值与查询条件的转换
       const data = fieldsFilter.call(
         await this.service.save(body as any,)
       ); // 返回值 字段过滤
@@ -77,7 +77,7 @@ export class UserControllers<T extends IUser> {
         R.mergeAll([{ username: null, password: null }, ctx.request.body ?? {}])
       );
       // 通过账号或昵称 匹配密码找到用户
-      const filter = getFilter(
+      const filter = getMongooseQueryFilter(
         queryData,
         {
           "username":['$or',(value:any)=>([
@@ -142,7 +142,7 @@ export class UserControllers<T extends IUser> {
   public updateMany = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
       const data = await this.service.updateMany({uid:{$in:filter.uid as string[]},super:{$lt:ctx.visitor.super}},R.omit(['uid'],body));
@@ -158,7 +158,7 @@ export class UserControllers<T extends IUser> {
   public updateOne = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string,any>
     if(!R.isNil(body) && !R.isEmpty(body)){
-      const filter = getFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(body,{"uids":"uid"}) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
       const data = await this.service.updateOne({uid:{$in:filter.uid as string[]},super:{$lt:ctx.visitor.super}},R.omit(['uid'],body));
@@ -195,7 +195,7 @@ export class UserControllers<T extends IUser> {
   public findOne = async (ctx: ParameterizedContext) => {
     const query:Record<string,any> = ctx.query;
     if(!R.isNil(query) && !R.isEmpty(query)){
-      const filter = getFilter(query) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(query) // 请求值与查询条件的转换
       const data = fieldsFilter.call(await this.service.findOne(filter)); // 返回值 字段过滤
       ctx.body = packResponse({
         code:!R.isNil(data)? 200 : 400, 
@@ -213,7 +213,7 @@ export class UserControllers<T extends IUser> {
   // 分页查找操作
   public find = async (ctx: ParameterizedContext) => {
     const query:Record<string,any> = ctx.request.body??{};
-    const filter = getFilter(
+    const filter = getMongooseQueryFilter(
       R.omit(['page','sort'],query),
       {
         "username":"username.$regex",
@@ -236,7 +236,7 @@ export class UserControllers<T extends IUser> {
   public aggregate = async (ctx: ParameterizedContext)=>{
     const visitor = ctx.visitor;
     const query:Record<string,any> = ctx.request.body??{};
-    const filter = getFilter(
+    const filter = getMongooseQueryFilter(
       R.omit(['page','sort'],query),
       {
         "username":"username/$regex",
@@ -298,7 +298,7 @@ export class UserControllers<T extends IUser> {
   }
   public uniqValidate = async (ctx: ParameterizedContext)=>{
     const query:Record<string,any> = ctx.request.body??{};
-    const filter = getFilter(
+    const filter = getMongooseQueryFilter(
       R.omit(['page','sort'],query),
       {
         "uid":"uid/$not/$eq"

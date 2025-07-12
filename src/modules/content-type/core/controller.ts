@@ -15,7 +15,7 @@ import { TagService } from './service';
 import { TagAssociationService } from './service';
 import { getPagination, getSort } from "@lib/serviceTools";
 import { ICategory, ITag, ITagAssociation } from './schema';
-import { packResponse, fieldsFilter, getFilter } from '@lib/serviceTools';
+import { packResponse, fieldsFilter, getMongooseQueryFilter } from '@lib/serviceTools';
 
 export class CategoryController<T extends ICategory> {
   public service: CategoryService<T>;
@@ -56,7 +56,7 @@ export class CategoryController<T extends ICategory> {
   public update = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string, any>;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, { '_ids': '_ids' });
+      const filter = getMongooseQueryFilter(body, { '_ids': '_ids' });
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now();
       const data = await this.service.updateMany(
@@ -94,7 +94,7 @@ export class CategoryController<T extends ICategory> {
   public findOne = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.query;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query);
+      const filter = getMongooseQueryFilter(query);
       const data = fieldsFilter.call(await this.service.findOne(filter));
       ctx.body = packResponse({
         code: !R.isNil(data) ? 200 : 400,
@@ -109,7 +109,7 @@ export class CategoryController<T extends ICategory> {
   public find = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.request.body;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-       const filter = getFilter(R.omit(['page','sort'],query));
+       const filter = getMongooseQueryFilter(R.omit(['page','sort'],query));
       const page = getPagination(query.page) // 分页与排序转换
       const sort = getSort(query.sort) // 分页与排序转换
       const data = await this.service.find(filter,page,sort);
@@ -124,7 +124,7 @@ export class CategoryController<T extends ICategory> {
   };
   public aggregate = async (ctx: ParameterizedContext)=>{
       const query:Record<string,any> = ctx.request.body??{};
-      const filter = getFilter(
+      const filter = getMongooseQueryFilter(
         R.omit(['page','sort'],query),
         {
           "name":"name/$regex",
@@ -227,7 +227,7 @@ export class TagController<T extends ITag, A extends ITagAssociation> {
   public update = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string, any>;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, { '_ids': '_ids' });
+      const filter = getMongooseQueryFilter(body, { '_ids': '_ids' });
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now();
       const data = await this.service.updateMany(
@@ -267,7 +267,7 @@ export class TagController<T extends ITag, A extends ITagAssociation> {
   public findOne = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.query;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query);
+      const filter = getMongooseQueryFilter(query);
       const data = fieldsFilter.call(await this.service.findOne(filter));
       ctx.body = packResponse({
         code: !R.isNil(data) ? 200 : 400,
@@ -282,7 +282,7 @@ export class TagController<T extends ITag, A extends ITagAssociation> {
   public find = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.request.body;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-       const filter = getFilter(R.omit(['page','sort'],query));
+       const filter = getMongooseQueryFilter(R.omit(['page','sort'],query));
       const page = getPagination(query.page) // 分页与排序转换
       const sort = getSort(query.sort) // 分页与排序转换
       const data = await this.service.find(filter,page,sort);
@@ -297,7 +297,7 @@ export class TagController<T extends ITag, A extends ITagAssociation> {
   };
   public aggregate = async (ctx: ParameterizedContext)=>{
       const query:Record<string,any> = ctx.request.body??{};
-      const filter = getFilter(
+      const filter = getMongooseQueryFilter(
         R.omit(['page','sort'],query),
         {
           "name":"name/$regex",
@@ -419,7 +419,7 @@ export class TagAssociationController<T extends ITagAssociation> {
   public update = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string, any>;
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, {
+      const filter = getMongooseQueryFilter(body, {
         'categoryIds': 'categoryId',
         'tagIds': 'tagId'
       });
@@ -465,7 +465,7 @@ export class TagAssociationController<T extends ITagAssociation> {
   public findOne = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.query;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query);
+      const filter = getMongooseQueryFilter(query);
       const data = fieldsFilter.call(await this.service.findOne(filter));
       ctx.body = packResponse({
         code: !R.isNil(data) ? 200 : 400,
@@ -480,7 +480,7 @@ export class TagAssociationController<T extends ITagAssociation> {
   public find = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.query;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query);
+      const filter = getMongooseQueryFilter(query);
       const data = await this.service.find(filter);
       ctx.body = packResponse({
         code: !R.isEmpty(data) ? 200 : 400,
@@ -493,7 +493,7 @@ export class TagAssociationController<T extends ITagAssociation> {
   };
   public aggregate = async (ctx: ParameterizedContext)=>{
       const query:Record<string,any> = ctx.request.body??{};
-      const filter = getFilter(
+      const filter = getMongooseQueryFilter(
         R.omit(['page','sort'],query),
         // {
         //   "name":"name/$regex",

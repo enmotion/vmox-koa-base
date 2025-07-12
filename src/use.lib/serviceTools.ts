@@ -130,7 +130,7 @@ export type MongooseFilterMapping = Record<string, string|[string,(value:any)=>a
  * @returns 符合 Mongoose 查询语法的平面结构对象，合并了映射后的字段和未映射的原始字段。
  */
 
-export function getFilter(
+export function getMongooseQueryFilter(
   query: Record<string, any>,      // 支持多级嵌套的查询条件
   mapping: MongooseFilterMapping = {}, // 字段路径映射规则（默认空配置）
   only:boolean = false // 是否只提取only数据，原本的对象数据需要经过 mapping 过滤

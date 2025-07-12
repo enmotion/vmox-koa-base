@@ -17,7 +17,7 @@ import { ProblemService } from "./service";  // 范文服务层
 import type { IModelEssay } from "./schema";  // 范文模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
-import { packResponse, fieldsFilter, getFilter } from "@lib/serviceTools";  // 响应处理工具
+import { packResponse, fieldsFilter, getMongooseQueryFilter } from "@lib/serviceTools";  // 响应处理工具
 import { qdrantClient } from "src/database";
 /**
  * 范文控制器类
@@ -52,8 +52,6 @@ export class ProblemControllers<T extends IModelEssay> {
         modelEssayData.super = modelEssayData.super ?? ctx?.visitor?.super ?? 0
         modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量 标题 + 正文        
         const data: Record<string, any> = await this.service.save(modelEssayData as T,{})
-        console.log(R.pick(['_id',],data))
-        console.log(R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'],data))
         try{
           // 创建向量数据
           const vectorPoint = {
@@ -106,7 +104,7 @@ export class ProblemControllers<T extends IModelEssay> {
     const body = R.clone(ctx.request?.body) as Record<string, any>
     console.log(body, 'updateMany')
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
       const updateDatas = await this.service.find({_id: { $in: filter._ids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
@@ -130,7 +128,7 @@ export class ProblemControllers<T extends IModelEssay> {
   public findOne = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.query;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(query) // 请求值与查询条件的转换
       const data = fieldsFilter.call(await this.service.findOne(filter)); // 返回值 字段过滤
       ctx.body = packResponse({
         code: !R.isEmpty(data) ? 200 : 400,
@@ -141,40 +139,12 @@ export class ProblemControllers<T extends IModelEssay> {
       ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
     }
   };
-  public vectorSearch = async (ctx: ParameterizedContext) => {
-    console.log(ctx.request.body,11111)
-    const request = R.clone(ctx.request.body) as Record<string, any>;
-    request.query =await getEmbedding(request.query) // 获取文本向量
-    const data = await qdrantClient.search('model-essay', {
-      vector:request.query,      
-      filter: {
-        must: [
-          {
-            key: "status", // Payload字段名
-            match: { value: request.status??1 } // 精确匹配status=1
-          }
-        ]
-      },
-      limit:20,
-      with_payload:true,
-      with_vector:false,
-    })
-    // console.log(data, 'vectorSearch')
-    ctx.body = packResponse({
-      code: 200,
-      data: {
-        total:data.length,
-        items:data
-      },
-      msg: '向量检索功能正在开发中，敬请期待' 
-    });
-  }
   // 聚合查询操作
   public aggregate = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = !R.isEmpty(ctx.request.body) ? ctx.request.body : JSON.parse(JSON.stringify(ctx.query)) ?? {};
     // https://rr4426xx0138.vicp.fun/problems/pub/find
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(
+      const filter = getMongooseQueryFilter(
         R.omit(['page', 'sort'], body),
         {
           "title": "title/$regex",
@@ -270,4 +240,42 @@ export class ProblemControllers<T extends IModelEssay> {
       ctx.body = packResponse({ code: 300, msg: '请提供查询条件' });
     }
   };
+  // 向量查询接口
+  public vectorSearch = async (ctx: ParameterizedContext) => {
+    if(R.isEmpty(ctx.request.body)){
+      ctx.body = packResponse({
+        code: 400,
+        data: {},
+        msg: '请输入查询条件' 
+      });
+      return
+    }
+    const request = R.clone(ctx.request.body) as Record<string, any>;
+    if(!!request.query){
+      request.query = await getEmbedding(request.query) // 获取文本向量
+      const data = await qdrantClient.search('model-essay', {
+        vector:request.query,      
+        filter: {
+          must: [
+            {
+              key: "status", // Payload字段名
+              match: { value: request.status ?? true } // 精确匹配status=1
+            }
+          ]
+        },
+        limit:20,
+        with_payload:true,
+        with_vector:false,
+      })
+      // console.log(data, 'vectorSearch')
+      ctx.body = packResponse({
+        code: 200,
+        data: {
+          total:data?.length,
+          items:data
+        },
+        msg: '向量检索功能正在开发中，敬请期待' 
+      });
+    }
+  }
 } 

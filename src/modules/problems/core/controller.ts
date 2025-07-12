@@ -13,7 +13,7 @@ import { ProblemService } from "./service";  // 问题集服务层
 import type { IProblem } from "./schema";  // 问题集模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
-import { packResponse, fieldsFilter, getFilter } from "@lib/serviceTools";  // 响应处理工具
+import { packResponse, fieldsFilter, getMongooseQueryFilter } from "@lib/serviceTools";  // 响应处理工具
 
 /**
  * 问题集控制器类
@@ -78,7 +78,7 @@ export class ProblemControllers<T extends IProblem> {
   public updateMany = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string, any>
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
       const data = await this.service.updateMany({ _id: { $in: filter._ids as string[] }, super: { $lt: ctx.visitor.super } }, R.omit(['_ids'], body));
@@ -96,7 +96,7 @@ export class ProblemControllers<T extends IProblem> {
   public findOne = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.query;
     if (!R.isNil(query) && !R.isEmpty(query)) {
-      const filter = getFilter(query) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(query) // 请求值与查询条件的转换
       const data = fieldsFilter.call(await this.service.findOne(filter)); // 返回值 字段过滤
       ctx.body = packResponse({
         code: !R.isEmpty(data) ? 200 : 400,
@@ -113,7 +113,7 @@ export class ProblemControllers<T extends IProblem> {
     console.log(body,1111)
     // https://rr4426xx0138.vicp.fun/problems/pub/find
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getFilter(
+      const filter = getMongooseQueryFilter(
         R.omit(['page','sort'],body),
         {
           "title":"title/$regex",
