@@ -34,7 +34,6 @@ import uniqid from "uniqid"
  */
 export interface IModelEssay {
   _id: string;                        // 范文ID
-  uuid: string;                        // 系统递增主键
   title: string;                      // 范文标题
   content:string;                     // 范文内容
   vector?: number[];                  // 向量化表示
@@ -47,7 +46,7 @@ export interface IModelEssay {
   from:string                         // 文章来源 投稿，采集，AI
 
   super:number;                       // 操作权限等级
-  status: number;                     // 范围文状态 0:草稿, 1:待审核, 2:已审核(同步到了向量数据库)
+  status: boolean;                     // 范围文状态 0:草稿, 1:待审核, 2:已审核(同步到了向量数据库)
   createdUser:string;                 // 创建用户 
   createdAt: Date;                    // 创建时间
   updatedUser?: string;               // 修改用户
@@ -66,12 +65,6 @@ export type IModelEssayDocument = Document<IModelEssay>
  * @constant
  * @type {SchemaDefinition<IModelEssayDocument>}
  * @property {Object} _id - 范文唯一标识配置
- *   @property {String} type - 字段类型
- *   @property {Boolean} index - 建立索引加速查询
- *   @property {String} name - 字段显示名称
- *   @property {Array} unique - 唯一性约束及错误提示
- *   @property {Function} default - 默认值生成函数
- * @property {Object} uuid - 递增数值组件
  *   @property {String} type - 字段类型
  *   @property {Boolean} index - 建立索引加速查询
  *   @property {String} name - 字段显示名称
@@ -105,13 +98,7 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     index: true,
     name: '范文ID',
     unique: [true, '该范文ID已被占用'],
-    default: () => uniqid()
-  },
-  uuid:{
-    type: String,
-    required:true,
-    index:true,
-    default:v4
+    default: v4
   },
   title: {
     type: String,
@@ -171,9 +158,9 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     min: [0, '权限等级不能小于0'],
   },
   status: {
-    type: Number,
+    type: Boolean,
     name: '范文状态',
-    default: 0
+    default: true
   },
   createdUser: {
     type: String,

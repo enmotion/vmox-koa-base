@@ -9,6 +9,7 @@
 "use strict";
 import * as colors from "colors";
 import * as R from "ramda";  // 函数式编程工具库
+import { mongoose } from "src/database";
 import { v4 } from "uuid"
 import { getEmbedding } from "src/sdk";
 import { ParameterizedContext } from "koa";  // Koa上下文类型
@@ -41,29 +42,39 @@ export class ProblemControllers<T extends IModelEssay> {
    * @returns 保存或更新结果
    */
   public save = async (ctx: ParameterizedContext) => {
+    // const session = await mongoose.startSession(); // 创建事务机制的 session
     const body: Record<string, any> = ctx.request.body;
-    if (!R.isNil(body) && !R.isEmpty(body)) {
-      const extraData:Record<string,any> = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
-      extraData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量
-      
-      const modelEssayData = R.mergeAll([body, extraData]);
-      if (!modelEssayData.super || ctx.visitor.super >= modelEssayData.super) {
+    if (!R.isNil(body) && !R.isEmpty(body)) {      
+      if (!body.super || ctx.visitor.super >= body.super) {
+        // session.startTransaction(); // 事务机制开始
+        const extraData:Record<string,any> = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
+        const modelEssayData = R.mergeAll([body, extraData]); // 合并请求数据，在原始数据上添加 向量值与更新或者创建内容
         modelEssayData.super = modelEssayData.super ?? ctx?.visitor?.super ?? 0
-        modelEssayData.uuid = modelEssayData.uuid || v4()
-        const data: Record<string, any> = await this.service.save(modelEssayData as T)
-        const vectorPoint = {
-          id: data.uuid, // 使用UUID作为默认ID
-          vector: data.vector,
-          payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'], data) // 去除向量字段
+        modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量 标题 + 正文        
+        const data: Record<string, any> = await this.service.save(modelEssayData as T,{})
+        console.log(R.pick(['_id',],data))
+        console.log(R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'],data))
+        try{
+          // 创建向量数据
+          const vectorPoint = {
+            id: data._id, // 使用UUID作为默认ID
+            vector: data.vector,
+            payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'], data) // 去除向量字段
+          }
+          await qdrantClient.upsert('model-essay', { points:[vectorPoint], wait:true }); // 向Qdrant中插入或更新向量点
+          // await session.commitTransaction();
+          // session.endSession();
+          ctx.body = packResponse({
+            code: 200,
+            data: data,
+            msg: '操作成功'
+          })
+        }catch(err){
+          this.service.deleteMany({_id:data._id})
+          // await session.abortTransaction()
+          // session.endSession();
+          throw err
         }
-        const res = await qdrantClient.upsert('model-essay', {points:[vectorPoint], wait:true}) // 向Qdrant中插入或更新向量点
-        console.log(res,1111)
-        const success = !!data.uuid
-        ctx.body = packResponse({
-          code: success ? 200 : 400,
-          data: data,
-          msg: success ? '操作成功' : '出现异常'
-        })
       } else {
         ctx.body = packResponse({ code: 300, msg: '你的权限等级,不允许操作此范文' })
       }
@@ -76,7 +87,10 @@ export class ProblemControllers<T extends IModelEssay> {
   public deleteMany = async (ctx: ParameterizedContext) => {
     if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
       const _ids = ctx.query._id.split(",")
-      const data = await this.service.deleteMany({ _id: { $in: _ids }, super: { $lte: ctx.visitor.super } }); // 删除范文
+      const deleteDatas = await this.service.find({_id: { $in: _ids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
+      const deleteIds = deleteDatas.items.map(item=>item._id);
+      const data = await this.service.deleteMany({ _id: { $in: deleteIds } }); // 删除范文
+      await qdrantClient.delete("model-essay",{points:deleteIds})
       return ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
         msg: data.deletedCount > 0 ? `操作成功，删除[${data.deletedCount}]` : '未找到可删除的范文',
@@ -95,7 +109,13 @@ export class ProblemControllers<T extends IModelEssay> {
       const filter = getFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
-      const data = await this.service.updateMany({ _id: { $in: filter._ids as string[] }, super: { $lte: ctx.visitor.super } }, R.omit(['_ids'], body));
+      const updateDatas = await this.service.find({_id: { $in: filter._ids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
+      const updateIds = updateDatas.items.map(item=>item._id);
+      const data = await this.service.updateMany({ _id: { $in: updateIds } }, R.omit(['_ids'], body));
+      await qdrantClient.setPayload("model-essay",{
+        points:updateIds,
+        payload:R.omit(['_ids'], body)
+      })
       ctx.body = packResponse({
         code: data.matchedCount > 0 ? 200 : 400,
         msg: data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的范文',

@@ -21,7 +21,7 @@ export class ProblemService<T extends IModelEssay> extends CoreService<T> {
   public override async save(modelEssay:T,options?:SaveOptions):Promise<any>{
     if(!!modelEssay._id){
       await super.updateOne({_id:modelEssay._id}, modelEssay, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
-      return super.findOne({_id:modelEssay._id})
+      return super.findOne({_id:modelEssay._id},{})
     }else{
       return super.save(modelEssay,options)
     }

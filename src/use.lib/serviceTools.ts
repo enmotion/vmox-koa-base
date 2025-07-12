@@ -35,7 +35,7 @@ export function mongoDBErrorTransform(err:any,schema:Schema){
     // 处理 MongoDB 原生错误
     if(['MongoServerError','MongooseError'].includes(res.data?.errorName)){
       // 提取冲突字段的 Schema 配置
-      Object.keys(err?.cause?.keyPattern ?? err?.keyPattern).forEach((key:string)=>{
+      Object.keys(err?.cause?.keyPattern ?? err?.keyPattern?? {}).forEach((key:string)=>{
         res.data['options'][key] = schema.path(key).options
       });
       // 从错误消息中提取有效信息
