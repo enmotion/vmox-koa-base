@@ -17,7 +17,7 @@ import { ProblemService } from "./service";  // 范文服务层
 import type { IModelEssay } from "./schema";  // 范文模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
-import { packResponse, fieldsFilter, getMongooseQueryFilter } from "@lib/serviceTools";  // 响应处理工具
+import { packResponse, fieldsFilter, getMongooseQueryFilter, getQdrantFilter } from "@lib/serviceTools";  // 响应处理工具
 import { qdrantClient } from "src/database";
 /**
  * 范文控制器类
@@ -251,17 +251,18 @@ export class ProblemControllers<T extends IModelEssay> {
       return
     }
     const request = R.clone(ctx.request.body) as Record<string, any>;
+    const must = getQdrantFilter(R.omit(['query'],request),{
+      status:{target:'status',match:'match/value'},
+      genre:{target:'genre',match:'match/value'},
+      writingMethods:{target:"writingMethods",match:"match/any"},
+      sync:{target:'sync',match:'match/any'}
+    })
     if(!!request.query){
       request.query = await getEmbedding(request.query) // 获取文本向量
       const data = await qdrantClient.search('model-essay', {
         vector:request.query,      
-        filter: {
-          must: [
-            {
-              key: "status", // Payload字段名
-              match: { value: request.status ?? true } // 精确匹配status=1
-            }
-          ]
+        filter:{
+          must:must
         },
         limit:20,
         with_payload:true,
@@ -273,6 +274,24 @@ export class ProblemControllers<T extends IModelEssay> {
         data: {
           total:data?.length,
           items:data
+        },
+        msg: '向量检索功能正在开发中，敬请期待' 
+      });
+    }else{
+      const data = await qdrantClient.query('model-essay', {      
+        filter:{
+          must:must
+        },
+        limit:20,
+        with_payload:true,
+        with_vector:false,
+      })
+      console.log(data, 'vectorSearch')
+      ctx.body = packResponse({
+        code: 200,
+        data: {
+          total:data.points?.length??0,
+          items:data.points
         },
         msg: '向量检索功能正在开发中，敬请期待' 
       });

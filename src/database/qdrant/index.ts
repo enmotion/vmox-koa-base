@@ -33,9 +33,9 @@ async function initQdrantDataBase(){
           vectors: { size: dimension, distance: "Cosine" }}
         )
         await qdrantClient.createPayloadIndex(collectionName, { field_name:"status", field_schema:'bool'});
-        await qdrantClient.createPayloadIndex(collectionName, { field_name:"genre", field_schema:'text'});
+        await qdrantClient.createPayloadIndex(collectionName, { field_name:"genre", field_schema:'keyword'});
         await qdrantClient.createPayloadIndex(collectionName, { field_name:"writingMethods", field_schema:'keyword'});
-        await qdrantClient.createPayloadIndex(collectionName, { field_name:"sync", field_schema:'text'});
+        await qdrantClient.createPayloadIndex(collectionName, { field_name:"sync", field_schema:'keyword'});
         console.log(colors.blue('qdrant create collection:'), colors.green(collectionName))
       }else{
         console.log(colors.blue('qdrant collection exists:'), colors.green(collectionName))

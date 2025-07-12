@@ -191,9 +191,56 @@ export function getMongooseQueryFilter(
   // 使用 Ramda 库的 mergeDeepRight 函数，将剩余未映射的字段和已转换的字段合并到一个对象中并返回
   return only ? result : R.mergeDeepRight(condition, result);
 }
+/**
+ * 拼装 qdrant 查询数据结构
+ */
 
-export function getQdrantFilter(data:Record<string,any>,mapping:MongooseFilterMapping={}){
+/**
+ * 将源数据转换为Qdrant兼容的过滤器格式
+ * @param data 源数据对象（支持嵌套结构）
+ * @param mapping 字段映射配置：
+ *   - key: 源数据路径（支持'/'分隔的嵌套路径）
+ *   - value: {
+ *       target: 目标字段名,
+ *       match: 匹配规则（字符串路径或[路径, 转换函数]）
+ *     }
+ * @returns Qdrant过滤器数组（每个元素包含key和匹配条件）
+ */
+export function getQdrantFilter(
+  data: Record<string, any>,
+  mapping: Record<string, { target: string; match: string | [string, (value: any) => any] }>
+): Record<string, any>[] {
+  // 获取所有需要处理的源字段路径
+  const sourceKeys = R.keys(mapping);
+  // 获取所有目标配置项
+  const targetItems = R.values(mapping);
+  const filters: Record<string, any>[] = [];
 
+  // 遍历每个源字段配置
+  sourceKeys.forEach((key: string, index: number) => {
+    // 使用Ramda的path方法获取嵌套数据（支持'a/b/c'格式路径）
+    const value = R.path(key.split('/'), data);
+    
+    // 仅处理非空值
+    if (!R.isNil(value)) {
+      const item = targetItems[index];
+      
+      // 处理匹配规则：字符串路径直接使用，数组路径需应用转换函数
+      const matchData = typeof item.match === 'string' 
+        ? R.assocPath(item.match.split("/"), value, {})  // 简单路径映射
+        : R.assocPath(item.match[0].split("/"), item.match[1](value), {});  // 带转换函数的映射
+      
+      // 合并匹配条件和目标字段名
+      filters.push(
+        R.mergeAll([
+          matchData,
+          { key: item.target }  // 添加目标字段标识
+        ])
+      );
+    }
+  });
+
+  return filters;
 }
 /*------------------------------------------------------------------------------------*/
 
