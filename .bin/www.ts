@@ -6,36 +6,20 @@
  */
 
 // 引入 "colors" 库，该库用于在控制台输出有颜色的文本，方便区分不同类型的信息
+import './load-env';
 import * as colors from "colors";
-// 引入 dotenv 模块，用于加载环境变量文件
-import dotenv from 'dotenv';
-// 引入 path 模块，用于处理文件路径
-import path from 'path';
+// // 引入 dotenv 模块，用于加载环境变量文件
+// import dotenv from 'dotenv';
+// // 引入 path 模块，用于处理文件路径
+// import path from 'path';
 // 从工具库模块中引入两个工具函数：getAvailablePort 用于获取可用端口，getLocalServerIP 用于获取本地服务器的 IP 地址
 import { getAvailablePort, getLocalServerIP } from "../src/use.lib/serverTools";
-
-// 获取当前的 NODE_ENV 环境变量，如果未设置则默认为 'production'
-const nodeEnv = process.env.NODE_ENV || 'production';
-
-// 根据不同的环境加载不同的环境变量文件
-if (nodeEnv !== 'production') {
-  // 在非生产环境中加载 .env 文件
-  dotenv.config({ path: path.resolve(__dirname, `../.env`) });
-  // 加载 .env.{NODE_ENV} 文件，并覆盖之前加载的环境变量
-  dotenv.config({ path: path.resolve(__dirname, `../.env.${nodeEnv}`), override: true });
-  // 加载 .env.{NODE_ENV}.local 文件，并覆盖之前加载的环境变量
-  dotenv.config({ path: path.resolve(__dirname, `../.env.${nodeEnv}.local`), override: true });
-} else {
-  // 在生产环境中加载 .env 文件
-  dotenv.config({ path: path.resolve(__dirname, `../.env`) });
-}
 // 引入应用实例，这个 app 应该是一个 koa 应用实例或者类似的服务器应用实例
 import app from '../src/app'; // 必须在环境变量读取后引入 否则 app 中将无法正确引入环境变量
 
 // 尝试从环境变量中获取端口号。如果环境变量中没有 APP_PORT 字段，则使用默认值 '0'。
 // 将获取到的端口号字符串转换为整数。如果转换失败（例如值为 '0' 或者非数字字符串），则使用默认端口号 3000
 const port = parseInt(process.env.APP_PORT as string) || 3000;
-
 /**
  * 异步函数，用于创建并启动服务器。
  * 根据当前的环境（开发环境或非开发环境）选择合适的端口，并启动服务器监听该端口。
