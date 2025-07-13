@@ -20,11 +20,11 @@ import {
 
 export class AppControllers {
   // 聚合查询操作
-  public aggregatePropblem = async (ctx: ParameterizedContext) => {
+  public aggregateProblem = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = !R.isEmpty(ctx.request.body)
       ? ctx.request.body
       : JSON.parse(JSON.stringify(ctx.query)) ?? {};
-    console.log(body, 'aggregatePropblem');
+    console.log(body, 'aggregateProblem');
     // https://rr4426xx0138.vicp.fun/problems/pub/find
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getMongooseQueryFilter(R.omit(["page", "sort"], body), {
@@ -98,23 +98,35 @@ export class AppControllers {
   };
 
   public aggregateTagAssociationService = async (ctx: ParameterizedContext) => {
-    const query: Record<string, any> = ctx.request.body ?? {};
+    const query: Record<string, any> = ctx.query ?? {};
+    // categroyId 不可以与 tagIds 同时存在
+    console.log(!R.isNil(query.tagIds) && !R.isEmpty(query.tagIds) && typeof query.tagIds === 'string')
+    if(!R.isNil(query.tagIds) && !R.isEmpty(query.tagIds) && typeof query.tagIds === 'string'){
+      query.tagIds = (query.tagIds as string).split(",");
+      delete query.categoryId;
+      delete query.onlyLeaf
+    }else{
+      delete query.tagIds
+    }
+    console.log(query,11222)
     const filter = getMongooseQueryFilter(
-      R.omit(["page", "sort"], query)
-      // {
-      //   "name":"name/$regex",
-      //   "key":["key",(value)=>{ return {$regex:value, $options:'i'}}],
-      //   "description":"description/$regex",
-      //   "createdAt":"createdAt/$dateRange",
-      //   "updatedAt":"updatedAt/$dateRange"
-      // }
+      R.omit(["page", "sort"], query),
+      {
+        "name":"name/$regex",
+        "tagIds":"tagId/$in",
+        "onlyLeaf":["parentAssociationId",(value)=> value=='1'?{$ne:""}:{$regex:""}],
+        "key":["key",(value)=>{ return {$regex:value, $options:'i'}}],
+        "description":"description/$regex",
+        "createdAt":"createdAt/$dateRange",
+        "updatedAt":"updatedAt/$dateRange"
+      }
     ); // 请求值与查询条件的转换
     const page = getPagination(query.page); // 分页与排序转换
     const sort = getSort(query.sort); // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
     const data = await tagAssociationService.aggregate(
       R.mergeAll([filter]),
-      { password: 0, __v: 0 },
+      { tagInfo:1, parentAssociationId:1 },
       page,
       sort,
       [
@@ -139,7 +151,7 @@ export class AppControllers {
             localField: "tagId",
             foreignField: "key", // 目标集合的关联字段
             as: "tagInfo", // 存储匹配结果的临时字段
-            pipeline: [{ $project: { name: 1, key: 1 } }],
+            pipeline: [{ $project: { name: 1, key: 1,description:1 } }],
           },
         },
         {

@@ -9,22 +9,21 @@ const appPublicRouterPaths = appPublicRouter.stack.map(s=>s.path)
 
 async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
   const pathname:string = ctx.URL.pathname;
-  if(pathname.includes('app/') && appPublicRouterPaths.includes(pathname)){
-    // console.log(ctx)
-    const app = await expandAppService.find({apiKey:ctx.header.apikey})
-    if(app.items[0].status){
-      await next();
-      return
-    }else{
-      throw {
-        code: 401,
-        msg: '没有合法的 apiKey 或者 当前apiKey 已经被禁用',
-        data: null
-      }
-    }
-  }
   // console.log(ctx)
   if(pathname && !pathname.includes('pub/') && pathname!='/favicon.ico'){
+    if(pathname.includes('app/') && appPublicRouterPaths.includes(pathname)){
+      const app = await expandAppService.find({apiKey:ctx.header.apikey})
+      if(app.items[0].status){
+        await next();
+        return
+      }else{
+        throw {
+          code: 401,
+          msg: 'Invalidate',
+          data: null
+        }
+      }
+    }
     let decoded:any = {};
     try{
       const token = (ctx.header.authorization as string)?.replace("bearer ","")||"";
