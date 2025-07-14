@@ -91,12 +91,6 @@ export type IAppDocument = Document<IApp>
  *   @property {Boolean} immutable - 禁止修改
  */
 export const problemBaseSchema: SchemaDefinition<IApp> = {
-  _id: {
-    type: String,
-    index: true,
-    name: '应用ID',
-    unique: [true, '该应用ID已被占用'],
-  },
   appName: {
     type: String,
     name: '应用名称',
