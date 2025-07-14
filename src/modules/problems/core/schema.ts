@@ -152,22 +152,22 @@ export const problemBaseSchema: SchemaDefinition<IProblem> = {
     type: String,
     name: '问题定义',
     required: [true, '缺少问题定义，创建失败'],
-    minlength: [10, '问题定义长度不能少于10字符'],
+    minlength: [1, '问题定义长度不能少于1字符'],
     maxlength: [2000, '问题定义长度不能超过2000字符']
   },
   example: {
     type: String,
     name: '问题范例',
     required: [true, '缺少问题范例，创建失败'],
-    minlength: [10, '问题范例长度不能少于10字符'],
+    minlength: [1, '问题范例长度不能少于1字符'],
     maxlength: [5000, '问题范例长度不能超过5000字符']
   },
   coreFix: {
     type: String,
     name: '修改核心',
     required: [true, '缺少修改核心，创建失败'],
-    minlength: [10, '修改核心长度不能少于10字符'],
-    maxlength: [1000, '修改核心长度不能超过1000字符']
+    minlength: [10, '修改核心长度不能少于1字符'],
+    maxlength: [3000, '修改核心长度不能超过1000字符']
   },
   difficultyLevel: {
     type: Number,

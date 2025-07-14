@@ -44,42 +44,43 @@ export class AppControllers {
       }); // 请求值与查询条件的转换
       const page = getPagination(body.page); // 分页参数
       const sort = getSort(body.sort); // 排序参数
+      filter.status = true; // 强制展现上架内容
       const data = await problemService.aggregate(
         filter,
-        { __v: 0 },
+        { _id: 1,title:1, definition:1, example:1, coreFix:1, gradeLevel:1, difficultyLevel:1 },
         page,
         sort,
         [
-          {
-            $lookup: {
-              from: "user-collections",
-              localField: "createdUser",
-              foreignField: "uid", // 目标集合的关联字段
-              as: "createdUserInfo", // 存储匹配结果的临时字段
-              pipeline: [{ $project: { username: 1, nickname: 1 } }],
-            },
-          },
-          {
-            $unwind: {
-              path: "$createdUserInfo",
-              preserveNullAndEmptyArrays: true, // 允许未匹配到创建者（如管理员创建的数据）
-            },
-          },
-          {
-            $lookup: {
-              from: "user-collections",
-              localField: "updatedUser",
-              foreignField: "uid", // 目标集合的关联字段
-              as: "updatedUserInfo", // 存储匹配结果的临时字段
-              pipeline: [{ $project: { username: 1, nickname: 1 } }],
-            },
-          },
-          {
-            $unwind: {
-              path: "$updatedUserInfo",
-              preserveNullAndEmptyArrays: true, // 允许未匹配到创建者（如管理员创建的数据）
-            },
-          },
+          // {
+          //   $lookup: {
+          //     from: "user-collections",
+          //     localField: "createdUser",
+          //     foreignField: "uid", // 目标集合的关联字段
+          //     as: "createdUserInfo", // 存储匹配结果的临时字段
+          //     pipeline: [{ $project: { username: 1, nickname: 1 } }],
+          //   },
+          // },
+          // {
+          //   $unwind: {
+          //     path: "$createdUserInfo",
+          //     preserveNullAndEmptyArrays: true, // 允许未匹配到创建者（如管理员创建的数据）
+          //   },
+          // },
+          // {
+          //   $lookup: {
+          //     from: "user-collections",
+          //     localField: "updatedUser",
+          //     foreignField: "uid", // 目标集合的关联字段
+          //     as: "updatedUserInfo", // 存储匹配结果的临时字段
+          //     pipeline: [{ $project: { username: 1, nickname: 1 } }],
+          //   },
+          // },
+          // {
+          //   $unwind: {
+          //     path: "$updatedUserInfo",
+          //     preserveNullAndEmptyArrays: true, // 允许未匹配到创建者（如管理员创建的数据）
+          //   },
+          // },
           // {
           //   $addFields: {
           //     createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段

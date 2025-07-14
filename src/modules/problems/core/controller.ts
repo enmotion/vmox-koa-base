@@ -81,7 +81,7 @@ export class ProblemControllers<T extends IProblem> {
       const filter = getMongooseQueryFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
-      const data = await this.service.updateMany({ _id: { $in: filter._ids as string[] }, super: { $lt: ctx.visitor.super } }, R.omit(['_ids'], body));
+      const data = await this.service.updateMany({ _id: { $in: filter._ids as string[] }, super: { $lte: ctx.visitor.super } }, R.omit(['_ids'], body));
       ctx.body = packResponse({
         code: data.matchedCount > 0 ? 200 : 400,
         msg: data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的问题集',
