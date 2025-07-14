@@ -133,7 +133,7 @@ export class ProblemControllers<T extends IModelEssay> {
             vector: data.vector,
             payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'], data) // 去除向量字段
           }
-          await qdrantClient.upsert('model-essay', { points:[vectorPoint], wait:true }); // 向Qdrant中插入或更新向量点
+          await qdrantClient.upsert(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, { points:[vectorPoint], wait:true }); // 向Qdrant中插入或更新向量点
           // await session.commitTransaction();
           // session.endSession();
           ctx.body = packResponse({
@@ -163,7 +163,7 @@ export class ProblemControllers<T extends IModelEssay> {
       const deleteDatas = await this.service.find({uuid: { $in: uuids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
       const deleteIds = deleteDatas.items.map(item=>item.uuid);
       const data = await this.service.deleteMany({ uuid: { $in: deleteIds } }); // 删除范文
-      await qdrantClient.delete("model-essay",{points:deleteIds})
+      await qdrantClient.delete(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string,{points:deleteIds})
       return ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
         msg: data.deletedCount > 0 ? `操作成功，删除[${data.deletedCount}]` : '未找到可删除的范文',
@@ -185,7 +185,7 @@ export class ProblemControllers<T extends IModelEssay> {
       const updateDatas = await this.service.find({uuid: { $in: filter.uuids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
       const updateIds = updateDatas.items.map(item=>item.uuid);
       const data = await this.service.updateMany({ uuid: { $in: updateIds } }, R.omit(['uuids'], body));
-      await qdrantClient.setPayload("model-essay",{
+      await qdrantClient.setPayload(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string,{
         points:updateIds,
         payload:R.omit(['uuids'], body)
       })
@@ -257,22 +257,25 @@ export class ProblemControllers<T extends IModelEssay> {
       status:{target:'status',match:'match/value'},
       genre:{target:'genre',match:'match/value'},
       writingMethods:{target:"writingMethods",match:"match/any"},
-      sync:{target:'sync',match:'match/any'}
+      sync:{target:'sync',match:'match/any'},
+      
     })
     if(!!request.query){
       request.query = await getEmbedding(request.query) // 获取文本向量
-      const vectorDatas = await qdrantClient.query('model-essay', {
+      const vectorDatas = await qdrantClient.query(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, {
         query:request.query,      
         filter:{
           must:must
         },
         limit:20,
-        with_payload:true,
+        with_payload:{
+          include:['id']
+        },
         with_vector:false,
       })
       const data = await this.service.aggregate(
         {uuid:{$in:vectorDatas.points.map(item=>item.id)}},
-        {__v:0},null,null,
+        {__v:0,vector:0},null,null,
         aggregatePiple,
       )
       const items = vectorDatas.points.map(point=>{
@@ -289,7 +292,7 @@ export class ProblemControllers<T extends IModelEssay> {
         msg: '查找成功' 
       });
     }else{
-      const vectorDatas = await qdrantClient.query('model-essay', { 
+      const vectorDatas = await qdrantClient.query(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, { 
         filter:{
           must:must
         },

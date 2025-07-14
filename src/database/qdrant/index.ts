@@ -19,7 +19,7 @@ const qdrantClient = new QdrantClient({
 
 const dimension = process.env.APP_VECTOR_DIMENTIONS ? parseInt(process.env.APP_VECTOR_DIMENTIONS) : 1024; // 默认向量维度为1024
 
-const collectionNames:string[] = ['model-essay']
+const collectionNames:string[] = [ process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string ]
 
 // qdrantClient.createCollection("dk", {
 //   vectors: { size: dimension, distance: "Cosine" },
