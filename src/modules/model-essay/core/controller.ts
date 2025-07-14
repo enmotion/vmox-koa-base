@@ -297,12 +297,14 @@ export class ProblemControllers<T extends IModelEssay> {
           must:must
         },
         limit:20,
-        with_payload:true,
+        with_payload:{
+          include:['id']
+        },
         with_vector:false,
       })
       const data = await this.service.aggregate(
         {uuid:{$in:vectorDatas.points.map(item=>item.id)}},
-        {__v:0},null,null,
+        {__v:0, vector:0},null,null,
         aggregatePiple,
       )
       const items = vectorDatas.points.map(point=>{
