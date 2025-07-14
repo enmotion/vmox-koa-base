@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-07-13 00:51:13
+ * @ Modified time: 2025-07-14 13:08:48
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -22,6 +22,7 @@ import { userRouter } from "@modules/users-class"
 import { systemRouter } from "@modules/system";
 import { categoryRouter, tagRouter, tagAssociationRouter } from '@modules/content-type';
 import { problemRouter } from "@modules/problems"
+import { AppreciateRouter } from '@modules/appreciate';
 import { modelEssayRouter } from "@modules/model-essay";
 import { expandAppRouter } from '@modules/app-manage';
 import { appPublicRouter } from '@modules/app-public';
@@ -88,6 +89,7 @@ app.use(problemRouter.routes())
 app.use(modelEssayRouter.routes())
 app.use(expandAppRouter.routes())
 app.use(appPublicRouter.routes())
+app.use(AppreciateRouter.routes())
 // app.use(appSystemModel(mongoose,'/system').router.routes())
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
 app.use(new Router().allowedMethods())
