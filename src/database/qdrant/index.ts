@@ -33,6 +33,7 @@ async function initQdrantDataBase(){
           vectors: { size: dimension, distance: "Cosine" }}
         )
         await qdrantClient.createPayloadIndex(collectionName, { field_name:"status", field_schema:'bool'});
+        await qdrantClient.createPayloadIndex(collectionName, { field_name:"processingStatus", field_schema:'integer'});
         await qdrantClient.createPayloadIndex(collectionName, { field_name:"genre", field_schema:'keyword'});
         await qdrantClient.createPayloadIndex(collectionName, { field_name:"writingMethods", field_schema:'keyword'});
         await qdrantClient.createPayloadIndex(collectionName, { field_name:"sync", field_schema:'keyword'});

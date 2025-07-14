@@ -33,20 +33,21 @@ import uniqid from "uniqid"
  * @property {Date} updatedAt - 最后修改时间(自动更新)
  */
 export interface IModelEssay {
-  _id: string;                        // 范文ID
+  // _id: string;                        // 范文ID
+  uuid:string;                        // 范文UUID 给到 qdrant 使用  
   title: string;                      // 范文标题
   content:string;                     // 范文内容
   vector?: number[];                  // 向量化表示
 
-  genre:string;                       // 范文体裁
+  genre:string[];                       // 范文体裁
   writingMethods:string[];            // 写作方法
-  sync:string;                        // 同步作文标签
+  sync:string[];                        // 同步作文标签
 
-  appreciationGuide:string;          // 欣赏指导
-  from:string                         // 文章来源 投稿，采集，AI
-
+  appreciationGuide:string;           // 欣赏指导
+  from:string                         // 文章来源 投稿，采集，AI 
   super:number;                       // 操作权限等级
-  status: boolean;                     // 范围文状态 0:草稿, 1:待审核, 2:已审核(同步到了向量数据库)
+  status: boolean;                    // 范围文状态 上下架状态
+  processingStatus:number,            // 范文加工状态 0:原文 1:提交评审 2:AI评审中 3:待复核 4:已复核
   createdUser:string;                 // 创建用户 
   createdAt: Date;                    // 创建时间
   updatedUser?: string;               // 修改用户
@@ -93,11 +94,12 @@ export type IModelEssayDocument = Document<IModelEssay>
  *   @property {Boolean} immutable - 禁止修改
  */
 export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
-  _id: {
+  uuid:{
     type: String,
     index: true,
-    name: '范文ID',
-    unique: [true, '该范文ID已被占用'],
+    name: '范文UUID',
+    immutable:true,
+    unique: [true, '该范文UUID已被占用'],
     default: v4
   },
   title: {
@@ -112,19 +114,17 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     name: '范文内容',
     trim: true,  // 自动去除前后空格
     required: [true, '缺少范文内容，创建失败'],
-    maxlength: [5000, '范文标题长度不能超过5000字符']
+    maxlength: [2000, '范文标题长度不能超过5000字符']
   },
   vector:{
     type: Array,
     name: '向量化表示',
     required:[true, '缺少向量化表示，创建失败'],
   },
-
   genre:{
-    type: String,
+    type: [String],
     name: '范文体裁',
-    required: [true, '缺少范文体裁，创建失败'],
-    trim: true
+    default:[]
   },
   writingMethods:{
     type: [String],
@@ -132,14 +132,14 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     default:[]
   },
   sync:{
-    type: String,
+    type: [String],
     name: '同步作文标签',
+    default:[]
   },
-
   appreciationGuide: {
     type: String,
     name: '欣赏指导',
-    maxlength: [2000, '欣赏指导长度不能超过5000字符'],
+    maxlength: [5000, '欣赏指导长度不能超过5000字符'],
     default: ''
   },
   from: {
@@ -150,7 +150,6 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     default: 'PGC',
     trim: true
   },
-
   super: {
     type: Number,
     name: '操作权限等级',
@@ -161,6 +160,11 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     type: Boolean,
     name: '范文状态',
     default: true
+  },
+  processingStatus: {
+    type: Number,
+    name: '范文审核状态',
+    default: 0
   },
   createdUser: {
     type: String,

@@ -121,7 +121,7 @@ export class ProblemControllers<T extends IModelEssay> {
     if (!R.isNil(body) && !R.isEmpty(body)) {      
       if (!body.super || ctx.visitor.super >= body.super) {
         // session.startTransaction(); // 事务机制开始
-        const extraData:Record<string,any> = !body?._id ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
+        const extraData:Record<string,any> = !body?.uuid ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
         const modelEssayData = R.mergeAll([body, extraData]); // 合并请求数据，在原始数据上添加 向量值与更新或者创建内容
         modelEssayData.super = modelEssayData.super ?? ctx?.visitor?.super ?? 0
         modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量 标题 + 正文        
@@ -129,7 +129,7 @@ export class ProblemControllers<T extends IModelEssay> {
         try{
           // 创建向量数据
           const vectorPoint = {
-            id: data._id, // 使用UUID作为默认ID
+            id: data.uuid, // 使用UUID作为默认ID
             vector: data.vector,
             payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'], data) // 去除向量字段
           }
@@ -142,7 +142,7 @@ export class ProblemControllers<T extends IModelEssay> {
             msg: '操作成功'
           })
         }catch(err){
-          this.service.deleteMany({_id:data._id})
+          this.service.deleteMany({uuid:data.uuid})
           // await session.abortTransaction()
           // session.endSession();
           throw err
@@ -157,11 +157,12 @@ export class ProblemControllers<T extends IModelEssay> {
 
   // 删除操作
   public deleteMany = async (ctx: ParameterizedContext) => {
-    if (!!ctx.query?._id && typeof ctx.query._id === 'string') {
-      const _ids = ctx.query._id.split(",")
-      const deleteDatas = await this.service.find({_id: { $in: _ids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
-      const deleteIds = deleteDatas.items.map(item=>item._id);
-      const data = await this.service.deleteMany({ _id: { $in: deleteIds } }); // 删除范文
+    if (!!ctx.query?.uuids && typeof ctx.query.uuids === 'string') {
+      const uuids = ctx.query.uuids.split(",")
+      console.log(uuids)
+      const deleteDatas = await this.service.find({uuid: { $in: uuids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
+      const deleteIds = deleteDatas.items.map(item=>item.uuid);
+      const data = await this.service.deleteMany({ uuid: { $in: deleteIds } }); // 删除范文
       await qdrantClient.delete("model-essay",{points:deleteIds})
       return ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
@@ -178,15 +179,15 @@ export class ProblemControllers<T extends IModelEssay> {
     const body = R.clone(ctx.request?.body) as Record<string, any>
     console.log(body, 'updateMany')
     if (!R.isNil(body) && !R.isEmpty(body)) {
-      const filter = getMongooseQueryFilter(body, { "_ids": "_ids" }) // 请求值与查询条件的转换
+      const filter = getMongooseQueryFilter(body, { "uuids": "uuids" }) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
       body.updatedAt = Date.now()
-      const updateDatas = await this.service.find({_id: { $in: filter._ids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
-      const updateIds = updateDatas.items.map(item=>item._id);
-      const data = await this.service.updateMany({ _id: { $in: updateIds } }, R.omit(['_ids'], body));
+      const updateDatas = await this.service.find({uuid: { $in: filter.uuids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
+      const updateIds = updateDatas.items.map(item=>item.uuid);
+      const data = await this.service.updateMany({ uuid: { $in: updateIds } }, R.omit(['uuids'], body));
       await qdrantClient.setPayload("model-essay",{
         points:updateIds,
-        payload:R.omit(['_ids'], body)
+        payload:R.omit(['uuids'], body)
       })
       ctx.body = packResponse({
         code: data.matchedCount > 0 ? 200 : 400,
@@ -270,12 +271,12 @@ export class ProblemControllers<T extends IModelEssay> {
         with_vector:false,
       })
       const data = await this.service.aggregate(
-        {_id:{$in:vectorDatas.points.map(item=>item.id)}},
+        {uuid:{$in:vectorDatas.points.map(item=>item.id)}},
         {__v:0},null,null,
         aggregatePiple,
       )
       const items = vectorDatas.points.map(point=>{
-        return R.mergeAll([data[0].items.find((item:Record<string,any>)=>point.id == item._id),{score:point.score}])
+        return R.mergeAll([data[0].items.find((item:Record<string,any>)=>point.id == item.uuid),{score:point.score}])
       })
        console.log(vectorDatas)
       // console.log(data, 'vectorSearch')
@@ -297,12 +298,12 @@ export class ProblemControllers<T extends IModelEssay> {
         with_vector:false,
       })
       const data = await this.service.aggregate(
-        {_id:{$in:vectorDatas.points.map(item=>item.id)}},
+        {uuid:{$in:vectorDatas.points.map(item=>item.id)}},
         {__v:0},null,null,
         aggregatePiple,
       )
       const items = vectorDatas.points.map(point=>{
-        return data[0].items.find((item:Record<string,any>)=>point.id == item._id)
+        return data[0].items.find((item:Record<string,any>)=>point.id == item.uuid)
       })
       // console.log(data, 'vectorSearch')
       ctx.body = packResponse({
