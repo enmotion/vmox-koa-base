@@ -133,13 +133,6 @@ export type IProblemDocument = Document<IProblem>
  *   @property {Boolean} immutable - 禁止修改
  */
 export const problemBaseSchema: SchemaDefinition<IProblem> = {
-  _id: {
-    type: String,
-    index: true,
-    name: '问题ID',
-    unique: [true, '该问题ID已被占用'],
-    default: () => uniqid()
-  },
   title: {
     type: String,
     name: '问题标题',

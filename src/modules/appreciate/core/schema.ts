@@ -133,12 +133,6 @@ export type IAppreciateDocument = Document<IAppreciate>
  *   @property {Boolean} immutable - 禁止修改
  */
 export const AppreciateBaseSchema: SchemaDefinition<IAppreciate> = {
-  _id: {
-    type: String,
-    index: true,
-    name: '亮点ID',
-    unique: [true, '该亮点ID已被占用'],
-  },
   title: {
     type: String,
     name: '亮点标题',
