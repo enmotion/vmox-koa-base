@@ -138,7 +138,6 @@ export const AppreciateBaseSchema: SchemaDefinition<IAppreciate> = {
     index: true,
     name: '亮点ID',
     unique: [true, '该亮点ID已被占用'],
-    default: () => uniqid()
   },
   title: {
     type: String,

@@ -96,7 +96,6 @@ export const problemBaseSchema: SchemaDefinition<IApp> = {
     index: true,
     name: '应用ID',
     unique: [true, '该应用ID已被占用'],
-    default: () => uniqid()
   },
   appName: {
     type: String,
@@ -109,6 +108,7 @@ export const problemBaseSchema: SchemaDefinition<IApp> = {
   apiKey: {
     type: String,
     name: '应用KEY',
+    unique: [true,'apiKey已被占用'],
     required: [true, '缺少应用KEY，创建失败'],
     minlength: [10, '应用KEY长度不能少于10字符'],
     maxlength: [64, '应用KEY长度不能超过2000字符']
