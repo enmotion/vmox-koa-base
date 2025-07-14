@@ -255,7 +255,7 @@ export class ProblemControllers<T extends IModelEssay> {
     const request = R.clone(ctx.request.body) as Record<string, any>;
     const must = getQdrantFilter(R.omit(['query'],request),{
       status:{target:'status',match:'match/value'},
-      genre:{target:'genre',match:'match/value'},
+      genre:{target:'genre',match:'match/any'},
       writingMethods:{target:"writingMethods",match:"match/any"},
       sync:{target:'sync',match:'match/any'},
       
