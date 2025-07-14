@@ -47,7 +47,7 @@ export interface IAppreciate {
   title: string;                      // 亮点标题
   definition: string;                 // 亮点定义
   example: string;                    // 亮点范例
-  effect:string,                      // 亮点作用
+  benefit:string,                      // 亮点作用
   difficultyLevel: number;            // 难度等级（1-5）
   gradeLevel: number;                 // 学龄等级（1-6）
   super: number;                      // 操作权限等级
@@ -162,12 +162,12 @@ export const AppreciateBaseSchema: SchemaDefinition<IAppreciate> = {
     minlength: [1, '亮点范例长度不能少于1字符'],
     maxlength: [5000, '亮点范例长度不能超过5000字符']
   },
-  effect: {
+  benefit: {
     type: String,
-    name: '亮点作用',
-    required: [true, '缺少亮点作用，创建失败'],
-    minlength: [1, '亮点作用长度不能少于1字符'],
-    maxlength: [5000, '亮点作用长度不能超过5000字符']
+    name: '亮点益处',
+    required: [true, '缺少亮点益处，创建失败'],
+    minlength: [1, '亮点益处长度不能少于1字符'],
+    maxlength: [5000, '亮点益处长度不能超过5000字符']
   },
   difficultyLevel: {
     type: Number,
