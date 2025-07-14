@@ -90,7 +90,7 @@ export class AppControllers {
       filter.status = true; // 强制展现上架内容
       const data = await AppreciateService.aggregate(
         filter,
-        { _id: 1,title:1, definition:1, example:1, coreFix:1, gradeLevel:1, difficultyLevel:1 },
+        { _id: 1,title:1, definition:1, example:1, coreFix:1, gradeLevel:1, difficultyLevel:1, trick:1 },
         page,
         sort,
         [
