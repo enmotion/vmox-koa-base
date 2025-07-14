@@ -10,7 +10,8 @@
 import * as R from "ramda"; // 函数式编程工具库
 import { ParameterizedContext } from "koa"; // Koa上下文类型
 import { problemService } from "@modules/problems";
-import { tagAssociationService, tagService } from "@modules/content-type";
+import { AppreciateService } from "@modules/appreciate";
+import { tagAssociationService } from "@modules/content-type";
 import { getPagination, getSort } from "@lib/serviceTools";
 import {
   packResponse,
@@ -51,41 +52,48 @@ export class AppControllers {
         page,
         sort,
         [
-          // {
-          //   $lookup: {
-          //     from: "user-collections",
-          //     localField: "createdUser",
-          //     foreignField: "uid", // 目标集合的关联字段
-          //     as: "createdUserInfo", // 存储匹配结果的临时字段
-          //     pipeline: [{ $project: { username: 1, nickname: 1 } }],
-          //   },
-          // },
-          // {
-          //   $unwind: {
-          //     path: "$createdUserInfo",
-          //     preserveNullAndEmptyArrays: true, // 允许未匹配到创建者（如管理员创建的数据）
-          //   },
-          // },
-          // {
-          //   $lookup: {
-          //     from: "user-collections",
-          //     localField: "updatedUser",
-          //     foreignField: "uid", // 目标集合的关联字段
-          //     as: "updatedUserInfo", // 存储匹配结果的临时字段
-          //     pipeline: [{ $project: { username: 1, nickname: 1 } }],
-          //   },
-          // },
-          // {
-          //   $unwind: {
-          //     path: "$updatedUserInfo",
-          //     preserveNullAndEmptyArrays: true, // 允许未匹配到创建者（如管理员创建的数据）
-          //   },
-          // },
-          // {
-          //   $addFields: {
-          //     createdUserName: '$creatorInfo.nickname' // 将用户名映射到新字段
-          //   }
-          // },
+        ]
+      ); // 返回值 字段过滤
+      ctx.body = packResponse({
+        code: 200,
+        data: data[0],
+        msg: "查询成功",
+      });
+    } else {
+      ctx.body = packResponse({ code: 300, msg: "请提供查询条件" });
+    }
+  };
+
+   public aggregateAppreciate = async (ctx: ParameterizedContext) => {
+    const body: Record<string, any> = !R.isEmpty(ctx.request.body)
+      ? ctx.request.body
+      : JSON.parse(JSON.stringify(ctx.query)) ?? {};
+    console.log(body, 'aggregateAppreciate');
+    if (!R.isNil(body) && !R.isEmpty(body)) {
+      const filter = getMongooseQueryFilter(R.omit(["page", "sort"], body), {
+        title: "title/$regex",
+        definition: "definition/$regex",
+        example: "example/$regex",
+        trick: "trick/$regex",
+        difficultyLevel: "difficultyLevel",
+        gradeLevel: [
+          "gradeLevel",
+          (val: any) => ({
+            $lte: parseInt(val),
+          }),
+        ],
+        createdAt: "createdAt/$dateRange",
+        updatedAt: "updatedAt/$dateRange",
+      }); // 请求值与查询条件的转换
+      const page = getPagination(body.page); // 分页参数
+      const sort = getSort(body.sort); // 排序参数
+      filter.status = true; // 强制展现上架内容
+      const data = await AppreciateService.aggregate(
+        filter,
+        { _id: 1,title:1, definition:1, example:1, coreFix:1, gradeLevel:1, difficultyLevel:1 },
+        page,
+        sort,
+        [
         ]
       ); // 返回值 字段过滤
       ctx.body = packResponse({

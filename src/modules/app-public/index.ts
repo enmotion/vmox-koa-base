@@ -18,6 +18,7 @@ export const appPublicRouter = mappingControllersAndRouter<AppControllers>(
   appcontrollers,
   [
     { routerPath: '/problem', method: 'post', handlerName: 'aggregateProblem' },
+    { routerPath: '/appreciate', method:'post', handlerName:'aggregateAppreciate'},
     { routerPath: '/tagAssociation', method: 'get', handlerName: 'aggregateTagAssociationService' },
   ]
 );
