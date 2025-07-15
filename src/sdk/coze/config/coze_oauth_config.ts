@@ -1,4 +1,5 @@
-{
+
+export const cozeConfig ={
     "client_type": "jwt",
     "client_id": "1135655748881",
     "coze_www_base": "https://www.coze.cn",

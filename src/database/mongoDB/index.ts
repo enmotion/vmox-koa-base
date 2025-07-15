@@ -11,7 +11,7 @@ const db_admin =
 
 export const mongoDB_URL = `mongodb://${db_admin}${process.env.APP_DB_URL}/${process.env.APP_DB_NAME}`
 
-console.log(colors.blue('database:'),colors.green(mongoDB_URL))
+console.log(colors.blue('database:'),colors.green(mongoDB_URL),process.env.APP_DB_NAME)
 
 mongoose.connect(mongoDB_URL).then(() => {
     console.log(colors.green('MongoDB Connected!'));

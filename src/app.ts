@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-07-14 13:08:48
+ * @ Modified time: 2025-07-15 20:16:05
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -17,6 +17,8 @@ import authMiddleware from "./middlewares/auth"; // token 鉴权 中间件
 import errosMiddleware from "./middlewares/error" // 错误处理 中间件
 import fs from 'fs';
 // import { swaggerMiddleware } from './config/swagger';
+
+import { startAgendaTask } from './agenda';
 
 import { userRouter } from "@modules/users-class"
 import { systemRouter } from "@modules/system";
@@ -37,6 +39,7 @@ import { appPublicRouter } from '@modules/app-public';
 // 注意：在生产环境中，需要确保安全地管理 SSL 密钥和证书文件，避免泄露。
 // const app = process.env.KOA_APP_NODE_ENV == "development" ? KoaWebSocket(new Koa()) : KoaWebSocket(new Koa(), {}, options);
 const app = new Koa()
+startAgendaTask()
 // 确保上传目录存在
 const uploadDir = path.join(__dirname, '../public/uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -93,7 +96,6 @@ app.use(AppreciateRouter.routes())
 // app.use(appSystemModel(mongoose,'/system').router.routes())
 // Koa-router 的 allowedMethods() 中间件可以根据路由的定义自动设置相应的 HTTP 状态码。
 app.use(new Router().allowedMethods())
-
 // 简单的中间件处理示例，所有的 GET 请求都会返回 "Hello, Koa with TypeScript! 12313132"。
 // 这段代码位置需要注意：在 Koa 中中间件的执行顺序是从上到下。如果上面的中间件已经处理了某些请求，那么下面的中间件将不再执行。
 // app.use(async (ctx) => {

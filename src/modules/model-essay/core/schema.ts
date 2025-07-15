@@ -48,6 +48,10 @@ export interface IModelEssay {
   super:number;                       // 操作权限等级
   status: boolean;                    // 范围文状态 上下架状态
   processingStatus:number,            // 范文加工状态 0:原文 1:提交评审 2:AI评审中 3:待复核 4:已复核
+
+  debugUrl:string,                   // 调试出错的页面
+  llmResult:Record<string,any>        // 模型最终输出
+
   createdUser:string;                 // 创建用户 
   createdAt: Date;                    // 创建时间
   updatedUser?: string;               // 修改用户
@@ -165,6 +169,14 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     type: Number,
     name: '范文审核状态',
     default: 0
+  },
+  debugUrl:{
+    type: String,
+    name:'运行调试地址'
+  },
+  llmResult:{
+    type: Object,
+    name:'模型输出',
   },
   createdUser: {
     type: String,

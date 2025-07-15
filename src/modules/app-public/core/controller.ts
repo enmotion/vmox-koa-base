@@ -22,7 +22,7 @@ import {
 export class AppControllers {
   // 范文评AI评审工作流
   public modelEssayReviewWebhook(ctx: ParameterizedContext) {
-    console.log(ctx);
+    console.log(ctx.request.body,1111111);
     ctx.body = packResponse({
       code: 200,
       data: {},
