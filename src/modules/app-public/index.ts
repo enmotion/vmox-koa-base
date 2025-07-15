@@ -17,6 +17,7 @@ export const appPublicRouter = mappingControllersAndRouter<AppControllers>(
   _routerPrefix,
   appcontrollers,
   [
+    { routerPath: '/modelEssayReview', method:'post', handlerName:'modelEssayReviewWebhook'},
     { routerPath: '/problem', method: 'post', handlerName: 'aggregateProblem' },
     { routerPath: '/appreciate', method:'post', handlerName:'aggregateAppreciate'},
     { routerPath: '/tagAssociation', method: 'get', handlerName: 'aggregateTagAssociationService' },

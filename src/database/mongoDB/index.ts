@@ -8,11 +8,12 @@ import mongoose from "mongoose";
 const db_admin = 
 !R.isNil(process.env.APP_DB_PASSWORD) && !R.isNil(process.env.APP_DB_USERNAME) && !R.isEmpty(process.env.APP_DB_PASSWORD) && !R.isEmpty(process.env.APP_DB_USERNAME) ? 
 `${process.env.APP_DB_USERNAME}:${process.env.APP_DB_PASSWORD}@`:``
-const url = `mongodb://${db_admin}${process.env.APP_DB_URL}/${process.env.APP_DB_NAME}`
 
-console.log(colors.blue('database:'),colors.green(url))
+export const mongoDB_URL = `mongodb://${db_admin}${process.env.APP_DB_URL}/${process.env.APP_DB_NAME}`
 
-mongoose.connect(url).then(() => {
+console.log(colors.blue('database:'),colors.green(mongoDB_URL))
+
+mongoose.connect(mongoDB_URL).then(() => {
     console.log(colors.green('MongoDB Connected!'));
 });
 

@@ -11,7 +11,7 @@ import * as colors from "colors";
 import * as R from "ramda";  // 函数式编程工具库
 import { mongoose } from "src/database";
 import { v4 } from "uuid"
-import { getEmbedding } from "src/sdk";
+import { getEmbedding } from "src/sdk/dashscope"; // 引入百炼词嵌入模型
 import { ParameterizedContext } from "koa";  // Koa上下文类型
 import { ProblemService } from "./service";  // 范文服务层
 import type { IModelEssay } from "./schema";  // 范文模型接口
@@ -19,6 +19,7 @@ import { getPagination, getSort } from "@lib/serviceTools";
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
 import { packResponse, fieldsFilter, getMongooseQueryFilter, getQdrantFilter } from "@lib/serviceTools";  // 响应处理工具
 import { qdrantClient } from "src/database";
+
 /**
  * 范文控制器类
  * @template T 扩展自IProblem的泛型类型

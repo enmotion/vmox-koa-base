@@ -20,12 +20,21 @@ import {
 } from "@lib/serviceTools"; // 响应处理工具
 
 export class AppControllers {
-  // 聚合查询操作
+  // 范文评AI评审工作流
+  public modelEssayReviewWebhook(ctx: ParameterizedContext) {
+    console.log(ctx);
+    ctx.body = packResponse({
+      code: 200,
+      data: {},
+      msg: "操作成功",
+    });
+  }
+  // 毛病问题开放接口
   public aggregateProblem = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = !R.isEmpty(ctx.request.body)
       ? ctx.request.body
       : JSON.parse(JSON.stringify(ctx.query)) ?? {};
-    console.log(body, 'aggregateProblem');
+    console.log(body, "aggregateProblem");
     // https://rr4426xx0138.vicp.fun/problems/pub/find
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getMongooseQueryFilter(R.omit(["page", "sort"], body), {
@@ -48,11 +57,18 @@ export class AppControllers {
       filter.status = true; // 强制展现上架内容
       const data = await problemService.aggregate(
         filter,
-        { _id: 1,title:1, definition:1, example:1, coreFix:1, gradeLevel:1, difficultyLevel:1 },
+        {
+          _id: 1,
+          title: 1,
+          definition: 1,
+          example: 1,
+          coreFix: 1,
+          gradeLevel: 1,
+          difficultyLevel: 1,
+        },
         page,
         sort,
-        [
-        ]
+        []
       ); // 返回值 字段过滤
       ctx.body = packResponse({
         code: 200,
@@ -63,12 +79,12 @@ export class AppControllers {
       ctx.body = packResponse({ code: 300, msg: "请提供查询条件" });
     }
   };
-
-   public aggregateAppreciate = async (ctx: ParameterizedContext) => {
+  // 欣赏亮点开放接口
+  public aggregateAppreciate = async (ctx: ParameterizedContext) => {
     const body: Record<string, any> = !R.isEmpty(ctx.request.body)
       ? ctx.request.body
       : JSON.parse(JSON.stringify(ctx.query)) ?? {};
-    console.log(body, 'aggregateAppreciate');
+    console.log(body, "aggregateAppreciate");
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getMongooseQueryFilter(R.omit(["page", "sort"], body), {
         title: "title/$regex",
@@ -90,11 +106,19 @@ export class AppControllers {
       filter.status = true; // 强制展现上架内容
       const data = await AppreciateService.aggregate(
         filter,
-        { _id: 1,title:1, definition:1, example:1, coreFix:1, gradeLevel:1, difficultyLevel:1, trick:1 },
+        {
+          _id: 1,
+          title: 1,
+          definition: 1,
+          example: 1,
+          coreFix: 1,
+          gradeLevel: 1,
+          difficultyLevel: 1,
+          trick: 1,
+        },
         page,
         sort,
-        [
-        ]
+        []
       ); // 返回值 字段过滤
       ctx.body = packResponse({
         code: 200,
@@ -105,37 +129,50 @@ export class AppControllers {
       ctx.body = packResponse({ code: 300, msg: "请提供查询条件" });
     }
   };
-
+  // 标签查询开放接口
   public aggregateTagAssociationService = async (ctx: ParameterizedContext) => {
     const query: Record<string, any> = ctx.query ?? {};
     // categroyId 不可以与 tagIds 同时存在
-    console.log(!R.isNil(query.tagIds) && !R.isEmpty(query.tagIds) && typeof query.tagIds === 'string')
-    if(!R.isNil(query.tagIds) && !R.isEmpty(query.tagIds) && typeof query.tagIds === 'string'){
+    console.log(
+      !R.isNil(query.tagIds) &&
+        !R.isEmpty(query.tagIds) &&
+        typeof query.tagIds === "string"
+    );
+    if (
+      !R.isNil(query.tagIds) &&
+      !R.isEmpty(query.tagIds) &&
+      typeof query.tagIds === "string"
+    ) {
       query.tagIds = (query.tagIds as string).split(",");
       delete query.categoryId;
-      delete query.onlyLeaf
-    }else{
-      delete query.tagIds
+      delete query.onlyLeaf;
+    } else {
+      delete query.tagIds;
     }
-    console.log(query,11222)
-    const filter = getMongooseQueryFilter(
-      R.omit(["page", "sort"], query),
-      {
-        "name":"name/$regex",
-        "tagIds":"tagId/$in",
-        "onlyLeaf":["parentAssociationId",(value)=> value=='1'?{$ne:""}:{$regex:""}],
-        "key":["key",(value)=>{ return {$regex:value, $options:'i'}}],
-        "description":"description/$regex",
-        "createdAt":"createdAt/$dateRange",
-        "updatedAt":"updatedAt/$dateRange"
-      }
-    ); // 请求值与查询条件的转换
+    console.log(query, 11222);
+    const filter = getMongooseQueryFilter(R.omit(["page", "sort"], query), {
+      name: "name/$regex",
+      tagIds: "tagId/$in",
+      onlyLeaf: [
+        "parentAssociationId",
+        (value) => (value == "1" ? { $ne: "" } : { $regex: "" }),
+      ],
+      key: [
+        "key",
+        (value) => {
+          return { $regex: value, $options: "i" };
+        },
+      ],
+      description: "description/$regex",
+      createdAt: "createdAt/$dateRange",
+      updatedAt: "updatedAt/$dateRange",
+    }); // 请求值与查询条件的转换
     const page = getPagination(query.page); // 分页与排序转换
     const sort = getSort(query.sort); // 分页与排序转换
     // 查询模式下，超级管理员在列表中不可见
     const data = await tagAssociationService.aggregate(
       R.mergeAll([filter]),
-      { tagInfo:1, parentAssociationId:1 },
+      { tagInfo: 1, parentAssociationId: 1 },
       page,
       sort,
       [
@@ -160,7 +197,7 @@ export class AppControllers {
             localField: "tagId",
             foreignField: "key", // 目标集合的关联字段
             as: "tagInfo", // 存储匹配结果的临时字段
-            pipeline: [{ $project: { name: 1, key: 1,description:1 } }],
+            pipeline: [{ $project: { name: 1, key: 1, description: 1 } }],
           },
         },
         {
