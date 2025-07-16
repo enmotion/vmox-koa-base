@@ -125,29 +125,13 @@ export class ProblemControllers<T extends IModelEssay> {
         const extraData:Record<string,any> = !body?.uuid ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
         const modelEssayData = R.mergeAll([body, extraData]); // 合并请求数据，在原始数据上添加 向量值与更新或者创建内容
         modelEssayData.super = modelEssayData.super ?? ctx?.visitor?.super ?? 0
-        modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量 标题 + 正文        
+        modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量 标题 + 正文   
         const data: Record<string, any> = await this.service.save(modelEssayData as T,{})
-        try{
-          // 创建向量数据
-          const vectorPoint = {
-            id: data.uuid, // 使用UUID作为默认ID
-            vector: data.vector,
-            payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'], data) // 去除向量字段
-          }
-          await qdrantClient.upsert(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, { points:[vectorPoint], wait:true }); // 向Qdrant中插入或更新向量点
-          // await session.commitTransaction();
-          // session.endSession();
-          ctx.body = packResponse({
-            code: 200,
-            data: data,
-            msg: '操作成功'
-          })
-        }catch(err){
-          this.service.deleteMany({uuid:data.uuid})
-          // await session.abortTransaction()
-          // session.endSession();
-          throw err
-        }
+        ctx.body = packResponse({
+          code: 200,
+          data: data,
+          msg: '操作成功'
+        })
       } else {
         ctx.body = packResponse({ code: 300, msg: '你的权限等级,不允许操作此范文' })
       }
@@ -163,8 +147,7 @@ export class ProblemControllers<T extends IModelEssay> {
       console.log(uuids)
       const deleteDatas = await this.service.find({uuid: { $in: uuids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
       const deleteIds = deleteDatas.items.map(item=>item.uuid);
-      const data = await this.service.deleteMany({ uuid: { $in: deleteIds } }); // 删除范文
-      await qdrantClient.delete(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string,{points:deleteIds})
+      const data = await this.service.deleteMany({ uuid: { $in: deleteIds } }, deleteIds); // 删除范文
       return ctx.body = packResponse({
         code: data.deletedCount > 0 ? 200 : 400,
         msg: data.deletedCount > 0 ? `操作成功，删除[${data.deletedCount}]` : '未找到可删除的范文',
@@ -185,11 +168,7 @@ export class ProblemControllers<T extends IModelEssay> {
       body.updatedAt = Date.now()
       const updateDatas = await this.service.find({uuid: { $in: filter.uuids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
       const updateIds = updateDatas.items.map(item=>item.uuid);
-      const data = await this.service.updateMany({ uuid: { $in: updateIds } }, R.omit(['uuids'], body));
-      await qdrantClient.setPayload(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string,{
-        points:updateIds,
-        payload:R.omit(['uuids'], body)
-      })
+      const data = await this.service.updateMany({ uuid: { $in: updateIds } }, R.omit(['uuids'], body),updateIds);
       ctx.body = packResponse({
         code: data.matchedCount > 0 ? 200 : 400,
         msg: data.matchedCount > 0 ? `操作成功，匹配[${data.matchedCount}]，更新[${data.modifiedCount}]` : '未找到可更新的范文',

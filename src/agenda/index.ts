@@ -15,7 +15,7 @@ export function startAgendaTask(delay?:number){
     const agendaInstance = new Agenda({db:{address:`${mongoDB_URL}`, collection:'agenda'}})
     agendaInstance.define('modelEssayReview',async (job,done)=>{
       try{
-        console.log("modelEssayReview")
+        // console.log("modelEssayReview")
         // const modelEssays = await modelEssayService.find({processingStatus:1},null,{updatedAt:'asc'})
         // if(modelEssays.items.length>0){
         //   const item = modelEssays.items[0];
@@ -34,7 +34,7 @@ export function startAgendaTask(delay?:number){
         //   }).catch(err=>{
         //     console.log(err);            
         //   }).finally(()=>{
-            done()
+        //     done()
         //   })
         // }
       }catch(err){

@@ -10,6 +10,7 @@
 import * as R from "ramda"; // 函数式编程工具库
 import { ParameterizedContext } from "koa"; // Koa上下文类型
 import { problemService } from "@modules/problems";
+import { modelEssayService, type ExpandModelEssay } from "@modules/model-essay";
 import { AppreciateService } from "@modules/appreciate";
 import { tagAssociationService } from "@modules/content-type";
 import { getPagination, getSort } from "@lib/serviceTools";
@@ -21,8 +22,26 @@ import {
 
 export class AppControllers {
   // 范文评AI评审工作流
-  public modelEssayReviewWebhook(ctx: ParameterizedContext) {
-    console.log(ctx.request.body,1111111);
+  public modelEssayReviewWebhook=async(ctx: ParameterizedContext)=> {
+    const result = ctx.request?.body?.result??{};
+    const item = {
+      uuid:result.uuid,
+      appreciationGuide:result.appreciationGuide,
+      gener:result.gener?.map((item:Record<string,any>)=>item.key),
+      writingMethods:result.writingMethods?.map((item:Record<string,any>)=>item.key),
+      sync:result.sync?.map((item:Record<string,any>)=>item.key),
+      llmResult:result,
+      processingStatus:3
+    } as any
+    console.log(JSON.stringify(item))
+    // 需要确保当前文章是待AI审核返回状态，否则是不能直接更新任何文章的
+    const currentItem = await modelEssayService.find({uuid:item.uuid,processingStatus:2})
+    if(currentItem.items.length>0){
+      await modelEssayService.save(item)
+    }
+    // console.log(ctx.request.body.sync.map((item:any)=>console.log(item.key)))
+    // console.log(ctx.request.body.writingMethods.map((item:any)=>console.log(item.key)))
+    // console.log(ctx.request.body.genre.map((item:any)=>console.log(item.key)))
     ctx.body = packResponse({
       code: 200,
       data: {},
