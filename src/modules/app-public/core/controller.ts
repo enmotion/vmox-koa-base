@@ -27,7 +27,7 @@ export class AppControllers {
     const item = {
       uuid:result.uuid,
       appreciationGuide:result.appreciationGuide,
-      gener:result.gener?.map((item:Record<string,any>)=>item.key),
+      genre:result.genre?.map((item:Record<string,any>)=>item.key),
       writingMethods:result.writingMethods?.map((item:Record<string,any>)=>item.key),
       sync:result.sync?.map((item:Record<string,any>)=>item.key),
       llmResult:result,
