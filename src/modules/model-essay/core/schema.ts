@@ -37,6 +37,7 @@ export interface IModelEssay {
   uuid:string;                        // 范文UUID 给到 qdrant 使用  
   title: string;                      // 范文标题
   content:string;                     // 范文内容
+  vectorKeyWords:string,              // 范文内容矢量文本标签
   vector?: number[];                  // 向量化表示
 
   genre:string[];                       // 范文体裁
@@ -119,6 +120,12 @@ export const modelEssayBaseSchema: SchemaDefinition<IModelEssay> = {
     trim: true,  // 自动去除前后空格
     required: [true, '缺少范文内容，创建失败'],
     maxlength: [2000, '范文标题长度不能超过5000字符']
+  },
+  vectorKeyWords:{
+    type: String,
+    name: '范文矢量标签',
+    trim: true,  // 自动去除前后空格
+    maxlength: [1000, '范文矢量标签不可超过1000字']
   },
   vector:{
     type: Array,

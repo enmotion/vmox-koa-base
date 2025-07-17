@@ -73,6 +73,7 @@ export interface ITag {
  * @property {string} categoryId - 分类ID
  * @property {string} tagId - 标签ID
  * @property {string} [parentAssociationId] - 父级关联ID
+ * @property {boolean} [allowAIrecognition] - 允许AI识别，关闭后，AI将无法获得该标签
  * @property {number} order - 排序值
  * @property {string} [createdUser] - 创建者ID
  * @property {Date} createdAt - 创建时间
@@ -84,6 +85,7 @@ export interface ITagAssociation {
   categoryId: string;
   tagId: string;
   parentAssociationId?: string;
+  allowAiRecognition?: boolean;
   order: number;
   createdUser?: string;
   createdAt: Date;
@@ -245,6 +247,12 @@ export const tagAssociationSchemaConfig: SchemaDefinition<ITagAssociation> = {
     sparse: true,
     ref: 'TagAssociation',
     default:''
+  },
+  allowAiRecognition:{
+    type: Boolean,
+    name: "允许AI识别",
+    sparse: true,
+    default: true
   },
   order: {
     type: Number,

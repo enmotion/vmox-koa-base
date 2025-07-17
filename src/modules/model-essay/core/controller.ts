@@ -13,7 +13,7 @@ import { mongoose } from "src/database";
 import { v4 } from "uuid"
 import { getEmbedding } from "src/sdk/dashscope"; // 引入百炼词嵌入模型
 import { ParameterizedContext } from "koa";  // Koa上下文类型
-import { ProblemService } from "./service";  // 范文服务层
+import { ModelEssayService } from "./service";  // 范文服务层
 import type { IModelEssay } from "./schema";  // 范文模型接口
 import { getPagination, getSort } from "@lib/serviceTools";
 import { Schema, RootFilterQuery } from "mongoose";  // Mongoose模式类型
@@ -98,8 +98,8 @@ const aggregatePiple=[
   //   }
   // },      
 ]
-export class ProblemControllers<T extends IModelEssay> {
-  public service: ProblemService<T>;  // 范文服务实例
+export class ModelControllers<T extends IModelEssay> {
+  public service: ModelEssayService<T>;  // 范文服务实例
   public schema: Schema<T>;  // Mongoose模式实例
 
   /**
@@ -107,7 +107,7 @@ export class ProblemControllers<T extends IModelEssay> {
    * @param service 注入的范文服务
    * @param schema 范文数据模式
    */
-  public constructor(service: ProblemService<T>, schema: Schema<T>) {
+  public constructor(service: ModelEssayService<T>, schema: Schema<T>) {
     this.service = service;
     this.schema = schema;
   }
@@ -125,7 +125,8 @@ export class ProblemControllers<T extends IModelEssay> {
         const extraData:Record<string,any> = !body?.uuid ? { createdUser: ctx.visitor.uid } : { updatedUser: ctx.visitor.uid }
         const modelEssayData = R.mergeAll([body, extraData]); // 合并请求数据，在原始数据上添加 向量值与更新或者创建内容
         modelEssayData.super = modelEssayData.super ?? ctx?.visitor?.super ?? 0
-        modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 获取文本向量 标题 + 正文   
+        // modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 更改为 service 内部获取向量值
+        console.log('save....')
         const data: Record<string, any> = await this.service.save(modelEssayData as T,{})
         ctx.body = packResponse({
           code: 200,

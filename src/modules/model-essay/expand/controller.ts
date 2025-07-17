@@ -8,14 +8,14 @@
 "use strict";
 import * as R from "ramda";
 import { ParameterizedContext } from "koa";
-import { ProblemControllers } from "../core/controller";
+import { ModelControllers } from "../core/controller";
 import { ExpandModelEssayService } from "./service";
 import type { ExpandModelEssay } from "./schema";
 
 import { Schema } from "mongoose";
 import { packResponse, fieldsFilter } from "@lib/serviceTools";
 
-export class ExpandModelEssayControllers<T extends ExpandModelEssay> extends ProblemControllers<T> {
+export class ExpandModelEssayControllers<T extends ExpandModelEssay> extends ModelControllers<T> {
   public constructor(service: ExpandModelEssayService<T>, schema: Schema<T>) {
     super(service,schema)
   }

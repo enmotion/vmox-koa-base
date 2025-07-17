@@ -10,7 +10,7 @@
 'use strict';
 import * as R from "ramda";
 import { mongoDBErrorTransform } from "@lib/serviceTools";
-import { ProblemService } from "../core/service";
+import { ModelEssayService } from "../core/service";
 import type { Model } from "mongoose";
 import type { ExpandModelEssay } from "./schema";
 
@@ -19,7 +19,7 @@ import type { ExpandModelEssay } from "./schema";
  * @param model Mongoose用户模型
  * @returns 包含CRUD操作方法的对象
  */
-export class ExpandModelEssayService<T extends ExpandModelEssay> extends ProblemService<T>{
+export class ExpandModelEssayService<T extends ExpandModelEssay> extends ModelEssayService<T>{
   public constructor(model:Model<T>){
     super(model as Model<T>)
   }

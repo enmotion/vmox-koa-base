@@ -26,6 +26,7 @@ export class AppControllers {
     const result = ctx.request?.body?.result??{};
     const item = {
       uuid:result.uuid,
+      vectorKeyWords:result.vectorKeyWords,
       appreciationGuide:result.appreciationGuide,
       genre:result.genre?.map((item:Record<string,any>)=>item.key),
       writingMethods:result.writingMethods?.map((item:Record<string,any>)=>item.key),

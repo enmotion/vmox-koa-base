@@ -10,12 +10,14 @@
 "use strict";
 import * as R from "ramda";
 import MongoDB from "mongodb";
+import colors from "colors";
+import { getEmbedding } from "src/sdk/dashscope"; // 引入百炼词嵌入模型
 import type { Model, MongooseUpdateQueryOptions, SaveOptions, RootFilterQuery, MongooseBaseQueryOptions } from "mongoose";
 import type { IModelEssay } from "./schema";
 import { CoreService } from "src/frame-work-core/service";
 import { qdrantClient } from "src/database";
 
-export class ProblemService<T extends IModelEssay> extends CoreService<T> {
+export class ModelEssayService<T extends IModelEssay> extends CoreService<T> {
   public constructor(model: Model<T>) {
     super(model)
   }
@@ -43,13 +45,20 @@ export class ProblemService<T extends IModelEssay> extends CoreService<T> {
   }
   public override async save(modelEssay:T,options?:SaveOptions):Promise<any>{
     if(!!modelEssay.uuid){
+      // 只要更新中，携带了新的需要向量的属性，则会重新获取向量值
+      if(R.values(R.pick(['title','content','vectorKeyWords'],modelEssay)).filter((item:string)=>!!item).length>0){
+        const data = await super.findOne({uuid:modelEssay.uuid}); // 考虑到这次或许只是部分更新某个向量属性，因此要做重新的合并
+        const vectorData = R.mergeAll([data,modelEssay]);
+        console.log(colors.blue("need embedding vector data"),colors.green(JSON.stringify(R.pick(['title','content','vectorKeyWords'],modelEssay))))
+        modelEssay.vector = await getEmbedding(`${vectorData?.title??''}#${vectorData?.vectorKeyWords?.split?.(",")??''}#${vectorData?.content??''}`) // 获取文本向量 标题 + 正文    
+      }
       await super.updateOne({uuid:modelEssay.uuid}, modelEssay, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
       const data = await super.findOne({uuid:modelEssay.uuid},{})
       if(data){
         const vectorPoint = {
           id: data.uuid, // 使用UUID作为默认ID
           vector: data.vector,
-          payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync'], data) // 去除向量字段
+          payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync','vectorKeyWords'], data) // 去除向量字段
         } as any;
         await qdrantClient.upsert(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, { points:[vectorPoint], wait:true }); // 向Qdrant中插入或更新向量点
         return data
@@ -57,6 +66,7 @@ export class ProblemService<T extends IModelEssay> extends CoreService<T> {
     }else{
       const data = await super.save(modelEssay,options)
       try{
+        data.vector = await getEmbedding(`${data?.title??''}#${data?.vectorKeyWords?.split?.(",")??''}#${data?.content??''}`) // 获取文本向量 标题 + 正文    
         // 创建向量数据
         const vectorPoint = {
           id: data.uuid, // 使用UUID作为默认ID
