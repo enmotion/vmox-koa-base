@@ -30,7 +30,7 @@ const aggregatePiple=[
       from: "tags",
       localField: 'genre',
       foreignField: 'key',    // 目标集合的关联字段
-      as: 'generInfo',       // 存储匹配结果的临时字段
+      as: 'genreInfo',       // 存储匹配结果的临时字段
       pipeline: [
         { $project: { name: 1 } }
       ]

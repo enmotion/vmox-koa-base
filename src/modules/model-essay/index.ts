@@ -39,7 +39,7 @@ export const modelEssaySchema = new mongoose.Schema<ExpandModelEssay>(
 );
 
 // 创建复合索引优化查询性能
-modelEssaySchema.index({ gener: 1, writeMethod: 1, sync: 1 });
+modelEssaySchema.index({ genre: 1, writeMethod: 1, sync: 1 });
 modelEssaySchema.index({ super: 1, status: 1 });
 
 /**
