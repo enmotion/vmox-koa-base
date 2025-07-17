@@ -225,6 +225,8 @@ export class ModelControllers<T extends IModelEssay> {
   };
   // 向量查询接口
   public vectorSearch = async (ctx: ParameterizedContext) => {
+    let startTime = Date.now()
+    console.log('开始查询',colors.red((startTime)+''))
     if(R.isEmpty(ctx.request.body)){
       ctx.body = packResponse({
         code: 400,
@@ -240,8 +242,12 @@ export class ModelControllers<T extends IModelEssay> {
       writingMethods:{target:"writingMethods", match:!!request.writingMethodsMust ? "match/value" : "match/any"},
       sync:{target:'sync',match:!!request.syncMust ? "match/value" : "match/any"},
     })
+    console.log('1.数据组装耗时',colors.red((Date.now()-startTime)+''))
+    startTime=Date.now()
     if(!!request.query){
       request.query = await getEmbedding(request.query) // 获取文本向量
+      console.log('2.查询向量获取耗时',colors.red((Date.now()-startTime)+''))
+      startTime=Date.now()
       const vectorDatas = await qdrantClient.query(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, {
         query:request.query,      
         filter:{
@@ -253,14 +259,20 @@ export class ModelControllers<T extends IModelEssay> {
         },
         with_vector:false,
       })
+      console.log('3.向量查询耗时',colors.red((Date.now()-startTime)+''))
+      startTime=Date.now()
       const data = await this.service.aggregate(
         {uuid:{$in:vectorDatas.points.map(item=>item.id)}},
-        {__v:0,vector:0},null,null,
+        {__v: 0, llmResult:0, vector:0},null,null,
         aggregatePiple,
       )
+      console.log('4.转为本地数据集耗时',colors.red((Date.now()-startTime)+''))
+      startTime=Date.now()
       const items = vectorDatas.points.map(point=>{
         return R.mergeAll([data[0].items.find((item:Record<string,any>)=>point.id == item.uuid),{score:point.score}])
       })
+      console.log('5.组装最终查询结果耗时',colors.red((Date.now()-startTime)+''))
+      startTime=Date.now()
       // console.log(vectorDatas)
       // console.log(data, 'vectorSearch')
       ctx.body = packResponse({
@@ -284,7 +296,7 @@ export class ModelControllers<T extends IModelEssay> {
       })
       const data = await this.service.aggregate(
         {uuid:{$in:vectorDatas.points.map(item=>item.id)}},
-        {__v:0, vector:0, llmResult: 0},null,null,
+        {__v: 0, llmResult:0, vector:0},null,null,
         aggregatePiple,
       )
       const items = vectorDatas.points.map(point=>{

@@ -19,9 +19,11 @@ import type { ParameterizedContext, Next } from "koa";
  * @warning 需确保上游中间件抛出的错误包含code字段才能被识别为业务错误
  */
 async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
+  const startTIme=Date.now()
   try {
     // 执行后续中间件链
-    await next();    
+    await next();
+    console.log('接口总耗时:',colors.red((Date.now()-startTIme)+''))
   } catch (err:any) {
     console.log(colors.red(err))
     // 识别标准业务错误（包含code字段）
@@ -38,6 +40,7 @@ async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
         msg: '未知错误'   // 用户友好提示
       };
     }
+    console.log('接口总耗时:',colors.red((Date.now()-startTIme)+''))
   }
 }
 export default middleware;
