@@ -23,14 +23,15 @@ import {
 export class AppControllers {
   // 范文评AI评审工作流
   public modelEssayReviewWebhook=async(ctx: ParameterizedContext)=> {
+    console.log('modelEssayReviewWebhook',ctx)
     const result = ctx.request?.body?.result??{};
     const item = {
       uuid:result.uuid,
       vectorKeyWords:result.vectorKeyWords,
       appreciationGuide:result.appreciationGuide,
-      genre:result.genre?.map((item:Record<string,any>)=>item.key),
-      writingMethods:result.writingMethods?.map((item:Record<string,any>)=>item.key),
-      sync:result.sync?.map((item:Record<string,any>)=>item.key),
+      genre:result.genre?.map?.((item:Record<string,any>)=>item.key),
+      writingMethods:result.writingMethods?.map?.((item:Record<string,any>)=>item.key),
+      sync:result.sync?.map?.((item:Record<string,any>)=>item.key),
       llmResult:result,
       processingStatus:3
     } as any
@@ -40,9 +41,6 @@ export class AppControllers {
     if(currentItem.items.length>0){
       await modelEssayService.save(item)
     }
-    // console.log(ctx.request.body.sync.map((item:any)=>console.log(item.key)))
-    // console.log(ctx.request.body.writingMethods.map((item:any)=>console.log(item.key)))
-    // console.log(ctx.request.body.genre.map((item:any)=>console.log(item.key)))
     ctx.body = packResponse({
       code: 200,
       data: {},
@@ -101,6 +99,7 @@ export class AppControllers {
   };
   // 欣赏亮点开放接口
   public aggregateAppreciate = async (ctx: ParameterizedContext) => {
+    console.log('aggregateAppreciate',ctx)
     const body: Record<string, any> = !R.isEmpty(ctx.request.body)
       ? ctx.request.body
       : JSON.parse(JSON.stringify(ctx.query)) ?? {};
@@ -151,6 +150,7 @@ export class AppControllers {
   };
   // 标签查询开放接口
   public aggregateTagAssociationService = async (ctx: ParameterizedContext) => {
+    console.log('aggregateTagAssociationService',ctx)
     const query: Record<string, any> = ctx.query ?? {};
     // categroyId 不可以与 tagIds 同时存在
     console.log(

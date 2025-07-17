@@ -44,29 +44,28 @@ export class ModelEssayService<T extends IModelEssay> extends CoreService<T> {
     return data
   }
   public override async save(modelEssay:T,options?:SaveOptions):Promise<any>{
-    if(!!modelEssay.uuid){
+    let saveItem = R.clone(modelEssay) as Record<string,any>
+    const currentItem = JSON.parse(JSON.stringify(await super.findOne({uuid:saveItem.uuid??''}))) ; // 考虑到这次或许只是部分更新某个向量属性，因此要做重新的合并
+    // 更新操作必须确保存在当前数据，不存在数据时，不能进行更新操作
+    if(!!currentItem?.uuid){
       // 只要更新中，携带了新的需要向量的属性，则会重新获取向量值
-      if(R.values(R.pick(['title','content','vectorKeyWords'],modelEssay)).filter((item:string)=>!!item).length>0){
-        const data = await super.findOne({uuid:modelEssay.uuid}); // 考虑到这次或许只是部分更新某个向量属性，因此要做重新的合并
-        const vectorData = R.mergeAll([data,modelEssay]);
-        console.log(colors.blue("need embedding vector data"),colors.green(JSON.stringify(R.pick(['title','content','vectorKeyWords'],modelEssay))))
-        modelEssay.vector = await getEmbedding(`${vectorData?.title??''}#${vectorData?.vectorKeyWords?.split?.(",")??''}#${vectorData?.content??''}`) // 获取文本向量 标题 + 正文    
+      if(R.values(R.pick(['title','content','vectorKeyWords'],saveItem)).filter((item:string)=>!!item).length>0){
+        // 注意点: 出现过存储异常问题， mergeAll操作 ，返回的数据与想象的不一致，会添加一些内容，所以不能直接赋值给 saveItem
+        saveItem = R.mergeAll([currentItem as Record<string,any>, saveItem]); // 确保数据的完整性 将当前存储数据合并为全量数据
+        saveItem.vector = await getEmbedding(`${saveItem?.title??''}#${saveItem?.vectorKeyWords?.join?.("#")??''}#${saveItem?.content??''}`) // 获取文本向量 标题 + 正文
       }
-      await super.updateOne({uuid:modelEssay.uuid}, modelEssay, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
-      const data = await super.findOne({uuid:modelEssay.uuid},{})
-      if(data){
-        const vectorPoint = {
-          id: data.uuid, // 使用UUID作为默认ID
-          vector: data.vector,
-          payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync','vectorKeyWords'], data) // 去除向量字段
-        } as any;
-        await qdrantClient.upsert(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, { points:[vectorPoint], wait:true }); // 向Qdrant中插入或更新向量点
-        return data
-      }
+      await super.updateOne({uuid:saveItem.uuid}, saveItem, options as (MongoDB.UpdateOptions & MongooseUpdateQueryOptions<T>)|null);
+      const vectorPoint = {
+        id: saveItem.uuid, // 使用UUID作为默认ID
+        vector: saveItem.vector,
+        payload: R.pick(['title','content','genre','writingMethods','appreciationGuide','from','status','sync','vectorKeyWords'], saveItem) // 去除向量字段
+      } as any;
+      await qdrantClient.upsert(process.env.APP_QDRANT_MODEL_ESSAY_DB_NAME as string, { points:[vectorPoint], wait:true }); // 向Qdrant中插入或更新向量点
+      return saveItem
     }else{
       const data = await super.save(modelEssay,options)
       try{
-        data.vector = await getEmbedding(`${data?.title??''}#${data?.vectorKeyWords?.split?.(",")??''}#${data?.content??''}`) // 获取文本向量 标题 + 正文    
+        data.vector = await getEmbedding(`${data?.title??''}#${data?.vectorKeyWords?.join?.(",")??''}#${data?.content??''}`) // 获取文本向量 标题 + 正文    
         // 创建向量数据
         const vectorPoint = {
           id: data.uuid, // 使用UUID作为默认ID

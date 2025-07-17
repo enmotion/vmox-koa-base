@@ -126,7 +126,7 @@ export class ModelControllers<T extends IModelEssay> {
         const modelEssayData = R.mergeAll([body, extraData]); // 合并请求数据，在原始数据上添加 向量值与更新或者创建内容
         modelEssayData.super = modelEssayData.super ?? ctx?.visitor?.super ?? 0
         // modelEssayData.vector = await getEmbedding(body.title+'#'+body.content) // 更改为 service 内部获取向量值
-        console.log('save....')
+        // console.log(modelEssayData,'save....')
         const data: Record<string, any> = await this.service.save(modelEssayData as T,{})
         ctx.body = packResponse({
           code: 200,
@@ -145,7 +145,7 @@ export class ModelControllers<T extends IModelEssay> {
   public deleteMany = async (ctx: ParameterizedContext) => {
     if (!!ctx.query?.uuids && typeof ctx.query.uuids === 'string') {
       const uuids = ctx.query.uuids.split(",")
-      console.log(uuids)
+      // console.log(uuids)
       const deleteDatas = await this.service.find({uuid: { $in: uuids }, super: { $lte: ctx.visitor.super }}) // 查找符合条件的所有集合
       const deleteIds = deleteDatas.items.map(item=>item.uuid);
       const data = await this.service.deleteMany({ uuid: { $in: deleteIds } }, deleteIds); // 删除范文
@@ -162,7 +162,7 @@ export class ModelControllers<T extends IModelEssay> {
   // 更新操作
   public updateMany = async (ctx: ParameterizedContext) => {
     const body = R.clone(ctx.request?.body) as Record<string, any>
-    console.log(body, 'updateMany')
+    // console.log(body, 'updateMany')
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getMongooseQueryFilter(body, { "uuids": "uuids" }) // 请求值与查询条件的转换
       body.updatedUser = ctx.visitor.uid;
@@ -236,10 +236,9 @@ export class ModelControllers<T extends IModelEssay> {
     const request = R.clone(ctx.request.body) as Record<string, any>;
     const must = getQdrantFilter(R.omit(['query'],request),{
       status:{target:'status',match:'match/value'},
-      genre:{target:'genre',match:'match/any'},
-      writingMethods:{target:"writingMethods",match:"match/any"},
-      sync:{target:'sync',match:'match/any'},
-      
+      genre:{target:'genre',match:!!request.genreMust ? "match/value" : "match/any"},
+      writingMethods:{target:"writingMethods", match:!!request.writingMethodsMust ? "match/value" : "match/any"},
+      sync:{target:'sync',match:!!request.syncMust ? "match/value" : "match/any"},
     })
     if(!!request.query){
       request.query = await getEmbedding(request.query) // 获取文本向量
@@ -248,7 +247,7 @@ export class ModelControllers<T extends IModelEssay> {
         filter:{
           must:must
         },
-        limit:20,
+        limit:request.limit ?? 20,
         with_payload:{
           include:['id']
         },
@@ -262,7 +261,7 @@ export class ModelControllers<T extends IModelEssay> {
       const items = vectorDatas.points.map(point=>{
         return R.mergeAll([data[0].items.find((item:Record<string,any>)=>point.id == item.uuid),{score:point.score}])
       })
-       console.log(vectorDatas)
+      // console.log(vectorDatas)
       // console.log(data, 'vectorSearch')
       ctx.body = packResponse({
         code: 200,
