@@ -213,7 +213,7 @@ export class ModelControllers<T extends IModelEssay> {
       ) // 请求值与查询条件的转换
       const page = getPagination(body.page) // 分页参数
       const sort = getSort(body.sort) // 排序参数
-      const data = await this.service.aggregate(filter, { __v: 0 }, page, sort, aggregatePiple); // 返回值 字段过滤
+      const data = await this.service.aggregate(filter, { __v: 0, llmResult:0, appreciationGuide:0, vector:0 }, page, sort, aggregatePiple); // 返回值 字段过滤
       ctx.body = packResponse({
         code: 200,
         data: data[0],
@@ -284,7 +284,7 @@ export class ModelControllers<T extends IModelEssay> {
       })
       const data = await this.service.aggregate(
         {uuid:{$in:vectorDatas.points.map(item=>item.id)}},
-        {__v:0, vector:0},null,null,
+        {__v:0, vector:0, llmResult: 0},null,null,
         aggregatePiple,
       )
       const items = vectorDatas.points.map(point=>{

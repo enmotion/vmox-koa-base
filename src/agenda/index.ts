@@ -16,7 +16,7 @@ export function startAgendaTask(delay?:number){
     const agendaInstance = new Agenda({db:{address:`${mongoDB_URL}`, collection:'agenda'}})
     agendaInstance.define('modelEssayReview',async (job,done)=>{
       try{
-        console.log(colors.blue("modelEssayReview workflow baseURL:"),colors.green(process.env.APP_API_BASE_URL as string))
+        console.log(colors.blue("modelEssayReview workflow baseURL:"), colors.green(process.env?.APP_API_BASE_URL??'' as string))
         const modelEssays = await modelEssayService.find({processingStatus:1},null,{updatedAt:'asc'})
         if(modelEssays.items.length>0){
           const item = modelEssays.items[0];
