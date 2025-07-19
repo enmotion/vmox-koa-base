@@ -143,10 +143,9 @@ export const problemBaseSchema: SchemaDefinition<IProblem> = {
   key:{
     type: String,
     name: '问题唯一标识',
+    required: [true, '缺少问题唯一标识，创建失败'],
     index: true,  // 建立索引加速查询
-    immutable:true, // 不允许修改唯一标识
     unique: [true, '该问题唯一标识已被占用'], // 唯一性约束
-    default: uniqid, // 默认值生成函数
   },
   title: {
     type: String,
