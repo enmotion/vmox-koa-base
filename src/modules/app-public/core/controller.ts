@@ -57,10 +57,16 @@ export class AppControllers {
     if (!R.isNil(body) && !R.isEmpty(body)) {
       const filter = getMongooseQueryFilter(R.omit(["page", "sort"], body), {
         title: "title/$regex",
+        key:"key/$in",
         definition: "definition/$regex",
         example: "example/$regex",
         coreFix: "coreFix/$regex",
-        difficultyLevel: "difficultyLevel",
+        difficultyLevel: [
+          "difficultyLevel",
+          (val: any) => ({
+            $lte: parseInt(val),
+          }),
+        ],
         gradeLevel: [
           "gradeLevel",
           (val: any) => ({
