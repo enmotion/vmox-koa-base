@@ -44,6 +44,7 @@ export interface ITrainingData {
  */
 export interface IAppreciate {
   _id: string;                        // 亮点ID
+  key:string,                         // 亮点唯一标识，使用uniqid生成 或用户自行指定
   title: string;                      // 亮点标题
   definition: string;                 // 亮点定义
   example: string;                    // 亮点范例
@@ -133,6 +134,14 @@ export type IAppreciateDocument = Document<IAppreciate>
  *   @property {Boolean} immutable - 禁止修改
  */
 export const AppreciateBaseSchema: SchemaDefinition<IAppreciate> = {
+  key: {
+    type: String,
+    name: '亮点优化主键',
+    index: true,  // 建立索引加速查询
+    unique: [true, '该亮点优化主键已被占用'], // 唯一性约束
+    required:true,
+    immutable: true, // 不允许修改唯一标识
+  },
   title: {
     type: String,
     name: '亮点标题',

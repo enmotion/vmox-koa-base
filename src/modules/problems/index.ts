@@ -21,6 +21,7 @@ import { ExpandProblemControllers } from "./expand/controller";
 
 // 路由工具
 import { mappingControllersAndRouter } from "@lib/routerTools";
+import { unique } from "agenda/dist/job/unique";
 
 // 常量定义
 const _mongoDbCollectionName = 'problem-collection'; // MongoDB集合名
@@ -39,10 +40,8 @@ export const problemSchema = new mongoose.Schema<ExpandProblem>(
 );
 
 // 创建复合索引优化查询性能
-problemSchema.index({ difficultyLevel: 1, gradeLevel: 1, status: 1 });
-problemSchema.index({ super: 1, status: 1 });
-problemSchema.index({ category: 1, status: 1 });
-problemSchema.index({ tags: 1, status: 1 });
+problemSchema.index({ category: 1, difficultyLevel: 1, gradeLevel: 1, status: 1, super: 1,tags: 1, });
+problemSchema.index({key:1}, {unique:true,sparse: true })
 
 /**
  * Mongoose问题集模型

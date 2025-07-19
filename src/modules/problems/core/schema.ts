@@ -44,6 +44,7 @@ export interface ITrainingData {
  */
 export interface IProblem {
   _id: string;                        // 问题ID
+  key:string,                         // 问题唯一标识，使用uniqid生成 或用户自行指定
   title: string;                      // 问题标题
   definition: string;                 // 问题定义
   example: string;                    // 问题范例
@@ -71,6 +72,12 @@ export type IProblemDocument = Document<IProblem>
  * @constant
  * @type {SchemaDefinition<IProblem>}
  * @property {Object} _id - 问题唯一标识配置
+ *   @property {String} type - 字段类型
+ *   @property {Boolean} index - 建立索引加速查询
+ *   @property {String} name - 字段显示名称
+ *   @property {Array} unique - 唯一性约束及错误提示
+ *   @property {Function} default - 默认值生成函数
+ * @property {Object} key - 问题唯一标识主键
  *   @property {String} type - 字段类型
  *   @property {Boolean} index - 建立索引加速查询
  *   @property {String} name - 字段显示名称
@@ -133,6 +140,14 @@ export type IProblemDocument = Document<IProblem>
  *   @property {Boolean} immutable - 禁止修改
  */
 export const problemBaseSchema: SchemaDefinition<IProblem> = {
+  // key:{
+  //   type: String,
+  //   name: '问题唯一标识',
+  //   index: true,  // 建立索引加速查询
+  //   immutable:true, // 不允许修改唯一标识
+  //   unique: [true, '该问题唯一标识已被占用'], // 唯一性约束
+  //   default: uniqid, // 默认值生成函数
+  // },
   title: {
     type: String,
     name: '问题标题',
