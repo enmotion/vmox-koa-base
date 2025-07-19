@@ -40,7 +40,7 @@ export const problemSchema = new mongoose.Schema<ExpandProblem>(
 );
 
 // 创建复合索引优化查询性能
-problemSchema.index({ category: 1, difficultyLevel: 1, gradeLevel: 1, status: 1, super: 1,tags: 1, });
+problemSchema.index({ difficultyLevel: 1, gradeLevel: 1, status: 1, super: 1 });
 
 /**
  * Mongoose问题集模型
