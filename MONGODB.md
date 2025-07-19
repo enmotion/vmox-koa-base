@@ -9,6 +9,11 @@ mongodump是MongoDB官方提供的备份工具，它能够将数据库内容以B
 mongodump的基本语法结构如下：
 ```
 mongodump --uri "mongodb://username:password@hostname:port/database" --out ./backup
+// 复制线上的地址 指定集合备份到本地位置 mac
+mongodump --uri="mongodb://username:password@hostname:port/mymongo" --collection="problem-collections" --out=./Desktop/zuowen2
+// 迁移数据到指定集合
+mongorestore --uri="mongodb://mymongo:aZMRHDpphPL5YiJZ@47.243.138.111:27017/mymongo" ~/Desktop/zuowen
+mongorestore --uri="mongodb://127.0.0.1:27017/cms-copy" --collection="problem-collections2" ~/Desktop/zuowen2
 
 ```
 ##### 主要参数说明：
