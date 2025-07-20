@@ -82,7 +82,7 @@ export class AppControllers {
       const data = await problemService.aggregate(
         filter,
         {
-          _id: 1,
+          key: 1,
           title: 1,
           definition: 1,
           example: 1,
@@ -138,7 +138,7 @@ export class AppControllers {
       const data = await AppreciateService.aggregate(
         filter,
         {
-          _id: 1,
+          key: 1,
           title: 1,
           definition: 1,
           example: 1,
