@@ -8,7 +8,7 @@ import { QdrantClient } from '@qdrant/js-client-rest'; // 引入向量数据建�
  */
 // 免费服务方案
 const qdrantClient = new QdrantClient({
-    url: 'https://97aa742f-0c02-40f7-9705-2061f9bd3045.us-east4-0.gcp.cloud.qdrant.io:6333',
+    url: process.env.APP_QDRANT_URL,
     apiKey: process.env.APP_QDRANT_API_KEY,
 });
 // 免费服务方案

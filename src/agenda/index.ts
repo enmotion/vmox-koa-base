@@ -44,8 +44,17 @@ export function startAgendaTask(delay?:number){
         console.log(err);
       }
     })
+    agendaInstance.define('modelEssayReviewCheck',async (job,done)=>{
+      try{
+        console.log('modelEssayReviewCheck')
+        done()
+      }catch(err){
+        console.log(err);
+      }
+    })
     await agendaInstance.start();
     await agendaInstance.every('3 seconds','modelEssayReview')
+    await agendaInstance.every('1 seconds','modelEssayReviewCheck')
     console.log('agenda start')
   },delay??1000)
 }
