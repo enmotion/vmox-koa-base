@@ -2,7 +2,7 @@
  * @ Author: enmotion
  * @ Create Time: 2025-04-15 16:30:41
  * @ Modified by: Your name
- * @ Modified time: 2025-07-15 20:16:05
+ * @ Modified time: 2025-08-09 23:04:02
  * @ Description: 这是一个基于 Koa 框架的简单服务器应用，支持 WebSocket 和静态文件服务
  */
 import Koa from 'koa';  // 引入 Koa 框架，这是一个轻量级的 Node.js Web 应用框架。
@@ -21,6 +21,7 @@ import fs from 'fs';
 import { startAgendaTask } from './agenda';
 
 import { userRouter } from "@modules/users-class"
+import { clientRouter} from "@modules/client-class"
 import { systemRouter } from "@modules/system";
 import { categoryRouter, tagRouter, tagAssociationRouter } from '@modules/content-type';
 import { problemRouter } from "@modules/problems"
@@ -84,6 +85,7 @@ app.use(KoaBody({
 }));
 app.use(authMiddleware);
 app.use(userRouter.routes());
+app.use(clientRouter.routes());
 app.use(systemRouter.routes());
 app.use(categoryRouter.routes());
 app.use(tagRouter.routes());
