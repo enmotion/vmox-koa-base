@@ -417,11 +417,9 @@ export class TagAssociationController<T extends ITagAssociation> {
         case "before":{
           const effectNodes = await (await this.service.find({parentAssociationId:body.parentAssociationId,order:{$lte:body.order},_id:{$ne:body._id}},null,{order:'desc'})).items
           let startOrder:number = body.order;
-          console.log(effectNodes)
-          await Promise.all(effectNodes.map((item, index)=>{
+          await Promise.all(effectNodes.map((item)=>{
             startOrder--
             item.order = startOrder;
-            // console.log(item,'before item')
             return this.service.save(item)
           }))
           // console.log(body,'before')
@@ -430,12 +428,9 @@ export class TagAssociationController<T extends ITagAssociation> {
         case "after":{
           const effectNodes = await (await this.service.find({parentAssociationId:body.parentAssociationId,order:{$gte:body.order},_id:{$ne:body._id}},null,{order:'asc'})).items
           let startOrder:number = body.order;
-          // console.log(effectNodes)
           await Promise.all(effectNodes.map((item)=>{
             startOrder++
             item.order = startOrder;
-            // item.order = item.order + 1;
-            // console.log(item,'before item')
             return this.service.save(item)
           }))
           // console.log(body,'after')
