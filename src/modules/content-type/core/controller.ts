@@ -382,12 +382,13 @@ export class TagAssociationController<T extends ITagAssociation> {
   };
   public save = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = R.clone(ctx.request.body);
+    const alreadyHas = await this.service.find({categoryId:body.categoryId})
     const tagIds = body.tagId?.filter(((item:string)=>body.parentAssociationId!==item))
     delete body.tagId;
     if(!R.isNil(body) && !R.isEmpty(body)){
       const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
-      const saveTasks = tagIds?.map((tagId:string)=>{
-        return this.service.save(R.mergeAll([body,extraData,{tagId}]) as T)
+      const saveTasks = tagIds?.map((tagId:string, index:number)=>{
+        return this.service.save(R.mergeAll([body,extraData,{tagId,order:alreadyHas.total+index+1}]) as T)
       })
       const data:Record<string,any> = await Promise.all(saveTasks)
       // console.log(R.mergeAll([body,extraData]),body)
@@ -403,7 +404,43 @@ export class TagAssociationController<T extends ITagAssociation> {
   }
   public drop = async (ctx:ParameterizedContext)=>{
     const body:Record<string,any> = R.clone(ctx.request.body);
+    console.log("ssss")
     if(!R.isNil(body) && !R.isEmpty(body)){
+      switch(body.type){
+        case 'inner':{
+          const effectNodes = await (await this.service.find({parentAssociationId:body.parentAssociationId})).items
+          const order = effectNodes.length>0 ? Math.min(...effectNodes.map(item=>item.order)) : 0;
+          body.order = order - 1
+          // console.log(order,'inner')
+        }
+        break;
+        case "before":{
+          const effectNodes = await (await this.service.find({parentAssociationId:body.parentAssociationId,order:{$lte:body.order},_id:{$ne:body._id}},null,{order:'desc'})).items
+          let startOrder:number = body.order;
+          console.log(effectNodes)
+          await Promise.all(effectNodes.map((item, index)=>{
+            startOrder--
+            item.order = startOrder;
+            // console.log(item,'before item')
+            return this.service.save(item)
+          }))
+          // console.log(body,'before')
+        }
+        break;
+        case "after":{
+          const effectNodes = await (await this.service.find({parentAssociationId:body.parentAssociationId,order:{$gte:body.order},_id:{$ne:body._id}},null,{order:'asc'})).items
+          let startOrder:number = body.order;
+          // console.log(effectNodes)
+          await Promise.all(effectNodes.map((item)=>{
+            startOrder++
+            item.order = startOrder;
+            // item.order = item.order + 1;
+            // console.log(item,'before item')
+            return this.service.save(item)
+          }))
+          // console.log(body,'after')
+        }
+      }
       const extraData = !body?._id ? { createdUser:ctx.visitor.uid } : {updatedUser:ctx.visitor.uid}
       const data:Record<string,any> = this.service.save(R.mergeAll([body,extraData]) as T)
       // console.log(R.mergeAll([body,extraData]),body)

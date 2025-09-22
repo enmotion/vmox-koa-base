@@ -23,6 +23,7 @@ async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
   try {
     // 执行后续中间件链
     await next();
+    // console.log('接口:',colors.red(ctx.URL.href))
     console.log('接口总耗时:',colors.red((Date.now()-startTIme)+''))
   } catch (err:any) {
     console.log(colors.red(err))
@@ -40,6 +41,7 @@ async function middleware(ctx:ParameterizedContext,next:Next):Promise<void>{
         msg: '未知错误'   // 用户友好提示
       };
     }
+    // console.log('接口:',colors.red(ctx.URL.href))
     console.log('接口总耗时:',colors.red((Date.now()-startTIme)+''))
   }
 }
